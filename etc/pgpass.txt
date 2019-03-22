@@ -1,0 +1,2 @@
+sslrootcert=/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem
+https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem

@@ -1,0 +1,64 @@
+name:                tslaq-event-tracker
+version:             0.1.0.0
+github:              "amiri/tslaq-event-tracker"
+license:             BSD3
+author:              "Amiri Barksdale"
+maintainer:          "amiribarksdale@gmail.com"
+copyright:           "2019 Amiri Barksdale"
+
+extra-source-files:
+- README.md
+
+description:         Please see the README on GitHub at <https://github.com/amiri/tslaq-event-tracker#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- aeson
+- amazonka
+- amazonka-core
+- amazonka-s3
+- amazonka-secretsmanager
+- aws-easy
+- bcrypt
+- bytestring
+- directory
+- hostname
+- hslogger
+- lens
+- mtl
+- mtl
+- persistent
+- persistent-postgresql
+- persistent-template
+- servant-auth
+- servant-server
+- text
+- time
+- transformers
+- wai
+- warp
+library:
+  source-dirs: src
+
+executables:
+  tslaq-event-tracker-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - tslaq-event-tracker
+
+tests:
+  tslaq-event-tracker-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - tslaq-event-tracker
+    - tasty

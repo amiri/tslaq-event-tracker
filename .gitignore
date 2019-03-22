@@ -1,0 +1,9 @@
+.stack-work/
+tslaq-prices.cabal
+*~
+*.log
+/tmp
+chef_guid
+chef-cache
+*.pid
+*.out

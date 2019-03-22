@@ -1,0 +1,132 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 0d45bbe2e4d84976932b8d7cbd761a06f063e6b1e214789a417b0db23d59d445
+
+name:           tslaq-event-tracker
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/amiri/tslaq-event-tracker#readme>
+homepage:       https://github.com/amiri/tslaq-event-tracker#readme
+bug-reports:    https://github.com/amiri/tslaq-event-tracker/issues
+author:         Amiri Barksdale
+maintainer:     amiribarksdale@gmail.com
+copyright:      2019 Amiri Barksdale
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/amiri/tslaq-event-tracker
+
+library
+  exposed-modules:
+      Lib
+      Types
+  other-modules:
+      Paths_tslaq_event_tracker
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , amazonka
+    , amazonka-core
+    , amazonka-s3
+    , amazonka-secretsmanager
+    , aws-easy
+    , base >=4.7 && <5
+    , bcrypt
+    , bytestring
+    , directory
+    , hostname
+    , hslogger
+    , lens
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , servant-auth
+    , servant-server
+    , text
+    , time
+    , transformers
+    , wai
+    , warp
+  default-language: Haskell2010
+
+executable tslaq-event-tracker-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_tslaq_event_tracker
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , amazonka
+    , amazonka-core
+    , amazonka-s3
+    , amazonka-secretsmanager
+    , aws-easy
+    , base >=4.7 && <5
+    , bcrypt
+    , bytestring
+    , directory
+    , hostname
+    , hslogger
+    , lens
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , servant-auth
+    , servant-server
+    , text
+    , time
+    , transformers
+    , tslaq-event-tracker
+    , wai
+    , warp
+  default-language: Haskell2010
+
+test-suite tslaq-event-tracker-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_tslaq_event_tracker
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , amazonka
+    , amazonka-core
+    , amazonka-s3
+    , amazonka-secretsmanager
+    , aws-easy
+    , base >=4.7 && <5
+    , bcrypt
+    , bytestring
+    , directory
+    , hostname
+    , hslogger
+    , lens
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , servant-auth
+    , servant-server
+    , tasty
+    , text
+    , time
+    , transformers
+    , tslaq-event-tracker
+    , wai
+    , warp
+  default-language: Haskell2010

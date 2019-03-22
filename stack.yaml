@@ -1,0 +1,11 @@
+flags: {}
+packages:
+- .
+extra-deps:
+- amazonka-1.6.1
+- amazonka-core-1.6.1
+- amazonka-dynamodb-1.6.1
+- amazonka-s3-1.6.1
+- amazonka-secretsmanager-1.6.1
+- aws-easy-0.1.0.2
+resolver: lts-13.6
