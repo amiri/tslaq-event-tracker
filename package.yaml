@@ -38,6 +38,8 @@ dependencies:
 - wai
 - warp
 - hspec
+- hspec-wai
+- hspec-wai-json
 library:
   source-dirs: src
 
