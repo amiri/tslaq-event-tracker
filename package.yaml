@@ -37,6 +37,7 @@ dependencies:
 - transformers
 - wai
 - warp
+- hspec
 library:
   source-dirs: src
 
