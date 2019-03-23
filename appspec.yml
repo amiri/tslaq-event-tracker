@@ -1,0 +1,14 @@
+version: 0.0
+os: linux
+files:
+  - source: ./
+    destination: /tmp/deployments/tslaq-event-tracker
+
+hooks:
+    BeforeInstall:
+      - location: etc/deploy-hooks/install-chef.sh
+        timeout: 1800
+        runas: root
+    ApplicationStart:
+      - location: etc/deploy-hooks/chef-client-local.sh
+        runas: root

@@ -1,0 +1,7 @@
+{
+  "run_list": [
+      "recipe[hostname::default]",
+      "recipe[tslaq-event-tracker]"
+  ],
+  "set_fqdn": "tslaq-event-tracker.org"
+}
