@@ -4,6 +4,9 @@
 #
 # Copyright:: 2019, The Authors, All Rights Reserved.
 
+apt_package 'libpq-dev'
+apt_package 'libpq5'
+
 group 'tslaq' do
   gid    2016
 end
