@@ -21,25 +21,43 @@ dependencies:
 - aws-easy
 - bcrypt
 - bytestring
+- containers
 - directory
+- ekg
+- ekg-core
+- fast-logger
+- foreign-store
 - hostname
 - hslogger
+- hspec
+- hspec-wai
+- hspec-wai-json
+- katip
 - lens
-- mtl
+- microlens
+- monad-control
+- monad-logger
+- monad-metrics
 - mtl
 - persistent
 - persistent-postgresql
 - persistent-template
+- resource-pool
+- safe
+- servant
 - servant-auth
+- servant-js
 - servant-server
 - text
 - time
 - transformers
+- unordered-containers
 - wai
+- wai-extra
+- wai-middleware-metrics
 - warp
-- hspec
-- hspec-wai
-- hspec-wai-json
+
+
 library:
   source-dirs: src
 
@@ -47,10 +65,7 @@ executables:
   tslaq-event-tracker-exe:
     main:                Main.hs
     source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+    ghc-options: "-Werror -Wall -threaded -rtsopts \"-with-rtsopts=-N -T\""
     dependencies:
     - tslaq-event-tracker
 
@@ -58,10 +73,7 @@ tests:
   tslaq-event-tracker-test:
     main:                Spec.hs
     source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+    ghc-options: "-Werror -Wall -threaded -rtsopts \"-with-rtsopts=-N -T\""
     dependencies:
     - tslaq-event-tracker
     - tasty

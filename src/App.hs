@@ -1,0 +1,86 @@
+{-# LANGUAGE OverloadedStrings #-}
+
+module App where
+
+import           Api                         (app)
+import           Api.User                    (generateJavaScript)
+import           AppContext                  (AppContext (..),
+                                              defaultPgConnectInfo,
+                                              getAWSConfig, getEnvironment,
+                                              getPgConnectInfo, makePool,
+                                              s3Service, secretsManagerService,
+                                              setLogger)
+import           Control.Concurrent          (killThread)
+import           Control.Exception           (bracket)
+import           Control.Lens                ((^.))
+import qualified Control.Monad.Metrics       as M
+import           Data.Maybe                  (fromMaybe)
+import qualified Data.Pool                   as Pool
+import           Database.Persist.Postgresql (runSqlPool)
+import qualified Katip
+import           Logger                      (defaultLogEnv)
+import           Models                      (doMigrations)
+import           Network.AWS.Easy            (connect)
+import           Network.HostName            (getHostName)
+import           Network.Wai                 (Application)
+import           Network.Wai.Handler.Warp    (run)
+import           Network.Wai.Metrics         (metrics, registerWaiMetrics)
+import           System.Remote.Monitoring    (forkServer, serverMetricStore,
+                                              serverThreadId)
+
+-- | An action that creates a WAI 'Application' together with its resources,
+--   runs it, and tears it down on exit
+runApp :: IO ()
+runApp = bracket acquireAppContext shutdownApp runApp
+  where runApp config = run (configPort config) =<< initialize config
+
+-- | The 'initialize' function accepts the required environment information,
+-- initializes the WAI 'Application' and returns it
+initialize :: AppContext -> IO Application
+initialize cfg = do
+  waiMetrics <- registerWaiMetrics (configMetrics cfg ^. M.metricsStore)
+  let logger = setLogger (configEnv cfg)
+  runSqlPool doMigrations (configPool cfg)
+  generateJavaScript
+  pure . logger . metrics waiMetrics . app $ cfg
+
+-- | Allocates resources for 'AppContext'
+acquireAppContext :: IO AppContext
+acquireAppContext = do
+  let port = 8888
+  env       <- getEnvironment
+  logEnv    <- defaultLogEnv
+  pool      <- makePool env logEnv
+  ekgServer <- forkServer "localhost" 8000
+  let store = serverMetricStore ekgServer
+  waiMetrics     <- registerWaiMetrics store
+  metr           <- M.initializeWith store
+  c              <- getAWSConfig
+  secretsSession <- connect c secretsManagerService
+  s3Session      <- connect c s3Service
+  hostname       <- getHostName
+  pgConnectInfo  <- case hostname of
+    "tslaq-event-tracker" -> getPgConnectInfo "pgconnectinfo" secretsSession
+    _                     -> return Nothing
+  let pgConnectInfo' = fromMaybe defaultPgConnectInfo pgConnectInfo
+  pure AppContext
+    { configPool           = pool
+    , configEnv            = env
+    , configMetrics        = metr
+    , configLogEnv         = logEnv
+    , configPort           = port
+    , configEkgServer      = serverThreadId ekgServer
+    , configSecretsSession = secretsSession
+    , configS3Session      = s3Session
+    }
+
+-- | Takes care of cleaning up 'AppContext' resources
+shutdownApp :: AppContext -> IO ()
+shutdownApp cfg = do
+  _ <- Katip.closeScribes (configLogEnv cfg)
+  Pool.destroyAllResources (configPool cfg)
+  -- Monad.Metrics does not provide a function to destroy metrics store
+  -- so, it'll hopefully get torn down when async exception gets thrown
+  -- at metrics server process
+  killThread (configEkgServer cfg)
+  pure ()

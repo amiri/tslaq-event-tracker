@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6d1a05cfe1eec1adfa6ce6eac4409997c76a6bec8c585c3876f3a0bde21c22c2
+-- hash: 99e360645bc49f4f5d1571b29cc897f4c3f2335c2fe0ab5072b616289be75cdf
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -26,8 +26,12 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
-      Types
+      Api
+      Api.User
+      App
+      AppContext
+      Logger
+      Models
   other-modules:
       Paths_tslaq_event_tracker
   hs-source-dirs:
@@ -42,23 +46,40 @@ library
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
     , directory
+    , ekg
+    , ekg-core
+    , fast-logger
+    , foreign-store
     , hostname
     , hslogger
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , katip
     , lens
+    , microlens
+    , monad-control
+    , monad-logger
+    , monad-metrics
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
+    , resource-pool
+    , safe
+    , servant
     , servant-auth
+    , servant-js
     , servant-server
     , text
     , time
     , transformers
+    , unordered-containers
     , wai
+    , wai-extra
+    , wai-middleware-metrics
     , warp
   default-language: Haskell2010
 
@@ -68,7 +89,7 @@ executable tslaq-event-tracker-exe
       Paths_tslaq_event_tracker
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -threaded -rtsopts "-with-rtsopts=-N -T"
   build-depends:
       aeson
     , amazonka
@@ -79,24 +100,41 @@ executable tslaq-event-tracker-exe
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
     , directory
+    , ekg
+    , ekg-core
+    , fast-logger
+    , foreign-store
     , hostname
     , hslogger
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , katip
     , lens
+    , microlens
+    , monad-control
+    , monad-logger
+    , monad-metrics
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
+    , resource-pool
+    , safe
+    , servant
     , servant-auth
+    , servant-js
     , servant-server
     , text
     , time
     , transformers
     , tslaq-event-tracker
+    , unordered-containers
     , wai
+    , wai-extra
+    , wai-middleware-metrics
     , warp
   default-language: Haskell2010
 
@@ -107,7 +145,7 @@ test-suite tslaq-event-tracker-test
       Paths_tslaq_event_tracker
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -threaded -rtsopts "-with-rtsopts=-N -T"
   build-depends:
       aeson
     , amazonka
@@ -118,24 +156,41 @@ test-suite tslaq-event-tracker-test
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
     , directory
+    , ekg
+    , ekg-core
+    , fast-logger
+    , foreign-store
     , hostname
     , hslogger
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , katip
     , lens
+    , microlens
+    , monad-control
+    , monad-logger
+    , monad-metrics
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
+    , resource-pool
+    , safe
+    , servant
     , servant-auth
+    , servant-js
     , servant-server
     , tasty
     , text
     , time
     , transformers
     , tslaq-event-tracker
+    , unordered-containers
     , wai
+    , wai-extra
+    , wai-middleware-metrics
     , warp
   default-language: Haskell2010
