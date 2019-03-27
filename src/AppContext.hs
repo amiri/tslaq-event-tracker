@@ -17,7 +17,6 @@
 module AppContext where
 
 import           Control.Concurrent                   (ThreadId)
-import           Control.Exception                    (throwIO)
 import           Control.Lens                         ((&), (.~), (^.))
 import           Control.Monad.Except                 (ExceptT, MonadError)
 import           Control.Monad.IO.Class               (liftIO)
@@ -28,21 +27,20 @@ import           Control.Monad.Reader                 (MonadIO, MonadReader,
                                                        ReaderT, asks)
 import           Control.Monad.Trans.AWS              (Credentials (..),
                                                        Region (..))
-import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Maybe            (MaybeT (..), runMaybeT)
 import           Data.Aeson                           (FromJSON, ToJSON, decode,
                                                        parseJSON, withObject,
                                                        (.:))
 import qualified Data.ByteString.Char8                as BS
-import           Data.Maybe                           (fromJust)
+import           Data.Maybe                           (fromJust, fromMaybe)
 import           Data.Monoid                          ((<>))
-import           Data.Text                            (Text)
+import           Data.Text                            (Text, pack, unpack)
 import           Data.Text.Lazy                       (fromStrict)
 import           Data.Text.Lazy.Encoding              (encodeUtf8)
 import           Database.Persist.Postgresql          (ConnectionPool,
                                                        ConnectionString,
                                                        createPostgresqlPool)
 import           GHC.Generics                         (Generic)
+import           Logger
 import           Network.AWS                          (send)
 import           Network.AWS.Easy                     (AWSConfig, Endpoint (..),
                                                        TypedSession, awsConfig,
@@ -58,9 +56,6 @@ import           Network.Wai.Handler.Warp             (Port)
 import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import           Servant                              (ServantErr)
 import           System.Directory                     (doesFileExist)
-import           System.Environment                   (lookupEnv)
-
-import           Logger
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
@@ -202,46 +197,72 @@ getEnvironment = do
     _                     -> return Development
 
 
+getPgConnectString :: PGConnectInfo -> ConnectionString
+getPgConnectString i =
+  BS.intercalate " " . zipWith (<>) pgKeys $ BS.pack . unpack <$> pgVals
+ where
+  PGConnectInfo { pgUsername = userName, pgPassword = password, pgHost = host, pgPort = port, pgDbInstanceIdentifier = dbName, pgSslmode = sslMode, pgSslrootcert = sslRootCert }
+    = i
+  pgVals =
+    [ userName
+    , password
+    , host
+    , (pack $ show port)
+    , dbName
+    , (fromMaybe "" sslMode)
+    , (fromMaybe "" sslRootCert)
+    ]
+  pgKeys =
+    [ "host="
+    , "port="
+    , "user="
+    , "password="
+    , "dbname="
+    , "sslmode="
+    , "sslrootcert="
+    ]
+
+
 -- | This function creates a 'ConnectionPool' for the given environment.
 -- For 'Development' and 'Test' environments, we use a stock and highly
 -- insecure connection string. The 'Production' environment acquires the
 -- information from environment variables that are set by the keter
 -- deployment application.
-makePool :: Environment -> LogEnv -> IO ConnectionPool
-makePool Test env =
-  runKatipT env (createPostgresqlPool (connStr "-test") (envPool Test))
-makePool Development env =
-  runKatipT env $ createPostgresqlPool (connStr "") (envPool Development)
-makePool Production env = do
-    -- This function makes heavy use of the 'MaybeT' monad transformer, which
-    -- might be confusing if you're not familiar with it. It allows us to
-    -- combine the effects from 'IO' and the effect of 'Maybe' into a single
-    -- "big effect", so that when we bind out of @MaybeT IO a@, we get an
-    -- @a@. If we just had @IO (Maybe a)@, then binding out of the IO would
-    -- give us a @Maybe a@, which would make the code quite a bit more
-    -- verbose.
-  pool <- runMaybeT $ do
-    let keys =
-          [ "host="
-          , "port="
-          , "user="
-          , "password="
-          , "dbname="
-          , "sslmode="
-          , "sslrootcert="
-          ]
-    let envs = ["PGHOST", "PGPORT", "PGUSER", "PGPASS", "PGDATABASE"]
-    envVars <- traverse (MaybeT . lookupEnv) envs
-    let prodStr = BS.intercalate " " . zipWith (<>) keys $ BS.pack <$> envVars
-    lift $ runKatipT env $ createPostgresqlPool prodStr (envPool Production)
-  case pool of
-      -- If we don't have a correct database configuration, we can't
-      -- handle that in the program, so we throw an IO exception. This is
-      -- one example where using an exception is preferable to 'Maybe' or
-      -- 'Either'.
-    Nothing -> throwIO
-      (userError "Database AppContexturation not present in environment.")
-    Just a -> return a
+makePool :: Environment -> ConnectionString -> LogEnv -> IO ConnectionPool
+makePool Test s le = runKatipT le (createPostgresqlPool s (envPool Test))
+makePool Development s le =
+  runKatipT le $ createPostgresqlPool s (envPool Development)
+makePool Production s le =
+  runKatipT le $ createPostgresqlPool s (envPool Production)
+    -- -- This function makes heavy use of the 'MaybeT' monad transformer, which
+    -- -- might be confusing if you're not familiar with it. It allows us to
+    -- -- combine the effects from 'IO' and the effect of 'Maybe' into a single
+    -- -- "big effect", so that when we bind out of @MaybeT IO a@, we get an
+    -- -- @a@. If we just had @IO (Maybe a)@, then binding out of the IO would
+    -- -- give us a @Maybe a@, which would make the code quite a bit more
+    -- -- verbose.
+  -- pool <- runMaybeT $ do
+    -- let keys =
+    --       [ "host="
+    --       , "port="
+    --       , "user="
+    --       , "password="
+    --       , "dbname="
+    --       , "sslmode="
+    --       , "sslrootcert="
+    --       ]
+    -- let envs = ["PGHOST", "PGPORT", "PGUSER", "PGPASS", "PGDATABASE"]
+    -- envVars <- traverse (MaybeT . lookupEnv) envs
+    -- let prodStr = BS.intercalate " " . zipWith (<>) keys $ BS.pack <$> envVars
+    -- lift $
+  -- case pool of
+    --   -- If we don't have a correct database configuration, we can't
+    --   -- handle that in the program, so we throw an IO exception. This is
+    --   -- one example where using an exception is preferable to 'Maybe' or
+    --   -- 'Either'.
+    -- Nothing -> throwIO
+    --   (userError "Database AppContexturation not present in environment.")
+    -- Just a -> return a
 
 -- | The number of pools to use for a given environment.
 envPool :: Environment -> Int

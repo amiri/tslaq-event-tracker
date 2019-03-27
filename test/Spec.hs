@@ -1,11 +1,11 @@
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 module Main (main) where
 
-import App (runApp)
-import Test.Hspec
-import Test.Hspec.Wai
-import Test.Hspec.Wai.JSON
+-- import App (runApp)
+-- import Test.Hspec
+-- import Test.Hspec.Wai
+-- import Test.Hspec.Wai.JSON
 
 main :: IO ()
 main = putStrLn "Test suite not yet implemented"

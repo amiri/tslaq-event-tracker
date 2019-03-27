@@ -7,7 +7,8 @@ import           Api.User                    (generateJavaScript)
 import           AppContext                  (AppContext (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getEnvironment,
-                                              getPgConnectInfo, makePool,
+                                              getPgConnectInfo,
+                                              getPgConnectString, makePool,
                                               s3Service, secretsManagerService,
                                               setLogger)
 import           Control.Concurrent          (killThread)
@@ -50,7 +51,6 @@ acquireAppContext = do
   let port = 8888
   env       <- getEnvironment
   logEnv    <- defaultLogEnv
-  pool      <- makePool env logEnv
   ekgServer <- forkServer "localhost" 8000
   let store = serverMetricStore ekgServer
   waiMetrics     <- registerWaiMetrics store
@@ -62,7 +62,9 @@ acquireAppContext = do
   pgConnectInfo  <- case hostname of
     "tslaq-event-tracker" -> getPgConnectInfo "pgconnectinfo" secretsSession
     _                     -> return Nothing
-  let pgConnectInfo' = fromMaybe defaultPgConnectInfo pgConnectInfo
+  let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
+  let pgConnectionString = getPgConnectString pgConnectInfo'
+  pool <- makePool env pgConnectionString logEnv
   pure AppContext
     { configPool           = pool
     , configEnv            = env
