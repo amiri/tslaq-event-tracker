@@ -30,12 +30,14 @@ import           Control.Monad.Trans.AWS              (Credentials (..),
 import           Data.Aeson                           (FromJSON, ToJSON, decode,
                                                        parseJSON, withObject,
                                                        (.:))
-import qualified Data.ByteString.Char8                as BS
+import qualified Data.ByteString                      as BS
 import           Data.Maybe                           (fromJust, fromMaybe)
 import           Data.Monoid                          ((<>))
-import           Data.Text                            (Text, pack, unpack)
+import           Data.Text                            (Text)
+import qualified Data.Text                            as T
+import           Data.Text.Encoding                   (encodeUtf8)
 import           Data.Text.Lazy                       (fromStrict)
-import           Data.Text.Lazy.Encoding              (encodeUtf8)
+import qualified Data.Text.Lazy.Encoding              as LE (encodeUtf8)
 import           Database.Persist.Postgresql          (ConnectionPool,
                                                        ConnectionString,
                                                        createPostgresqlPool)
@@ -94,8 +96,9 @@ defaultPgConnectInfo = PGConnectInfo
 getPgConnectInfo :: Text -> SMSession -> IO (Maybe PGConnectInfo)
 getPgConnectInfo s = withAWS $ do
   res <- send (getSecretValue s)
-  let k  = res ^. gsvrsSecretString
-  let k' = decode (encodeUtf8 $ fromStrict $ fromJust k) :: Maybe PGConnectInfo
+  let k = res ^. gsvrsSecretString
+  let k' =
+        decode (LE.encodeUtf8 $ fromStrict $ fromJust k) :: Maybe PGConnectInfo
   return k'
 
 -- | This type represents the effects we want to have for our application.
@@ -198,25 +201,25 @@ getEnvironment = do
 
 
 getPgConnectString :: PGConnectInfo -> ConnectionString
-getPgConnectString i =
-  BS.intercalate " " . zipWith (<>) pgKeys $ BS.pack . unpack <$> pgVals
+getPgConnectString i = BS.intercalate " " $ zipWith (<>) pgKeys pgVals
  where
-  PGConnectInfo { pgUsername = userName, pgPassword = password, pgHost = host, pgPort = port, pgDbInstanceIdentifier = dbName, pgSslmode = sslMode, pgSslrootcert = sslRootCert }
+  PGConnectInfo { pgUsername = username, pgPassword = password, pgHost = host, pgPort = port, pgDbInstanceIdentifier = dbName, pgSslmode = sslMode, pgSslrootcert = sslRootCert }
     = i
-  pgVals =
-    [ userName
+  pgVals = map (encodeUtf8) $ filter
+    (not . null . T.unpack)
+    [ username
     , password
     , host
-    , (pack $ show port)
+    , (T.pack $ show port)
     , dbName
     , (fromMaybe "" sslMode)
     , (fromMaybe "" sslRootCert)
     ]
   pgKeys =
-    [ "host="
-    , "port="
-    , "user="
+    [ "user="
     , "password="
+    , "host="
+    , "port="
     , "dbname="
     , "sslmode="
     , "sslrootcert="
@@ -234,35 +237,6 @@ makePool Development s le =
   runKatipT le $ createPostgresqlPool s (envPool Development)
 makePool Production s le =
   runKatipT le $ createPostgresqlPool s (envPool Production)
-    -- -- This function makes heavy use of the 'MaybeT' monad transformer, which
-    -- -- might be confusing if you're not familiar with it. It allows us to
-    -- -- combine the effects from 'IO' and the effect of 'Maybe' into a single
-    -- -- "big effect", so that when we bind out of @MaybeT IO a@, we get an
-    -- -- @a@. If we just had @IO (Maybe a)@, then binding out of the IO would
-    -- -- give us a @Maybe a@, which would make the code quite a bit more
-    -- -- verbose.
-  -- pool <- runMaybeT $ do
-    -- let keys =
-    --       [ "host="
-    --       , "port="
-    --       , "user="
-    --       , "password="
-    --       , "dbname="
-    --       , "sslmode="
-    --       , "sslrootcert="
-    --       ]
-    -- let envs = ["PGHOST", "PGPORT", "PGUSER", "PGPASS", "PGDATABASE"]
-    -- envVars <- traverse (MaybeT . lookupEnv) envs
-    -- let prodStr = BS.intercalate " " . zipWith (<>) keys $ BS.pack <$> envVars
-    -- lift $
-  -- case pool of
-    --   -- If we don't have a correct database configuration, we can't
-    --   -- handle that in the program, so we throw an IO exception. This is
-    --   -- one example where using an exception is preferable to 'Maybe' or
-    --   -- 'Either'.
-    -- Nothing -> throwIO
-    --   (userError "Database AppContexturation not present in environment.")
-    -- Just a -> return a
 
 -- | The number of pools to use for a given environment.
 envPool :: Environment -> Int

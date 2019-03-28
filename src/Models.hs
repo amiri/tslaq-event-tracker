@@ -23,15 +23,15 @@ import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   User json sql=users
-    registration_time UTCTime default=CURRENT_TIME
+    registration_time UTCTime default=CURRENT_TIMESTAMP
     email_address Text
     name Text
     password Text
     UniqueEmailAddress email_address
     deriving Show Read
   Event json sql=events
-    create_time UTCTime default=CURRENT_TIME
-    event_time UTCTime default=CURRENT_TIME
+    create_time UTCTime default=CURRENT_TIMESTAMP
+    event_time UTCTime default=CURRENT_TIMESTAMP
     title Text
     body Text
     UniqueTitle title
