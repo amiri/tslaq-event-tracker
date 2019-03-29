@@ -13,7 +13,7 @@
 
 module Models where
 
-import           AppContext           (AppContext, configPool)
+import           AppContext           (AppContext, ctxPool)
 import           Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
 import           Data.Text            (Text)
 import           Data.Time.Clock      (UTCTime)
@@ -43,5 +43,5 @@ doMigrations = runMigration migrateAll
 
 runDb :: (MonadReader AppContext m, MonadIO m) => SqlPersistT IO b -> m b
 runDb query = do
-  pool <- asks configPool
+  pool <- asks ctxPool
   liftIO $ runSqlPool query pool

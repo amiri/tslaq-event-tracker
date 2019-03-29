@@ -103,7 +103,7 @@ getPgConnectInfo s = withAWS $ do
 
 -- | This type represents the effects we want to have for our application.
 -- We wrap the standard Servant monad with 'ReaderT AppContext', which gives us
--- access to the application configuration using the 'MonadReader'
+-- access to the application ctxuration using the 'MonadReader'
 -- interface's 'ask' function.
 --
 -- By encapsulating the effects in our newtype, we can add layers to the
@@ -122,14 +122,14 @@ type App = AppT IO
 -- running in and a Persistent 'ConnectionPool'.
 data AppContext
     = AppContext
-    { configPool           :: !ConnectionPool
-    , configEnv            :: !Environment
-    , configMetrics        :: !Metrics
-    , configEkgServer      :: !ThreadId
-    , configLogEnv         :: !LogEnv
-    , configPort           :: !Port
-    , configSecretsSession :: !(TypedSession SMService)
-    , configS3Session      :: !(TypedSession S3Service)
+    { ctxPool           :: !ConnectionPool
+    , ctxEnv            :: !Environment
+    , ctxMetrics        :: !Metrics
+    , ctxEkgServer      :: !ThreadId
+    , ctxLogEnv         :: !LogEnv
+    , ctxPort           :: !Port
+    , ctxSecretsSession :: !(TypedSession SMService)
+    , ctxS3Session      :: !(TypedSession S3Service)
     }
 
 data PGConnectInfo = PGConnectInfo {
@@ -156,11 +156,11 @@ instance FromJSON PGConnectInfo where
       return PGConnectInfo {..}
 
 instance Monad m => MonadMetrics (AppT m) where
-    getMetrics = asks AppContext.configMetrics
+    getMetrics = asks AppContext.ctxMetrics
 
 -- | Katip instance for @AppT m@
 instance MonadIO m => Katip (AppT m) where
-    getLogEnv = asks configLogEnv
+    getLogEnv = asks ctxLogEnv
     localLogEnv = error "not implemented"
 
 -- | MonadLogger instance to use within @AppT m@

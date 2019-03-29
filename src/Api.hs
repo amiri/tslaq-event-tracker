@@ -4,30 +4,29 @@
 module Api (app) where
 
 import           Control.Monad.Reader (runReaderT)
-import           Servant              ((:<|>) ((:<|>)),
-                                       Proxy (Proxy), Raw, Server,
-                                       serve, serveDirectoryFileServer)
+import           Servant              ((:<|>) ((:<|>)), Proxy (Proxy), Raw,
+                                       Server, serve, serveDirectoryFileServer)
 import           Servant.Server
 
-import           Api.User             (UserAPI, userServer, userApi)
-import           AppContext               (AppT (..), AppContext (..))
+import           Api.User             (UserAPI, userApi, userServer)
+import           AppContext           (AppContext (..), AppT (..))
 
 -- | This is the function we export to run our 'UserAPI'. Given
 -- a 'AppContext', we return a WAI 'Application' which any WAI compliant server
 -- can run.
 userApp :: AppContext -> Application
-userApp cfg = serve userApi (appToServer cfg)
+userApp ctx = serve userApi (appToServer ctx)
 
 -- | This functions tells Servant how to run the 'App' monad with our
 -- 'server' function.
 appToServer :: AppContext -> Server UserAPI
-appToServer cfg = hoistServer userApi (convertApp cfg) userServer
+appToServer ctx = hoistServer userApi (convertApp ctx) userServer
 
 -- | This function converts our @'AppT' m@ monad into the @ExceptT ServantErr
 -- m@ monad that Servant's 'enter' function needs in order to run the
 -- application.
 convertApp :: AppContext -> AppT IO a -> Handler a
-convertApp cfg appt = Handler $ runReaderT (runApp appt) cfg
+convertApp ctx appt = Handler $ runReaderT (runApp appt) ctx
 
 -- | Since we also want to provide a minimal front end, we need to give
 -- Servant a way to serve a directory with HTML and JavaScript. This
@@ -48,5 +47,4 @@ appApi = Proxy
 -- | Finally, this function takes a configuration and runs our 'UserAPI'
 -- alongside the 'Raw' endpoint that serves all of our files.
 app :: AppContext -> Application
-app cfg =
-    serve appApi (appToServer cfg :<|> files)
+app ctx = serve appApi (appToServer ctx :<|> files)

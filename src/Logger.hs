@@ -19,7 +19,7 @@ import qualified System.Log.FastLogger as FastLogger
 defaultLogEnv :: IO LogEnv
 defaultLogEnv = do
   handleScribe <- mkHandleScribe ColorIfTerminal IO.stdout DebugS V2
-  env          <- initLogEnv "servant-persistent" "production"
+  env          <- initLogEnv "tslaq-event-tracker" "production"
   registerScribe "stdout" handleScribe defaultScribeSettings env
 
 fromLevel :: LogLevel -> Severity

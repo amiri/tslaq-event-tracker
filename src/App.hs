@@ -33,17 +33,17 @@ import           System.Remote.Monitoring    (forkServer, serverMetricStore,
 --   runs it, and tears it down on exit
 runApp :: IO ()
 runApp = bracket acquireAppContext shutdownApp runApp
-  where runApp config = run (configPort config) =<< initialize config
+  where runApp ctx = run (ctxPort ctx) =<< initialize ctx
 
 -- | The 'initialize' function accepts the required environment information,
 -- initializes the WAI 'Application' and returns it
 initialize :: AppContext -> IO Application
-initialize cfg = do
-  waiMetrics <- registerWaiMetrics (configMetrics cfg ^. M.metricsStore)
-  let logger = setLogger (configEnv cfg)
-  runSqlPool doMigrations (configPool cfg)
+initialize ctx = do
+  waiMetrics <- registerWaiMetrics (ctxMetrics ctx ^. M.metricsStore)
+  let logger = setLogger (ctxEnv ctx)
+  runSqlPool doMigrations (ctxPool ctx)
   generateJavaScript
-  pure . logger . metrics waiMetrics . app $ cfg
+  pure . logger . metrics waiMetrics . app $ ctx
 
 -- | Allocates resources for 'AppContext'
 acquireAppContext :: IO AppContext
@@ -66,23 +66,23 @@ acquireAppContext = do
   let pgConnectionString = getPgConnectString pgConnectInfo'
   pool <- makePool env pgConnectionString logEnv
   pure AppContext
-    { configPool           = pool
-    , configEnv            = env
-    , configMetrics        = metr
-    , configLogEnv         = logEnv
-    , configPort           = port
-    , configEkgServer      = serverThreadId ekgServer
-    , configSecretsSession = secretsSession
-    , configS3Session      = s3Session
+    { ctxPool           = pool
+    , ctxEnv            = env
+    , ctxMetrics        = metr
+    , ctxLogEnv         = logEnv
+    , ctxPort           = port
+    , ctxEkgServer      = serverThreadId ekgServer
+    , ctxSecretsSession = secretsSession
+    , ctxS3Session      = s3Session
     }
 
 -- | Takes care of cleaning up 'AppContext' resources
 shutdownApp :: AppContext -> IO ()
-shutdownApp cfg = do
-  _ <- Katip.closeScribes (configLogEnv cfg)
-  Pool.destroyAllResources (configPool cfg)
+shutdownApp ctx = do
+  _ <- Katip.closeScribes (ctxLogEnv ctx)
+  Pool.destroyAllResources (ctxPool ctx)
   -- Monad.Metrics does not provide a function to destroy metrics store
   -- so, it'll hopefully get torn down when async exception gets thrown
   -- at metrics server process
-  killThread (configEkgServer cfg)
+  killThread (ctxEkgServer ctx)
   pure ()
