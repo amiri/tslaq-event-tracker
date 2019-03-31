@@ -12,14 +12,15 @@ module Logger
 
 import           Control.Monad.Logger
 import qualified Control.Monad.Logger  as Logger
+import           Data.Text             (Text)
 import           Katip
 import qualified System.IO             as IO
 import qualified System.Log.FastLogger as FastLogger
 
-defaultLogEnv :: IO LogEnv
-defaultLogEnv = do
+defaultLogEnv :: Text -> IO LogEnv
+defaultLogEnv e = do
   handleScribe <- mkHandleScribe ColorIfTerminal IO.stdout DebugS V2
-  env          <- initLogEnv "tslaq-event-tracker" "production"
+  env <- initLogEnv "tslaq-event-tracker" Environment {getEnvironment = e}
   registerScribe "stdout" handleScribe defaultScribeSettings env
 
 fromLevel :: LogLevel -> Severity

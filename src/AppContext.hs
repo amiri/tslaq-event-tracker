@@ -180,15 +180,15 @@ data Environment
     deriving (Eq, Show, Read)
 
 -- | This returns a 'Middleware' based on the environment that we're in.
-setLogger :: Environment -> Middleware
-setLogger Test        = id
-setLogger Development = logStdoutDev
-setLogger Production  = logStdout
+setLogger :: Environment -> LogEnv -> Middleware
+setLogger Test        _  = id
+setLogger Development le = katipLogger le
+setLogger Production  le = katipLogger le
 
--- | Web request logger (currently unimplemented and unused). For inspiration
+-- | Web request logger. For inspiration
 -- see ApacheLogger from wai-logger package.
 katipLogger :: LogEnv -> Middleware
-katipLogger env app req respond = runKatipT env $ do
+katipLogger logEnv app req respond = runKatipT logEnv $ do
     -- todo: log proper request data
   logMsg "web" InfoS "todo: received some request"
   liftIO $ app req respond

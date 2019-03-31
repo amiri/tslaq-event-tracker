@@ -15,8 +15,10 @@ import           Control.Concurrent          (killThread)
 import           Control.Exception           (bracket)
 import           Control.Lens                ((^.))
 import qualified Control.Monad.Metrics       as M
+import           Data.Char                   (toLower)
 import           Data.Maybe                  (fromMaybe)
 import qualified Data.Pool                   as Pool
+import qualified Data.Text                   as T
 import           Database.Persist.Postgresql (runSqlPool)
 import qualified Katip
 import           Logger                      (defaultLogEnv)
@@ -40,7 +42,7 @@ runApp = bracket acquireAppContext shutdownApp runApp
 initialize :: AppContext -> IO Application
 initialize ctx = do
   waiMetrics <- registerWaiMetrics (ctxMetrics ctx ^. M.metricsStore)
-  let logger = setLogger (ctxEnv ctx)
+  let logger = setLogger (ctxEnv ctx) (ctxLogEnv ctx)
   runSqlPool doMigrations (ctxPool ctx)
   generateJavaScript
   pure . logger . metrics waiMetrics . app $ ctx
@@ -50,7 +52,7 @@ acquireAppContext :: IO AppContext
 acquireAppContext = do
   let port = 8888
   env       <- getEnvironment
-  logEnv    <- defaultLogEnv
+  logEnv    <- defaultLogEnv (T.pack $ map toLower $ show env)
   ekgServer <- forkServer "localhost" 8000
   let store = serverMetricStore ekgServer
   waiMetrics     <- registerWaiMetrics store
