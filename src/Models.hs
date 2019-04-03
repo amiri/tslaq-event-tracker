@@ -15,27 +15,29 @@ module Models where
 
 import           AppContext           (AppContext, ctxPool)
 import           Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
-import           Data.Text            (Text)
 import           Data.Time.Clock      (UTCTime)
 import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
                                        share, sqlSettings)
+import           Types (EventTitle, EventBody, UserName, UserEmail, BCrypt)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   User json sql=users
-    registration_time UTCTime default=CURRENT_TIMESTAMP
-    email_address Text
-    name Text
-    password Text
-    UniqueEmailAddress email_address
-    deriving Show Read
+    createTime UTCTime sql=create_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    emailAddress UserEmail sql=email_address sqltype=text
+    name UserName sql=user_name sqltype=text
+    password BCrypt
+    UniqueEmailAddress emailAddress
+    deriving Eq Show Read
   Event json sql=events
-    create_time UTCTime default=CURRENT_TIMESTAMP
-    event_time UTCTime default=CURRENT_TIMESTAMP
-    title Text
-    body Text
+    createTime UTCTime sql=create_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    eventTime UTCTime sql=event_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    title EventTitle sql=event_title sqltype=text
+    body EventBody sql=event_body sqltype=text
     UniqueTitle title
-    deriving Show Read
+    deriving Eq Show Read
 |]
 
 doMigrations :: SqlPersistT IO ()

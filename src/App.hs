@@ -3,7 +3,7 @@
 module App where
 
 import           Api                         (app)
-import           Api.User                    (generateJavaScript)
+import           Api.TSLAQ                   (generateJavaScript)
 import           AppContext                  (AppContext (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getEnvironment,
@@ -27,21 +27,21 @@ import           Network.AWS.Easy            (connect)
 import           Network.HostName            (getHostName)
 import           Network.Wai                 (Application)
 import           Network.Wai.Handler.Warp    (run)
-import           Network.Wai.Metrics         (metrics, registerWaiMetrics)
+import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics, registerWaiMetrics)
 import           System.Remote.Monitoring    (forkServer, serverMetricStore,
                                               serverThreadId)
 
 -- | An action that creates a WAI 'Application' together with its resources,
 --   runs it, and tears it down on exit
 runApp :: IO ()
-runApp = bracket acquireAppContext shutdownApp runApp
-  where runApp ctx = run (ctxPort ctx) =<< initialize ctx
+runApp = bracket acquireAppContext shutdownApp runApp'
+  where runApp' ctx = run (ctxPort ctx) =<< initialize ctx
 
 -- | The 'initialize' function accepts the required environment information,
 -- initializes the WAI 'Application' and returns it
 initialize :: AppContext -> IO Application
 initialize ctx = do
-  waiMetrics <- registerWaiMetrics (ctxMetrics ctx ^. M.metricsStore)
+  waiMetrics <- registerNamedWaiMetrics "TSLAQ" (ctxMetrics ctx ^. M.metricsStore)
   let logger = setLogger (ctxEnv ctx) (ctxLogEnv ctx)
   runSqlPool doMigrations (ctxPool ctx)
   generateJavaScript
@@ -55,7 +55,7 @@ acquireAppContext = do
   logEnv    <- defaultLogEnv (T.pack $ map toLower $ show env)
   ekgServer <- forkServer "localhost" 8000
   let store = serverMetricStore ekgServer
-  waiMetrics     <- registerWaiMetrics store
+  _              <- registerWaiMetrics store
   metr           <- M.initializeWith store
   c              <- getAWSConfig
   secretsSession <- connect c secretsManagerService

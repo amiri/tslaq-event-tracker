@@ -20,9 +20,9 @@ var getUsers = function(onSuccess, onError) {
   xhr.send(null);
 };
 
-var getUsersByName = function(name, onSuccess, onError) {
+var getUsersById = function(id, onSuccess, onError) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/users/' + encodeURIComponent(name) + '', true);
+  xhr.open('GET', '/users/' + encodeURIComponent(id) + '', true);
   xhr.setRequestHeader('Accept', 'application/json');
   xhr.onreadystatechange = function () {
     var res = null;
@@ -44,6 +44,70 @@ var getUsersByName = function(name, onSuccess, onError) {
 var postUsers = function(body, onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/users', true);
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function () {
+    var res = null;
+    if (xhr.readyState === 4) {
+      if (xhr.status === 204 || xhr.status === 205) {
+        onSuccess();
+      } else if (xhr.status >= 200 && xhr.status < 300) {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onSuccess(res);
+      } else {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onError(res);
+      }
+    }
+  };
+  xhr.send(JSON.stringify(body));
+};
+
+var getEvents = function(onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/events', true);
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.onreadystatechange = function () {
+    var res = null;
+    if (xhr.readyState === 4) {
+      if (xhr.status === 204 || xhr.status === 205) {
+        onSuccess();
+      } else if (xhr.status >= 200 && xhr.status < 300) {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onSuccess(res);
+      } else {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onError(res);
+      }
+    }
+  };
+  xhr.send(null);
+};
+
+var getEventsById = function(id, onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/events/' + encodeURIComponent(id) + '', true);
+  xhr.setRequestHeader('Accept', 'application/json');
+  xhr.onreadystatechange = function () {
+    var res = null;
+    if (xhr.readyState === 4) {
+      if (xhr.status === 204 || xhr.status === 205) {
+        onSuccess();
+      } else if (xhr.status >= 200 && xhr.status < 300) {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onSuccess(res);
+      } else {
+        try { res = JSON.parse(xhr.responseText); } catch (e) { onError(e); }
+        if (res) onError(res);
+      }
+    }
+  };
+  xhr.send(null);
+};
+
+var postEvents = function(body, onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/events', true);
   xhr.setRequestHeader('Accept', 'application/json');
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.onreadystatechange = function () {

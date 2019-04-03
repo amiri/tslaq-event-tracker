@@ -55,7 +55,7 @@ import           Network.AWS.SecretsManager           (getSecretValue,
 import           Network.HostName                     (getHostName)
 import           Network.Wai                          (Middleware)
 import           Network.Wai.Handler.Warp             (Port)
-import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
+-- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import           Servant                              (ServantErr)
 import           System.Directory                     (doesFileExist)
 

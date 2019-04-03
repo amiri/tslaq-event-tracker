@@ -8,19 +8,13 @@ import           Servant              ((:<|>) ((:<|>)), Proxy (Proxy), Raw,
                                        Server, serve, serveDirectoryFileServer)
 import           Servant.Server
 
-import           Api.User             (UserAPI, userApi, userServer)
+import           Api.TSLAQ             (TSLAQAPI, tslaqApi, tslaqServer)
 import           AppContext           (AppContext (..), AppT (..))
-
--- | This is the function we export to run our 'UserAPI'. Given
--- a 'AppContext', we return a WAI 'Application' which any WAI compliant server
--- can run.
-userApp :: AppContext -> Application
-userApp ctx = serve userApi (appToServer ctx)
 
 -- | This functions tells Servant how to run the 'App' monad with our
 -- 'server' function.
-appToServer :: AppContext -> Server UserAPI
-appToServer ctx = hoistServer userApi (convertApp ctx) userServer
+appToServer :: AppContext -> Server TSLAQAPI
+appToServer ctx = hoistServer tslaqApi (convertApp ctx) tslaqServer
 
 -- | This function converts our @'AppT' m@ monad into the @ExceptT ServantErr
 -- m@ monad that Servant's 'enter' function needs in order to run the
@@ -39,12 +33,12 @@ files = serveDirectoryFileServer "assets"
 -- two different APIs and applications. This is a powerful tool for code
 -- reuse and abstraction! We need to put the 'Raw' endpoint last, since it
 -- always succeeds.
-type AppAPI = UserAPI :<|> Raw
+type AppAPI = TSLAQAPI :<|> Raw
 
 appApi :: Proxy AppAPI
 appApi = Proxy
 
--- | Finally, this function takes a configuration and runs our 'UserAPI'
+-- | Finally, this function takes a configuration and runs our 'TSLAQAPI'
 -- alongside the 'Raw' endpoint that serves all of our files.
 app :: AppContext -> Application
 app ctx = serve appApi (appToServer ctx :<|> files)
