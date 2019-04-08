@@ -6,30 +6,39 @@
 
 module Api.TSLAQ where
 
+import           AppContext                  (AppT (..), S3Session, jsBucket,
+                                              localJSFolder)
+import           Control.Lens                ((^.))
+import           Control.Monad               (void)
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
+import           Control.Monad.Metrics       (increment, metricsCounters)
 import qualified Control.Monad.Metrics       as Metrics
+import qualified Data.ByteString             as B (writeFile)
+import qualified Data.ByteString.Lazy        as LB (fromStrict)
+import           Data.Digest.Pure.MD5        (md5)
+import           Data.HashMap.Lazy           (HashMap)
 import           Data.Int                    (Int64)
+import           Data.IORef                  (readIORef)
+import           Data.Text                   (Text, pack)
+import           Data.Text.Encoding          (encodeUtf8)
+import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
                                               getEntity, insert, selectList,
                                               toSqlKey)
-import           Servant
-import           Servant.JS                  (vanillaJS, writeJSForAPI)
-
-import           AppContext                  (AppT (..))
-import           Control.Lens                ((^.))
-import           Control.Monad.Metrics       (increment, metricsCounters)
-import           Data.HashMap.Lazy           (HashMap)
-import           Data.IORef                  (readIORef)
-import           Data.Text                   (Text)
-import           Data.Time.Clock             (getCurrentTime)
 import           Models                      (Event (Event), Key, User (User),
                                               eventBody, eventEventTime,
                                               eventTitle, runDb,
                                               userEmailAddress, userName,
                                               userPassword)
+import           Network.AWS                 (send)
+import           Network.AWS.Data.Body       (toBody)
+import           Network.AWS.Easy            (withAWS)
+import           Network.AWS.S3              (ObjectKey (..), putObject)
+import           Servant
+import           Servant.JS                  (jsForAPI, vanillaJS)
+import           System.Command
 import qualified System.Metrics.Counter      as Counter
-
 
 
 type TSLAQAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
@@ -179,6 +188,21 @@ waiMetrics = do
   liftIO $ mapM Counter.read =<< readIORef (metr ^. metricsCounters)
 
 -- | Generates JavaScript to query the User API.
-generateJavaScript :: IO ()
-generateJavaScript =
-  writeJSForAPI (Proxy :: Proxy TSLAQAPI) vanillaJS "./frontend/src/TSLAQAPI.js"
+generateJavaScript :: S3Session -> IO Text
+generateJavaScript = withAWS $ do
+  let js            = encodeUtf8 $ jsForAPI (Proxy :: Proxy TSLAQAPI) vanillaJS
+  let h             = md5 $ LB.fromStrict js
+  let f             = "tslaq-api-" ++ (show h) ++ ".js"
+  let f'            = pack f
+  let localFilename = localJSFolder ++ f
+  liftIO $ B.writeFile localFilename js
+  let body = toBody js
+  void $ send (putObject jsBucket (ObjectKey f') body)
+  return f'
+
+getLatestPricesFile :: IO Text
+getLatestPricesFile = do
+  Stdout l <- command []
+                      "/var/local/tslaq-prices/bin/tslaq-prices-exe"
+                      ["--latest"]
+  return (pack l)

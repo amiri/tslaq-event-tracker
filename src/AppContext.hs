@@ -1,4 +1,4 @@
--- {-# LANGUAGE DeriveAnyClass             #-}
+{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE FlexibleContexts           #-}
@@ -16,54 +16,62 @@
 
 module AppContext where
 
-import           Control.Concurrent                   (ThreadId)
-import           Control.Lens                         ((&), (.~), (^.))
-import           Control.Monad.Except                 (ExceptT, MonadError)
-import           Control.Monad.IO.Class               (liftIO)
-import           Control.Monad.Logger                 (MonadLogger (..))
-import           Control.Monad.Metrics                (Metrics, MonadMetrics,
-                                                       getMetrics)
-import           Control.Monad.Reader                 (MonadIO, MonadReader,
-                                                       ReaderT, asks)
-import           Control.Monad.Trans.AWS              (Credentials (..),
-                                                       Region (..))
-import           Data.Aeson                           (FromJSON, ToJSON, decode,
-                                                       parseJSON, withObject,
-                                                       (.:))
-import qualified Data.ByteString                      as BS
-import           Data.Maybe                           (fromJust, fromMaybe)
-import           Data.Monoid                          ((<>))
-import           Data.Text                            (Text)
-import qualified Data.Text                            as T
-import           Data.Text.Encoding                   (encodeUtf8)
-import           Data.Text.Lazy                       (fromStrict)
-import qualified Data.Text.Lazy.Encoding              as LE (encodeUtf8)
-import           Database.Persist.Postgresql          (ConnectionPool,
-                                                       ConnectionString,
-                                                       createPostgresqlPool)
-import           GHC.Generics                         (Generic)
+import           Control.Concurrent          (ThreadId)
+import           Control.Lens                ((&), (.~), (^.))
+import           Control.Monad.Except        (ExceptT, MonadError)
+import           Control.Monad.IO.Class      (liftIO)
+import           Control.Monad.Logger        (MonadLogger (..))
+import           Control.Monad.Metrics       (Metrics, MonadMetrics, getMetrics)
+import           Control.Monad.Reader        (MonadIO, MonadReader, ReaderT,
+                                              asks)
+import           Control.Monad.Trans.AWS     (Credentials (..), Region (..))
+import           Crypto.JOSE.JWK             (JWK, fromRSA)
+import           Data.Aeson                  (FromJSON, ToJSON, decode,
+                                              parseJSON, withObject, (.:))
+import qualified Data.ByteString             as BS
+import           Data.Maybe                  (fromJust, fromMaybe)
+import           Data.Monoid                 ((<>))
+import           Data.PEM                    (pemParseBS)
+import           Data.Text                   (Text)
+import qualified Data.Text                   as T
+import           Data.Text.Encoding          (encodeUtf8)
+import           Data.Text.Lazy              (fromStrict)
+import qualified Data.Text.Lazy.Encoding     as LE (encodeUtf8)
+import           Data.X509                   (PrivKey (PrivKeyRSA))
+import           Data.X509.Memory            (pemToKey)
+import           Database.Persist.Postgresql (ConnectionPool, ConnectionString,
+                                              createPostgresqlPool)
+import           GHC.Generics                (Generic)
 import           Logger
-import           Network.AWS                          (send)
-import           Network.AWS.Easy                     (AWSConfig, Endpoint (..),
-                                                       TypedSession, awsConfig,
-                                                       awscCredentials, withAWS,
-                                                       wrapAWSService)
-import           Network.AWS.S3                       (s3)
-import           Network.AWS.SecretsManager           (getSecretValue,
-                                                       gsvrsSecretString,
-                                                       secretsManager)
-import           Network.HostName                     (getHostName)
-import           Network.Wai                          (Middleware)
-import           Network.Wai.Handler.Warp             (Port)
+import           Network.AWS                 (send)
+import           Network.AWS.Easy            (AWSConfig, Endpoint (..),
+                                              TypedSession, awsConfig,
+                                              awscCredentials, withAWS,
+                                              wrapAWSService)
+import           Network.AWS.S3              (BucketName (..), s3)
+import           Network.AWS.SecretsManager  (getSecretValue, gsvrsSecretBinary,
+                                              gsvrsSecretString, secretsManager)
+import           Network.HostName            (getHostName)
+import           Network.Wai                 (Middleware)
+import           Network.Wai.Handler.Warp    (Port)
+import           Servant                     (Context (..), ServantErr)
+import           Servant.Auth.Server         (CookieSettings, JWTSettings,
+                                              defaultCookieSettings,
+                                              defaultJWTSettings)
+import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
-import           Servant                              (ServantErr)
-import           System.Directory                     (doesFileExist)
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
 
 appDir :: FilePath
 appDir = "/var/local/tslaq-event-tracker/"
+
+localJSFolder :: FilePath
+localJSFolder = appDir ++ "api-js/"
+
+jsBucket :: BucketName
+jsBucket = "tslaq-api-js"
 
 awsRegion :: Region
 awsRegion = NorthVirginia
@@ -101,9 +109,27 @@ getPgConnectInfo s = withAWS $ do
         decode (LE.encodeUtf8 $ fromStrict $ fromJust k) :: Maybe PGConnectInfo
   return k'
 
+getJwtKey :: Text -> SMSession -> IO (Maybe JWK)
+getJwtKey s = withAWS $ do
+  res <- send (getSecretValue s)
+  let res' = fromJust $ res ^. gsvrsSecretBinary
+  let k    = pemParseBS res'
+  case k of
+    Left  _ -> return Nothing
+    Right p -> do
+      let k' = head $ pemToKey [] (head p)
+      case k' of
+        Just (PrivKeyRSA p') -> do
+          return $ Just (fromRSA p')
+        _ -> return Nothing
+
+getAuthConfig :: JWK -> Context '[JWTSettings, CookieSettings]
+getAuthConfig j =
+  (defaultJWTSettings j) :. defaultCookieSettings :. EmptyContext
+
 -- | This type represents the effects we want to have for our application.
 -- We wrap the standard Servant monad with 'ReaderT AppContext', which gives us
--- access to the application ctxuration using the 'MonadReader'
+-- access to the application configuration using the 'MonadReader'
 -- interface's 'ask' function.
 --
 -- By encapsulating the effects in our newtype, we can add layers to the
@@ -122,14 +148,17 @@ type App = AppT IO
 -- running in and a Persistent 'ConnectionPool'.
 data AppContext
     = AppContext
-    { ctxPool           :: !ConnectionPool
-    , ctxEnv            :: !Environment
-    , ctxMetrics        :: !Metrics
-    , ctxEkgServer      :: !ThreadId
-    , ctxLogEnv         :: !LogEnv
-    , ctxPort           :: !Port
-    , ctxSecretsSession :: !(TypedSession SMService)
-    , ctxS3Session      :: !(TypedSession S3Service)
+    { ctxPool             :: !ConnectionPool
+    , ctxEnv              :: !Environment
+    , ctxMetrics          :: !Metrics
+    , ctxEkgServer        :: !ThreadId
+    , ctxLogEnv           :: !LogEnv
+    , ctxPort             :: !Port
+    , ctxSecretsSession   :: !(TypedSession SMService)
+    , ctxS3Session        :: !(TypedSession S3Service)
+    , ctxAuthConfig       :: !(Context '[JWTSettings, CookieSettings])
+    , ctxLatestJSFile     :: !Text
+    , ctxLatestPricesFile :: !Text
     }
 
 data PGConnectInfo = PGConnectInfo {

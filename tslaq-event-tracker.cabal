@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5887a2a19328a8b87f61e4c94bb4a9328b9ee6d8a98a62f7602caba7ec8effbc
+-- hash: 2509b4409f86e70e8b18c41cfdbb492528072a13c8eadba5e89a87492e0b11ce
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -47,6 +47,7 @@ library
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , command
     , containers
     , directory
     , ekg
@@ -58,6 +59,7 @@ library
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , jose
     , katip
     , lens
     , microlens
@@ -65,13 +67,16 @@ library
     , monad-logger
     , monad-metrics
     , mtl
+    , pem
     , persistent
     , persistent-postgresql
     , persistent-template
+    , pureMD5
     , resource-pool
     , safe
     , servant
     , servant-auth
+    , servant-auth-server
     , servant-js
     , servant-server
     , text
@@ -82,6 +87,8 @@ library
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , x509
+    , x509-store
   default-language: Haskell2010
 
 executable tslaq-event-tracker-exe
@@ -101,6 +108,7 @@ executable tslaq-event-tracker-exe
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , command
     , containers
     , directory
     , ekg
@@ -112,6 +120,7 @@ executable tslaq-event-tracker-exe
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , jose
     , katip
     , lens
     , microlens
@@ -119,13 +128,16 @@ executable tslaq-event-tracker-exe
     , monad-logger
     , monad-metrics
     , mtl
+    , pem
     , persistent
     , persistent-postgresql
     , persistent-template
+    , pureMD5
     , resource-pool
     , safe
     , servant
     , servant-auth
+    , servant-auth-server
     , servant-js
     , servant-server
     , text
@@ -137,6 +149,8 @@ executable tslaq-event-tracker-exe
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , x509
+    , x509-store
   default-language: Haskell2010
 
 test-suite tslaq-event-tracker-test
@@ -157,6 +171,7 @@ test-suite tslaq-event-tracker-test
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , command
     , containers
     , directory
     , ekg
@@ -168,6 +183,7 @@ test-suite tslaq-event-tracker-test
     , hspec
     , hspec-wai
     , hspec-wai-json
+    , jose
     , katip
     , lens
     , microlens
@@ -175,13 +191,16 @@ test-suite tslaq-event-tracker-test
     , monad-logger
     , monad-metrics
     , mtl
+    , pem
     , persistent
     , persistent-postgresql
     , persistent-template
+    , pureMD5
     , resource-pool
     , safe
     , servant
     , servant-auth
+    , servant-auth-server
     , servant-js
     , servant-server
     , tasty
@@ -194,4 +213,6 @@ test-suite tslaq-event-tracker-test
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , x509
+    , x509-store
   default-language: Haskell2010

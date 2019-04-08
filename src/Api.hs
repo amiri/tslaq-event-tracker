@@ -7,7 +7,7 @@ import           Control.Monad.Reader (runReaderT)
 import           Servant              (Server, serve)
 import           Servant.Server
 
-import           Api.TSLAQ             (TSLAQAPI, tslaqApi, tslaqServer)
+import           Api.TSLAQ            (TSLAQAPI, tslaqApi, tslaqServer)
 import           AppContext           (AppContext (..), AppT (..))
 
 -- | This functions tells Servant how to run the 'App' monad with our

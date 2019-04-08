@@ -3,10 +3,12 @@
 module App where
 
 import           Api                         (app)
-import           Api.TSLAQ                   (generateJavaScript)
+import           Api.TSLAQ                   (generateJavaScript,
+                                              getLatestPricesFile)
 import           AppContext                  (AppContext (..),
                                               defaultPgConnectInfo,
-                                              getAWSConfig, getEnvironment,
+                                              getAWSConfig, getAuthConfig,
+                                              getEnvironment, getJwtKey,
                                               getPgConnectInfo,
                                               getPgConnectString, makePool,
                                               s3Service, secretsManagerService,
@@ -16,7 +18,7 @@ import           Control.Exception           (bracket)
 import           Control.Lens                ((^.))
 import qualified Control.Monad.Metrics       as M
 import           Data.Char                   (toLower)
-import           Data.Maybe                  (fromMaybe)
+import           Data.Maybe                  (fromJust, fromMaybe)
 import qualified Data.Pool                   as Pool
 import qualified Data.Text                   as T
 import           Database.Persist.Postgresql (runSqlPool)
@@ -27,7 +29,8 @@ import           Network.AWS.Easy            (connect)
 import           Network.HostName            (getHostName)
 import           Network.Wai                 (Application)
 import           Network.Wai.Handler.Warp    (run)
-import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics, registerWaiMetrics)
+import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics,
+                                              registerWaiMetrics)
 import           System.Remote.Monitoring    (forkServer, serverMetricStore,
                                               serverThreadId)
 
@@ -41,10 +44,10 @@ runApp = bracket acquireAppContext shutdownApp runApp'
 -- initializes the WAI 'Application' and returns it
 initialize :: AppContext -> IO Application
 initialize ctx = do
-  waiMetrics <- registerNamedWaiMetrics "TSLAQ" (ctxMetrics ctx ^. M.metricsStore)
+  waiMetrics <- registerNamedWaiMetrics "TSLAQ"
+                                        (ctxMetrics ctx ^. M.metricsStore)
   let logger = setLogger (ctxEnv ctx) (ctxLogEnv ctx)
   runSqlPool doMigrations (ctxPool ctx)
-  generateJavaScript
   pure . logger . metrics waiMetrics . app $ ctx
 
 -- | Allocates resources for 'AppContext'
@@ -66,16 +69,24 @@ acquireAppContext = do
     _                     -> return Nothing
   let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
   let pgConnectionString = getPgConnectString pgConnectInfo'
-  pool <- makePool env pgConnectionString logEnv
+  pool   <- makePool env pgConnectionString logEnv
+  jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
+  let j          = fromJust jwtKey
+  let authConfig = getAuthConfig j
+  latestJSFile     <- generateJavaScript s3Session
+  latestPricesFile <- getLatestPricesFile
   pure AppContext
-    { ctxPool           = pool
-    , ctxEnv            = env
-    , ctxMetrics        = metr
-    , ctxLogEnv         = logEnv
-    , ctxPort           = port
-    , ctxEkgServer      = serverThreadId ekgServer
-    , ctxSecretsSession = secretsSession
-    , ctxS3Session      = s3Session
+    { ctxPool             = pool
+    , ctxEnv              = env
+    , ctxMetrics          = metr
+    , ctxLogEnv           = logEnv
+    , ctxPort             = port
+    , ctxEkgServer        = serverThreadId ekgServer
+    , ctxSecretsSession   = secretsSession
+    , ctxS3Session        = s3Session
+    , ctxAuthConfig       = authConfig
+    , ctxLatestJSFile     = latestJSFile
+    , ctxLatestPricesFile = latestPricesFile
     }
 
 -- | Takes care of cleaning up 'AppContext' resources

@@ -21,6 +21,7 @@ dependencies:
 - aws-easy
 - bcrypt
 - bytestring
+- command
 - containers
 - directory
 - ekg
@@ -32,6 +33,7 @@ dependencies:
 - hspec
 - hspec-wai
 - hspec-wai-json
+- jose
 - katip
 - lens
 - microlens
@@ -39,13 +41,16 @@ dependencies:
 - monad-logger
 - monad-metrics
 - mtl
+- pem
 - persistent
 - persistent-postgresql
 - persistent-template
+- pureMD5
 - resource-pool
 - safe
 - servant
 - servant-auth
+- servant-auth-server
 - servant-js
 - servant-server
 - text
@@ -56,6 +61,8 @@ dependencies:
 - wai-extra
 - wai-middleware-metrics
 - warp
+- x509
+- x509-store
 
 
 library:

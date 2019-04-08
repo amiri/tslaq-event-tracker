@@ -8,6 +8,7 @@ extra-deps:
 - amazonka-s3-1.6.1
 - amazonka-secretsmanager-1.6.1
 - aws-easy-0.1.0.2
+- command-0.1.1
 - ekg-0.4.0.15
 - ekg-json-0.1.0.6
 - monad-metrics-0.2.1.2
