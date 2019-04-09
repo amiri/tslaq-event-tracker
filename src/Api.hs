@@ -4,7 +4,7 @@
 module Api (app) where
 
 import           Control.Monad.Reader (runReaderT)
-import           Servant              (Server, serve)
+import           Servant              (Server, serveWithContext)
 import           Servant.Server
 
 import           Api.TSLAQ            (TSLAQAPI, tslaqApi, tslaqServer)
@@ -24,4 +24,4 @@ convertApp ctx appt = Handler $ runReaderT (runApp appt) ctx
 -- | Finally, this function takes a configuration and runs our 'TSLAQAPI'
 -- alongside the 'Raw' endpoint that serves all of our files.
 app :: AppContext -> Application
-app ctx = serve tslaqApi (appToServer ctx)
+app ctx = serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)

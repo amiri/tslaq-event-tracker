@@ -42,6 +42,7 @@ import           Data.X509.Memory            (pemToKey)
 import           Database.Persist.Postgresql (ConnectionPool, ConnectionString,
                                               createPostgresqlPool)
 import           GHC.Generics                (Generic)
+import Katip.Core (logStr)
 import           Logger
 import           Network.AWS                 (send)
 import           Network.AWS.Easy            (AWSConfig, Endpoint (..),
@@ -220,6 +221,7 @@ katipLogger :: LogEnv -> Middleware
 katipLogger logEnv app req respond = runKatipT logEnv $ do
     -- todo: log proper request data
   logMsg "web" InfoS "todo: received some request"
+  -- logMsg "web" InfoS (logStr (show req))
   liftIO $ app req respond
 
 getEnvironment :: IO Environment

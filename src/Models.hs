@@ -19,7 +19,8 @@ import           Data.Time.Clock      (UTCTime)
 import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
                                        share, sqlSettings)
-import           Types (EventTitle, EventBody, UserName, UserEmail, BCrypt)
+import           Types                (BCrypt, EventBody, EventTitle, UserEmail,
+                                       UserName)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   User json sql=users
@@ -27,7 +28,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
     emailAddress UserEmail sql=email_address sqltype=text
     name UserName sql=user_name sqltype=text
-    password BCrypt
+    password BCrypt sqltype=bytea
     UniqueEmailAddress emailAddress
     deriving Eq Show Read
   Event json sql=events

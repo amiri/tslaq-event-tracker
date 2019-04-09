@@ -20,8 +20,9 @@ import           Data.Digest.Pure.MD5        (md5)
 import           Data.HashMap.Lazy           (HashMap)
 import           Data.Int                    (Int64)
 import           Data.IORef                  (readIORef)
+import           Data.Maybe                  (fromJust)
 import           Data.Text                   (Text, pack)
-import           Data.Text.Encoding          (encodeUtf8)
+import           Data.Text.Encoding          (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
                                               getEntity, insert, selectList,
@@ -39,6 +40,8 @@ import           Servant
 import           Servant.JS                  (jsForAPI, vanillaJS)
 import           System.Command
 import qualified System.Metrics.Counter      as Counter
+import           Types                       (BCrypt (..), NewUser (..),
+                                              hashPassword)
 
 
 type TSLAQAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
@@ -122,7 +125,7 @@ createEvent p = do
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
     :<|> "users" :> Capture "id" Int64 :> Get '[JSON] (Entity User)
-    :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
+    :<|> "users" :> ReqBody '[JSON] NewUser :> Post '[JSON] Int64
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] EventUpdate :> Put '[JSON] (Entity User)
 
 userApi :: Proxy UserAPI
@@ -151,18 +154,20 @@ getUser i = do
     Just u  -> return u
 
 -- | Creates a user in the database.
-createUser :: MonadIO m => User -> AppT m Int64
+createUser :: MonadIO m => NewUser -> AppT m Int64
 createUser p = do
   increment "createUser"
   logDebugNS "web" "creating a user"
   currentTime <- liftIO $ getCurrentTime
-  newUser     <- runDb
+  pw          <- liftIO $ hashPassword (password p)
+  let pw' = fromJust pw
+  newUser <- runDb
     ( insert
       ( User currentTime
              currentTime
-             (userEmailAddress p)
-             (userName p)
-             (userPassword p)
+             (emailAddress p)
+             (name p)
+             (BCrypt . decodeUtf8 $ pw')
       )
     )
   return $ fromSqlKey newUser
