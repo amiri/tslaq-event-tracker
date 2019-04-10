@@ -1,9 +1,10 @@
 {-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 module Types where
 
-import           Control.Monad.Except  (MonadIO, liftIO, throwError)
+import           Control.Monad.Except  (MonadIO, liftIO)
 import           Crypto.BCrypt         (hashPasswordUsingPolicy,
                                         slowerBcryptHashingPolicy,
                                         validatePassword)
@@ -12,7 +13,6 @@ import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
 import           Data.Text             (Text)
 import           Data.Text.Encoding    (encodeUtf8)
-import           Data.Time.Clock       (UTCTime)
 import           Database.Persist.Sql
 import           GHC.Generics
 
@@ -26,9 +26,14 @@ instance ToJSON NewUser where
 
 instance FromJSON NewUser where
 
+data UserLogin = UserLogin {
+    emailAddress :: UserEmail
+  , password     :: Text
+  } deriving (Show, Eq, Generic, Read)
 
-data UserUpdate = UserUpdate { }
-data EventUpdate = EventUpdate {}
+instance ToJSON UserLogin where
+
+instance FromJSON UserLogin where
 
 newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)

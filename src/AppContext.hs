@@ -42,7 +42,7 @@ import           Data.X509.Memory            (pemToKey)
 import           Database.Persist.Postgresql (ConnectionPool, ConnectionString,
                                               createPostgresqlPool)
 import           GHC.Generics                (Generic)
-import Katip.Core (logStr)
+-- import           Katip.Core                  (logStr)
 import           Logger
 import           Network.AWS                 (send)
 import           Network.AWS.Easy            (AWSConfig, Endpoint (..),

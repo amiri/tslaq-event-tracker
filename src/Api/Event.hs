@@ -1,0 +1,60 @@
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE KindSignatures    #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
+
+module Api.Event where
+
+import           AppContext                  (AppT (..))
+import           Control.Monad.Except        (MonadIO, liftIO)
+import           Control.Monad.Logger        (logDebugNS)
+import           Control.Monad.Metrics       (increment)
+import           Data.Int                    (Int64)
+import           Data.Time.Clock             (getCurrentTime)
+import           Database.Persist.Postgresql (fromSqlKey, insert)
+import           Models                      (Event (Event), eventBody,
+                                              eventEventTime, eventTitle, runDb)
+import           Servant
+
+type EventAPI = "events" :> ReqBody '[JSON] Event :> Post '[JSON] Int64
+    -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
+
+eventApi :: Proxy EventAPI
+eventApi = Proxy
+
+-- | The server that runs the EventAPI
+eventServer :: MonadIO m => ServerT EventAPI (AppT m)
+eventServer = createEvent
+    -- listEvents
+    -- :<|> getEvent
+    -- :<|> updateEvent
+
+-- | Creates a event in the database.
+createEvent :: MonadIO m => Event -> AppT m Int64
+createEvent p = do
+  increment "createEvent"
+  logDebugNS "web" "creating a event"
+  currentTime <- liftIO $ getCurrentTime
+  newEvent    <- runDb
+    ( insert
+      ( Event currentTime
+              currentTime
+              (eventEventTime p)
+              (eventTitle p)
+              (eventBody p)
+      )
+    )
+  return $ fromSqlKey newEvent
+
+-- -- | Returns a event by id or throws a 404 error.
+-- updateEvent :: MonadIO m => Int64 -> EventUpdate -> AppT m (Entity Event)
+-- updateEvent i e = do
+--   increment "updateEvent"
+--   logDebugNS "web" "updateEvent"
+--   let k = toSqlKey i
+--   runDb (update k e)
+--   updated <- runDb (getEntity k)
+--   case updated of
+--     Nothing -> throwError err404
+--     Just ue -> return ue
