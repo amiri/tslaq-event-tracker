@@ -11,10 +11,13 @@ import           Crypto.BCrypt         (hashPasswordUsingPolicy,
 import           Data.Aeson
 import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
+import           Data.Int                    (Int64)
 import           Data.Text             (Text)
 import           Data.Text.Encoding    (encodeUtf8)
 import           Database.Persist.Sql
 import           GHC.Generics
+
+data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
 
 data NewUser = NewUser {
     emailAddress :: UserEmail
@@ -29,6 +32,12 @@ instance FromJSON NewUser where
 data UserLogin = UserLogin {
     emailAddress :: UserEmail
   , password     :: Text
+  } deriving (Show, Eq, Generic, Read)
+
+data LoggedInUser = LoggedInUser {
+    userName :: UserName
+  , userId :: Int64
+  , role :: UserRole
   } deriving (Show, Eq, Generic, Read)
 
 instance ToJSON UserLogin where
