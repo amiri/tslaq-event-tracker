@@ -15,6 +15,7 @@ import           Database.Persist.Postgresql (Entity (..), getEntity,
                                               selectList, toSqlKey)
 import           Models                      (Event, Key, runDb)
 import           Servant
+import           Servant.Auth.Server   as SAS
 
 type ReadEventAPI = "events" :> Get '[JSON] [Entity Event]
     :<|> "events" :> Capture "id" Int64 :> Get '[JSON] (Entity Event)
@@ -22,8 +23,8 @@ type ReadEventAPI = "events" :> Get '[JSON] [Entity Event]
 readEventApi :: Proxy ReadEventAPI
 readEventApi = Proxy
 
-readEventServer :: MonadIO m => ServerT ReadEventAPI (AppT m)
-readEventServer = listEvents :<|> getEvent
+readEventServer :: MonadIO m => CookieSettings -> JWTSettings -> ServerT ReadEventAPI (AppT m)
+readEventServer _ _ = listEvents :<|> getEvent
 
 -- | Returns all events in the database.
 listEvents :: MonadIO m => AppT m [Entity Event]
@@ -40,4 +41,4 @@ getEvent i = do
   maybeEvent <- runDb (getEntity (toSqlKey i :: Key Event))
   case maybeEvent of
     Nothing -> throwError err404
-    Just e  -> return e
+    Just e  -> pure e

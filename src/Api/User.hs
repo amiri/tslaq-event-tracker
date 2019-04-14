@@ -51,7 +51,7 @@ getUser i = do
   maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
   case maybeUser of
     Nothing -> throwError err404
-    Just u  -> return u
+    Just u  -> pure u
 
 -- | Creates a user in the database.
 createUser :: MonadIO m => NewUser -> AppT m Int64
@@ -70,7 +70,7 @@ createUser p = do
              (BCrypt . decodeUtf8 $ pw')
       )
     )
-  return $ fromSqlKey newUser
+  pure $ fromSqlKey newUser
 
 -- updateUser :: MonadIO m => Int64 -> UserUpdate -> AppT m (Entity User)
 -- updateUser i e = do
@@ -81,4 +81,4 @@ createUser p = do
 --   updated <- runDb (getEntity k)
 --   case updated of
 --     Nothing -> throwError err404
---     Just uu -> return uu
+--     Just uu -> pure uu

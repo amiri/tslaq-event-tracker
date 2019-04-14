@@ -45,7 +45,7 @@ createEvent p = do
               (eventBody p)
       )
     )
-  return $ fromSqlKey newEvent
+  pure $ fromSqlKey newEvent
 
 -- -- | Returns a event by id or throws a 404 error.
 -- updateEvent :: MonadIO m => Int64 -> EventUpdate -> AppT m (Entity Event)
@@ -57,4 +57,4 @@ createEvent p = do
 --   updated <- runDb (getEntity k)
 --   case updated of
 --     Nothing -> throwError err404
---     Just ue -> return ue
+--     Just ue -> pure ue

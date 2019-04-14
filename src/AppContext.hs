@@ -89,7 +89,7 @@ getAWSConfig = do
   let creds = getCredentials b
   let r     = AWSRegion awsRegion
   let c     = awsConfig r & awscCredentials .~ creds
-  return c
+  pure c
 
 defaultPgConnectInfo :: PGConnectInfo
 defaultPgConnectInfo = PGConnectInfo
@@ -108,7 +108,7 @@ getPgConnectInfo s = withAWS $ do
   let k = res ^. gsvrsSecretString
   let k' =
         decode (LE.encodeUtf8 $ fromStrict $ fromJust k) :: Maybe PGConnectInfo
-  return k'
+  pure k'
 
 getJwtKey :: Text -> SMSession -> IO (Maybe JWK)
 getJwtKey s = withAWS $ do
@@ -116,17 +116,22 @@ getJwtKey s = withAWS $ do
   let res' = fromJust $ res ^. gsvrsSecretBinary
   let k    = pemParseBS res'
   case k of
-    Left  _ -> return Nothing
+    Left  _ -> pure Nothing
     Right p -> do
       let k' = head $ pemToKey [] (head p)
       case k' of
         Just (PrivKeyRSA p') -> do
-          return $ Just (fromRSA p')
-        _ -> return Nothing
+          pure $ Just (fromRSA p')
+        _ -> pure Nothing
 
 getAuthConfig :: JWK -> Context '[JWTSettings, CookieSettings]
-getAuthConfig j =
-  (defaultJWTSettings j) :. defaultCookieSettings :. EmptyContext
+getAuthConfig j = (getJWTSettings j) :. getCookieSettings :. EmptyContext
+
+getJWTSettings :: JWK -> JWTSettings
+getJWTSettings j = defaultJWTSettings j
+
+getCookieSettings :: CookieSettings
+getCookieSettings = defaultCookieSettings
 
 -- | This type represents the effects we want to have for our application.
 -- We wrap the standard Servant monad with 'ReaderT AppContext', which gives us
@@ -145,8 +150,7 @@ newtype AppT m a
 
 type App = AppT IO
 
--- | The AppContext for our application is (for now) the 'Environment' we're
--- running in and a Persistent 'ConnectionPool'.
+-- | The AppContext for our application is a bunch of stuff
 data AppContext
     = AppContext
     { ctxPool             :: !ConnectionPool
@@ -158,6 +162,8 @@ data AppContext
     , ctxSecretsSession   :: !(TypedSession SMService)
     , ctxS3Session        :: !(TypedSession S3Service)
     , ctxAuthConfig       :: !(Context '[JWTSettings, CookieSettings])
+    , ctxJWTSettings      :: !(JWTSettings)
+    , ctxCookieSettings   :: !(CookieSettings)
     , ctxLatestJSFile     :: !Text
     , ctxLatestPricesFile :: !Text
     }
@@ -183,7 +189,7 @@ instance FromJSON PGConnectInfo where
       pgDbInstanceIdentifier <- obj .: "dbInstanceIdentifier"
       pgSslmode <- obj .: "sslmode"
       pgSslrootcert <- obj .: "sslrootcert"
-      return PGConnectInfo {..}
+      pure PGConnectInfo {..}
 
 instance Monad m => MonadMetrics (AppT m) where
     getMetrics = asks AppContext.ctxMetrics
@@ -227,8 +233,8 @@ katipLogger logEnv app req respond = runKatipT logEnv $ do
 getEnvironment :: IO Environment
 getEnvironment = do
   getHostName >>= \case
-    "tslaq-event-tracker" -> return Production
-    _                     -> return Development
+    "tslaq-event-tracker" -> pure Production
+    _                     -> pure Development
 
 
 getPgConnectString :: PGConnectInfo -> ConnectionString

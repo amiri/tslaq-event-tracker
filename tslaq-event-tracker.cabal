@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d7d3304c8b200e7e5ce02e71db9ca498730e5df6af09ae9f5ae2f4dbcce2f209
+-- hash: 103e7028b77983daf375ac52e44f45d637477b7be6e5d9043661cd8efb632722
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       Api.User
       App
       AppContext
+      Instances
       Logger
       Models
       Types
@@ -81,6 +82,7 @@ library
     , servant
     , servant-auth
     , servant-auth-server
+    , servant-foreign
     , servant-js
     , servant-server
     , text
@@ -142,6 +144,7 @@ executable tslaq-event-tracker-exe
     , servant
     , servant-auth
     , servant-auth-server
+    , servant-foreign
     , servant-js
     , servant-server
     , text
@@ -205,6 +208,7 @@ test-suite tslaq-event-tracker-test
     , servant
     , servant-auth
     , servant-auth-server
+    , servant-foreign
     , servant-js
     , servant-server
     , tasty

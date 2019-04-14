@@ -8,7 +8,8 @@ import           Api.TSLAQ                   (generateJavaScript,
 import           AppContext                  (AppContext (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
-                                              getEnvironment, getJwtKey,
+                                              getCookieSettings, getEnvironment,
+                                              getJWTSettings, getJwtKey,
                                               getPgConnectInfo,
                                               getPgConnectString, makePool,
                                               s3Service, secretsManagerService,
@@ -48,7 +49,8 @@ initialize ctx = do
                                         (ctxMetrics ctx ^. M.metricsStore)
   let logger = setLogger (ctxEnv ctx) (ctxLogEnv ctx)
   runSqlPool doMigrations (ctxPool ctx)
-  pure . logger . metrics waiMetrics . app $ ctx
+  -- wrap app in middleware
+  (pure . logger . metrics waiMetrics . app) ctx
 
 -- | Allocates resources for 'AppContext'
 acquireAppContext :: IO AppContext
@@ -66,7 +68,7 @@ acquireAppContext = do
   hostname       <- getHostName
   pgConnectInfo  <- case hostname of
     "tslaq-event-tracker" -> getPgConnectInfo "pgconnectinfo" secretsSession
-    _                     -> return Nothing
+    _                     -> pure Nothing
   let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
   let pgConnectionString = getPgConnectString pgConnectInfo'
   pool   <- makePool env pgConnectionString logEnv
@@ -85,6 +87,8 @@ acquireAppContext = do
     , ctxSecretsSession   = secretsSession
     , ctxS3Session        = s3Session
     , ctxAuthConfig       = authConfig
+    , ctxJWTSettings      = getJWTSettings j
+    , ctxCookieSettings   = getCookieSettings
     , ctxLatestJSFile     = latestJSFile
     , ctxLatestPricesFile = latestPricesFile
     }

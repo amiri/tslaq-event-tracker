@@ -11,13 +11,16 @@ import           Crypto.BCrypt         (hashPasswordUsingPolicy,
 import           Data.Aeson
 import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
-import           Data.Int                    (Int64)
+import           Data.Int              (Int64)
 import           Data.Text             (Text)
 import           Data.Text.Encoding    (encodeUtf8)
 import           Database.Persist.Sql
 import           GHC.Generics
+import           Servant.Auth.Server   as SAS
 
 data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
+instance ToJSON UserRole where
+instance FromJSON UserRole where
 
 data NewUser = NewUser {
     emailAddress :: UserEmail
@@ -34,11 +37,16 @@ data UserLogin = UserLogin {
   , password     :: Text
   } deriving (Show, Eq, Generic, Read)
 
-data LoggedInUser = LoggedInUser {
+data AuthorizedUser = AuthorizedUser {
     userName :: UserName
-  , userId :: Int64
-  , role :: UserRole
+  , userId   :: Int64
+  , role     :: UserRole
   } deriving (Show, Eq, Generic, Read)
+
+instance ToJSON AuthorizedUser
+instance FromJSON AuthorizedUser
+instance SAS.ToJWT AuthorizedUser
+instance SAS.FromJWT AuthorizedUser
 
 instance ToJSON UserLogin where
 
