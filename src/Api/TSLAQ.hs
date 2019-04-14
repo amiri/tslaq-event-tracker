@@ -1,8 +1,10 @@
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE KindSignatures    #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Api.TSLAQ where
 
@@ -51,7 +53,8 @@ protectedApi = Proxy
 protectedServer
   :: MonadIO m => AuthResult AuthorizedUser -> ServerT ProtectedAPI (AppT m)
 protectedServer (SAS.Authenticated u) =
-  userServer :<|> eventServer :<|> metricsServer
+  userServer u :<|> eventServer u :<|> metricsServer u
+protectedServer _ = throwAll err401 { errBody = "Unauthorized" }
 
 type PublicAPI = ReadEventAPI
 

@@ -19,8 +19,8 @@ import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
                                               toSqlKey)
 import           Models                      (Key, User (User), runDb)
 import           Servant
-import           Types                       (BCrypt (..), NewUser (..),
-                                              hashPassword)
+import           Types                       (AuthorizedUser (..), BCrypt (..),
+                                              NewUser (..), hashPassword)
 
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
@@ -32,20 +32,20 @@ userApi :: Proxy UserAPI
 userApi = Proxy
 
 -- | The server that runs the UserAPI
-userServer :: MonadIO m => ServerT UserAPI (AppT m)
-userServer = listUsers :<|> getUser :<|> createUser
+userServer :: MonadIO m => AuthorizedUser -> ServerT UserAPI (AppT m)
+userServer u = listUsers u :<|> getUser u :<|> createUser u
     -- :<|> updateUser
 
 -- | Returns all users in the database.
-listUsers :: MonadIO m => AppT m [Entity User]
-listUsers = do
+listUsers :: MonadIO m => AuthorizedUser -> AppT m [Entity User]
+listUsers u = do
   increment "listUsers"
   logDebugNS "web" "listUsers"
   runDb (selectList [] [])
 
 -- | Returns a user by id or throws a 404 error.
-getUser :: MonadIO m => Int64 -> AppT m (Entity User)
-getUser i = do
+getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
+getUser au i = do
   increment "getUser"
   logDebugNS "web" "getUser"
   maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
@@ -54,8 +54,8 @@ getUser i = do
     Just u  -> pure u
 
 -- | Creates a user in the database.
-createUser :: MonadIO m => NewUser -> AppT m Int64
-createUser p = do
+createUser :: MonadIO m => AuthorizedUser -> NewUser -> AppT m Int64
+createUser u p = do
   increment "createUser"
   logDebugNS "web" "creating a user"
   currentTime <- liftIO $ getCurrentTime

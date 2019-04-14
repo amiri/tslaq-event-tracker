@@ -16,6 +16,7 @@ import           Database.Persist.Postgresql (fromSqlKey, insert)
 import           Models                      (Event (Event), eventBody,
                                               eventEventTime, eventTitle, runDb)
 import           Servant
+import           Types                       (AuthorizedUser (..))
 
 type EventAPI = "events" :> ReqBody '[JSON] Event :> Post '[JSON] Int64
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
@@ -24,15 +25,15 @@ eventApi :: Proxy EventAPI
 eventApi = Proxy
 
 -- | The server that runs the EventAPI
-eventServer :: MonadIO m => ServerT EventAPI (AppT m)
-eventServer = createEvent
+eventServer :: MonadIO m => AuthorizedUser -> ServerT EventAPI (AppT m)
+eventServer u = createEvent u
     -- listEvents
     -- :<|> getEvent
     -- :<|> updateEvent
 
 -- | Creates a event in the database.
-createEvent :: MonadIO m => Event -> AppT m Int64
-createEvent p = do
+createEvent :: MonadIO m => AuthorizedUser -> Event -> AppT m Int64
+createEvent u p = do
   increment "createEvent"
   logDebugNS "web" "creating a event"
   currentTime <- liftIO $ getCurrentTime
