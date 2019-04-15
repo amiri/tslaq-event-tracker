@@ -32,12 +32,24 @@ import           Servant.JS
 import           System.Command
 import           Types                 (AuthorizedUser (..))
 
-
+-- Servant type representation
 type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
 
+type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
+
+type PublicAPI = ReadEventAPI
+
+-- Servant API
 tslaqApi :: Proxy (TSLAQAPI '[JWT, Cookie])
 tslaqApi = Proxy
 
+protectedApi :: Proxy ProtectedAPI
+protectedApi = Proxy
+
+publicApi :: Proxy PublicAPI
+publicApi = Proxy
+
+-- Servant servers
 tslaqServer
   :: MonadIO m
   => SAS.CookieSettings
@@ -45,21 +57,14 @@ tslaqServer
   -> ServerT (TSLAQAPI auths) (AppT m)
 tslaqServer cs jwts = protectedServer :<|> publicServer cs jwts
 
-type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
-
-protectedApi :: Proxy ProtectedAPI
-protectedApi = Proxy
-
 protectedServer
   :: MonadIO m => AuthResult AuthorizedUser -> ServerT ProtectedAPI (AppT m)
 protectedServer (SAS.Authenticated u) =
   userServer u :<|> eventServer u :<|> metricsServer u
-protectedServer _ = throwAll err401 { errBody = "Unauthorized" }
-
-type PublicAPI = ReadEventAPI
-
-publicApi :: Proxy PublicAPI
-publicApi = Proxy
+protectedServer SAS.BadPassword = throwAll err401 { errBody = "Bad password." }
+protectedServer SAS.NoSuchUser  = throwAll err401 { errBody = "No such user." }
+protectedServer SAS.Indefinite =
+  throwAll err401 { errBody = "Unknown authorization error." }
 
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
