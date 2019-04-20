@@ -5,7 +5,7 @@ module App where
 import           Api                         (app)
 import           Api.TSLAQ                   (generateJavaScript,
                                               getLatestPricesFile)
-import           AppContext                  (AppContext (..),
+import           AppContext                  (Environment(..), AppContext (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
                                               getCookieSettings, getEnvironment,
@@ -27,7 +27,6 @@ import qualified Katip
 import           Logger                      (defaultLogEnv)
 import           Models                      (doMigrations)
 import           Network.AWS.Easy            (connect)
-import           Network.HostName            (getHostName)
 import           Network.Wai                 (Application)
 import           Network.Wai.Handler.Warp    (run)
 import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics,
@@ -65,16 +64,15 @@ acquireAppContext = do
   c              <- getAWSConfig
   secretsSession <- connect c secretsManagerService
   s3Session      <- connect c s3Service
-  hostname       <- getHostName
-  pgConnectInfo  <- case hostname of
-    "tslaq-event-tracker" -> getPgConnectInfo "pgconnectinfo" secretsSession
+  pgConnectInfo  <- case env of
+    Production  -> getPgConnectInfo "pgconnectinfo" secretsSession
     _                     -> pure Nothing
   let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
   let pgConnectionString = getPgConnectString pgConnectInfo'
   pool   <- makePool env pgConnectionString logEnv
   jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
   let j          = fromJust jwtKey
-  let authConfig = getAuthConfig j
+  let authConfig = getAuthConfig j env
   latestJSFile     <- generateJavaScript s3Session
   latestPricesFile <- getLatestPricesFile
   pure AppContext
@@ -88,7 +86,7 @@ acquireAppContext = do
     , ctxS3Session        = s3Session
     , ctxAuthConfig       = authConfig
     , ctxJWTSettings      = getJWTSettings j
-    , ctxCookieSettings   = getCookieSettings
+    , ctxCookieSettings   = getCookieSettings env
     , ctxLatestJSFile     = latestJSFile
     , ctxLatestPricesFile = latestPricesFile
     }

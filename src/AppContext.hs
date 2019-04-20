@@ -56,7 +56,7 @@ import           Network.HostName            (getHostName)
 import           Network.Wai                 (Middleware)
 import           Network.Wai.Handler.Warp    (Port)
 import           Servant                     (Context (..), ServantErr)
-import           Servant.Auth.Server         (CookieSettings, JWTSettings,
+import           Servant.Auth.Server         (IsSecure(..), CookieSettings(..), JWTSettings,
                                               defaultCookieSettings,
                                               defaultJWTSettings)
 import           System.Directory            (doesFileExist)
@@ -124,14 +124,16 @@ getJwtKey s = withAWS $ do
           pure $ Just (fromRSA p')
         _ -> pure Nothing
 
-getAuthConfig :: JWK -> Context '[JWTSettings, CookieSettings]
-getAuthConfig j = (getJWTSettings j) :. getCookieSettings :. EmptyContext
+getAuthConfig :: JWK -> Environment -> Context '[JWTSettings, CookieSettings]
+getAuthConfig j e = (getJWTSettings j) :. (getCookieSettings e) :. EmptyContext
 
 getJWTSettings :: JWK -> JWTSettings
 getJWTSettings j = defaultJWTSettings j
 
-getCookieSettings :: CookieSettings
-getCookieSettings = defaultCookieSettings
+getCookieSettings :: Environment -> CookieSettings
+getCookieSettings e = case e of
+  Production -> defaultCookieSettings
+  _ -> defaultCookieSettings { cookieIsSecure = NotSecure }
 
 -- | This type represents the effects we want to have for our application.
 -- We wrap the standard Servant monad with 'ReaderT AppContext', which gives us

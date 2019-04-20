@@ -12,6 +12,7 @@ import           Api.Event
 import           Api.Metrics
 import           Api.ReadEvent
 import           Api.User
+import           Api.Login
 import           AppContext            (AppT (..), S3Session, jsBucket,
                                         localJSFolder)
 import           Control.Monad         (void)
@@ -37,7 +38,7 @@ type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> Publi
 
 type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
 
-type PublicAPI = ReadEventAPI
+type PublicAPI = ReadEventAPI :<|> LoginAPI
 
 -- Servant API
 tslaqApi :: Proxy (TSLAQAPI '[JWT, Cookie])
@@ -63,12 +64,11 @@ protectedServer (SAS.Authenticated u) =
   userServer u :<|> eventServer u :<|> metricsServer u
 protectedServer SAS.BadPassword = throwAll err401 { errBody = "Bad password." }
 protectedServer SAS.NoSuchUser  = throwAll err401 { errBody = "No such user." }
-protectedServer SAS.Indefinite =
-  throwAll err401 { errBody = "Unknown authorization error." }
+protectedServer SAS.Indefinite = throwAll err401 { errBody = "Indefinite error." }
 
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
-publicServer cs jwts = readEventServer cs jwts
+publicServer cs jwts = readEventServer cs jwts :<|> loginServer cs jwts
 
 -- | Generates JavaScript to query the User API.
 generateJavaScript :: S3Session -> IO Text

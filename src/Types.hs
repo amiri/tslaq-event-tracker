@@ -38,9 +38,9 @@ data UserLogin = UserLogin {
   } deriving (Show, Eq, Generic, Read)
 
 data AuthorizedUser = AuthorizedUser {
-    userName :: UserName
-  , userId   :: Int64
-  , role     :: UserRole
+    authUserName :: UserName
+  , authUserId   :: Int64
+  , authUserRole :: UserRole
   } deriving (Show, Eq, Generic, Read)
 
 instance ToJSON AuthorizedUser
