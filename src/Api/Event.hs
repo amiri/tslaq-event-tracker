@@ -6,7 +6,7 @@
 
 module Api.Event where
 
-import           AppContext                  (AppT (..))
+import           AppContext                  (userHasRole, AppT (..))
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
@@ -17,7 +17,7 @@ import           Database.Persist.Postgresql (fromSqlKey, insert)
 import           Models                      (Event (Event), eventBody,
                                               eventEventTime, eventTitle, runDb)
 import           Servant
-import           Types                       (AuthorizedUser (..))
+import           Types                       (AuthorizedUser (..), UserRole(..))
 
 type EventAPI = "events" :> ReqBody '[JSON] Event :> Post '[JSON] Int64
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
@@ -35,6 +35,7 @@ eventServer u = createEvent u
 -- | Creates a event in the database.
 createEvent :: MonadIO m => AuthorizedUser -> Event -> AppT m Int64
 createEvent u p = do
+  userHasRole u Admin
   increment "createEvent"
   logDebugNS "web" ((pack $ show $ authUserId u) <> " creating an event")
   currentTime <- liftIO $ getCurrentTime

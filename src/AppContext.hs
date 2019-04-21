@@ -55,12 +55,13 @@ import           Network.AWS.SecretsManager  (getSecretValue, gsvrsSecretBinary,
 import           Network.HostName            (getHostName)
 import           Network.Wai                 (Middleware)
 import           Network.Wai.Handler.Warp    (Port)
-import           Servant                     (Context (..), ServantErr)
+import           Servant
 import           Servant.Auth.Server         (IsSecure(..), CookieSettings(..), JWTSettings,
                                               defaultCookieSettings,
                                               defaultJWTSettings)
 import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
+import Types
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
@@ -290,3 +291,6 @@ connStr sfx =
   "host=localhost dbname=perservant"
     <> sfx
     <> " user=test password=test port=5432"
+
+userHasRole :: Monad m => AuthorizedUser -> UserRole -> AppT m ()
+userHasRole u r = if (authUserRole u) == r then return () else throwError err401 {errBody = "Insufficient authorization."}

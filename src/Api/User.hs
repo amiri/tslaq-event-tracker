@@ -6,7 +6,7 @@
 
 module Api.User where
 
-import           AppContext                  (AppT (..))
+import           AppContext                  (userHasRole, AppT (..))
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
@@ -21,7 +21,7 @@ import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
 import           Models                      (Key, User (User), runDb)
 import           Servant
 import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              NewUser (..), hashPassword)
+                                              NewUser (..), hashPassword, UserRole(..))
 
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
@@ -40,13 +40,14 @@ userServer u = listUsers u :<|> getUser u :<|> createUser u
 -- | Returns all users in the database.
 listUsers :: MonadIO m => AuthorizedUser -> AppT m [Entity User]
 listUsers u = do
+  userHasRole u Admin
   increment "listUsers"
   logDebugNS "web" ((pack $ show $ authUserId u) <> " listing users")
   runDb (selectList [] [])
 
 -- | Returns a user by id or throws a 404 error.
 getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
-getUser au i = do
+getUser au i = if (authUserId au) /= i then throwError err401 {errBody = "Not you"} else do
   increment "getUser"
   logDebugNS "web" "getUser"
   logDebugNS
@@ -60,6 +61,7 @@ getUser au i = do
 -- | Creates a user in the database.
 createUser :: MonadIO m => AuthorizedUser -> NewUser -> AppT m Int64
 createUser u p = do
+  userHasRole u Admin
   increment "createUser"
   currentTime <- liftIO $ getCurrentTime
   pw          <- liftIO $ hashPassword (password p)
