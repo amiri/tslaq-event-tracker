@@ -12,18 +12,16 @@ import           AppContext                  (AppT (..))
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
-import           Data.Int                    (Int64)
-import           Data.Text                   (Text, unpack)
+import           Data.Text                   (Text, pack, unpack)
 import           Database.Persist.Postgresql (Entity (..), fromSqlKey, getBy)
-import           Models                      (Key (..), Unique (..),
-                                              User (User), runDb, userName,
+import           Models                      (Unique (..), runDb, userName,
                                               userPassword)
 import           Servant
 import           Servant.Auth.Server         as SAS
 import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              NewUser, UserEmail,
-                                              UserLogin (..), UserName (..),
-                                              UserRole (..), passwordValid)
+                                              UserEmail, UserLogin (..),
+                                              UserName (..), UserRole (..),
+                                              passwordValid)
 
 type LoginAPI = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
 
@@ -70,6 +68,7 @@ login cs jwts (UserLogin e p) = do
         Nothing -> do
           throwError err401 { errBody = "acceptLogin failed." }
         Just applyCookies -> do
+          logDebugNS "web" ((pack $ show (authUserId u)) <> " logged in")
           pure $ applyCookies NoContent
 
 
@@ -81,18 +80,18 @@ validateLogin e p = do
     Nothing           -> return Nothing
     Just (Entity k v) -> do
       let uName = userName v
-      let uId   = k
+      let uId   = fromSqlKey k
       case passwordValid (unpack p) (unpack $ unBCrypt $ userPassword v) of
-        True -> return
+        True -> pure
           ( Just
             ( AuthorizedUser
               { authUserName = uName
-              , authUserId   = fromSqlKey k
+              , authUserId   = uId
               , authUserRole = getUserRole (userName v)
               }
             )
           )
-        False -> return Nothing
+        False -> pure Nothing
 
 getUserRole :: UserName -> UserRole
 getUserRole n = if (n == (UserName "amiribarksdale")) then Admin else Normal

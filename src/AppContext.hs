@@ -228,7 +228,7 @@ setLogger Production  le = katipLogger le
 katipLogger :: LogEnv -> Middleware
 katipLogger logEnv app req respond = runKatipT logEnv $ do
     -- todo: log proper request data
-  logMsg "web" InfoS "todo: received some request"
+  -- logMsg "web" InfoS "todo: received some request"
   logMsg "web" InfoS (logStr (show req))
   liftIO $ app req respond
 

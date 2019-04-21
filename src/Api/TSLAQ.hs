@@ -9,10 +9,10 @@
 module Api.TSLAQ where
 
 import           Api.Event
+import           Api.Login
 import           Api.Metrics
 import           Api.ReadEvent
 import           Api.User
-import           Api.Login
 import           AppContext            (AppT (..), S3Session, jsBucket,
                                         localJSFolder)
 import           Control.Monad         (void)
@@ -64,7 +64,8 @@ protectedServer (SAS.Authenticated u) =
   userServer u :<|> eventServer u :<|> metricsServer u
 protectedServer SAS.BadPassword = throwAll err401 { errBody = "Bad password." }
 protectedServer SAS.NoSuchUser  = throwAll err401 { errBody = "No such user." }
-protectedServer SAS.Indefinite = throwAll err401 { errBody = "Indefinite error." }
+protectedServer SAS.Indefinite =
+  throwAll err401 { errBody = "Indefinite error." }
 
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)

@@ -12,6 +12,7 @@ import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
 import           Data.Maybe                  (fromJust)
+import           Data.Text                   (pack)
 import           Data.Text.Encoding          (decodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
@@ -40,7 +41,7 @@ userServer u = listUsers u :<|> getUser u :<|> createUser u
 listUsers :: MonadIO m => AuthorizedUser -> AppT m [Entity User]
 listUsers u = do
   increment "listUsers"
-  logDebugNS "web" "listUsers"
+  logDebugNS "web" ((pack $ show $ authUserId u) <> " listing users")
   runDb (selectList [] [])
 
 -- | Returns a user by id or throws a 404 error.
@@ -48,6 +49,9 @@ getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
 getUser au i = do
   increment "getUser"
   logDebugNS "web" "getUser"
+  logDebugNS
+    "web"
+    ((pack $ show $ authUserId au) <> " get user " <> (pack $ show i))
   maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
   case maybeUser of
     Nothing -> throwError err404
@@ -57,7 +61,6 @@ getUser au i = do
 createUser :: MonadIO m => AuthorizedUser -> NewUser -> AppT m Int64
 createUser u p = do
   increment "createUser"
-  logDebugNS "web" "creating a user"
   currentTime <- liftIO $ getCurrentTime
   pw          <- liftIO $ hashPassword (password p)
   let pw' = fromJust pw
@@ -70,7 +73,11 @@ createUser u p = do
              (BCrypt . decodeUtf8 $ pw')
       )
     )
-  pure $ fromSqlKey newUser
+  let k = fromSqlKey newUser
+  logDebugNS
+    "web"
+    ((pack $ show $ authUserId u) <> " created user " <> (pack $ show k))
+  pure k
 
 -- updateUser :: MonadIO m => Int64 -> UserUpdate -> AppT m (Entity User)
 -- updateUser i e = do

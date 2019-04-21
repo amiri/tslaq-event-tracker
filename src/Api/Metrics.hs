@@ -15,7 +15,7 @@ import qualified Control.Monad.Metrics  as Metrics
 import           Data.HashMap.Lazy      (HashMap)
 import           Data.Int               (Int64)
 import           Data.IORef             (readIORef)
-import           Data.Text              (Text)
+import           Data.Text              (Text, pack)
 import           Servant
 import qualified System.Metrics.Counter as Counter
 import Types (AuthorizedUser(..))
@@ -33,7 +33,7 @@ metricsServer = waiMetrics
 waiMetrics :: MonadIO m => AuthorizedUser -> AppT m (HashMap Text Int64)
 waiMetrics u = do
   increment "metrics"
-  logDebugNS "web" "metrics"
+  logDebugNS "web" ((pack $ show $ authUserId u) <> " read metrics")
   metr <- Metrics.getMetrics
   liftIO $ mapM Counter.read =<< readIORef (metr ^. metricsCounters)
 

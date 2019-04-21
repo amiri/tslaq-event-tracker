@@ -11,6 +11,7 @@ import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
+import           Data.Text                   (pack)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (fromSqlKey, insert)
 import           Models                      (Event (Event), eventBody,
@@ -35,7 +36,7 @@ eventServer u = createEvent u
 createEvent :: MonadIO m => AuthorizedUser -> Event -> AppT m Int64
 createEvent u p = do
   increment "createEvent"
-  logDebugNS "web" "creating a event"
+  logDebugNS "web" ((pack $ show $ authUserId u) <> " creating an event")
   currentTime <- liftIO $ getCurrentTime
   newEvent    <- runDb
     ( insert
