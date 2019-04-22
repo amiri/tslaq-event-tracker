@@ -15,7 +15,7 @@ import           Data.Text                   (pack)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (fromSqlKey, insert)
 import           Models                      (Event (Event), eventBody,
-                                              eventEventTime, eventTitle, runDb)
+                                              eventTime, eventTitle, runDb)
 import           Servant
 import           Types                       (AuthorizedUser (..), UserRole(..))
 
@@ -43,7 +43,7 @@ createEvent u p = do
     ( insert
       ( Event currentTime
               currentTime
-              (eventEventTime p)
+              (eventTime p)
               (eventTitle p)
               (eventBody p)
       )

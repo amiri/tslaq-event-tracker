@@ -14,13 +14,31 @@ import           Data.ByteString.Char8 (pack)
 import           Data.Int              (Int64)
 import           Data.Text             (Text)
 import           Data.Text.Encoding    (encodeUtf8)
+import           Data.Time.Clock       (UTCTime)
 import           Database.Persist.Sql
 import           GHC.Generics
 import           Servant.Auth.Server   as SAS
 
+
+
 data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
 instance ToJSON UserRole where
 instance FromJSON UserRole where
+
+data EventDisplay = EventDisplay {
+    body       :: EventBody
+  , createTime :: UTCTime
+  , eventId    :: Int64
+  , time       :: UTCTime
+  , title      :: EventTitle
+  , updateTime :: UTCTime
+  , categories :: Maybe [CategoryDisplay]
+  } deriving (Show, Eq, Generic, Read)
+
+data CategoryDisplay = CategoryDisplay {
+    name    :: CategoryName
+  , details :: Maybe CategoryDetails
+  } deriving (Show, Eq, Generic, Read)
 
 data NewUser = NewUser {
     emailAddress :: UserEmail
@@ -56,6 +74,8 @@ newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistF
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserName = UserName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventTitle = EventTitle Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
+newtype CategoryName = CategoryName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
+newtype CategoryDetails = CategoryDetails Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventBody = EventBody Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 
 hashPassword :: MonadIO m => Text -> m (Maybe ByteString)

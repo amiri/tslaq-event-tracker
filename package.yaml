@@ -26,6 +26,7 @@ dependencies:
 - directory
 - ekg
 - ekg-core
+- esqueleto
 - fast-logger
 - foreign-store
 - hostname

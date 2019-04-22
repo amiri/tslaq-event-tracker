@@ -15,11 +15,13 @@ module Models where
 
 import           AppContext           (AppContext, ctxPool)
 import           Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
+import           Data.Ord             (comparing)
 import           Data.Time.Clock      (UTCTime)
 import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
                                        share, sqlSettings)
-import           Types                (BCrypt, EventBody, EventTitle, UserEmail,
+import           Types                (BCrypt, CategoryDetails, CategoryName,
+                                       EventBody, EventTitle, UserEmail,
                                        UserName)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -34,12 +36,25 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Event json sql=events
     createTime UTCTime sql=create_time sqltype=timestamptz default=CURRENT_TIMESTAMP
     updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
-    eventTime UTCTime sql=event_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    time UTCTime sql=event_time sqltype=timestamptz default=CURRENT_TIMESTAMP
     title EventTitle sql=event_title sqltype=text
     body EventBody sql=event_body sqltype=text
     UniqueTitle title
     deriving Eq Show Read
+  Category json sql=category
+    createTime UTCTime sql=create_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    name CategoryName
+    details CategoryDetails
+    UniqueName name
+    deriving Eq Show Read
+  EventCategory json sql=event_category
+    eventId EventId sql=event_id
+    categoryId CategoryId sql=category_id
 |]
+
+instance Ord Event where
+  compare = comparing eventTime
 
 doMigrations :: SqlPersistT IO ()
 doMigrations = runMigration migrateAll
