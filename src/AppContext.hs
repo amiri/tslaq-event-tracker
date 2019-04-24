@@ -70,7 +70,7 @@ appDir :: FilePath
 appDir = "/var/local/tslaq-event-tracker/"
 
 localJSFolder :: FilePath
-localJSFolder = appDir ++ "api-js/"
+localJSFolder = appDir ++ "react/src/"
 
 jsBucket :: BucketName
 jsBucket = "tslaq-api-js"

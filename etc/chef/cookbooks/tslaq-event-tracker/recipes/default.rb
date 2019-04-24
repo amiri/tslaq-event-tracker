@@ -42,3 +42,10 @@ remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
   mode '0755'
   action :create
 end
+
+remote_directory '/var/local/tslaq-event-tracker/react' do
+  source 'file:///tmp/deployments/tslaq-event-tracker/react'
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0755'
+  action :create
