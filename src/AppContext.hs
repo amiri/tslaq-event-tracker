@@ -220,7 +220,7 @@ data Environment
 
 -- | This returns a 'Middleware' based on the environment that we're in.
 setLogger :: Environment -> LogEnv -> Middleware
-setLogger Test        _  = id
+setLogger Test        _  = Prelude.id
 setLogger Development le = katipLogger le
 setLogger Production  le = katipLogger le
 

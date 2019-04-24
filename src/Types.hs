@@ -2,6 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE GADTs #-}
 module Types where
 
 import           Control.Monad.Except  (MonadIO, liftIO)
@@ -22,53 +23,55 @@ import           Servant.Auth.Server   as SAS
 
 
 data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
-instance ToJSON UserRole where
-instance FromJSON UserRole where
+instance ToJSON UserRole
+instance FromJSON UserRole
 
 data EventDisplay = EventDisplay {
-    body       :: EventBody
-  , createTime :: UTCTime
-  , eventId    :: Int64
-  , time       :: UTCTime
-  , title      :: EventTitle
-  , updateTime :: UTCTime
-  , categories :: Maybe [CategoryDisplay]
+    body       :: !EventBody
+  , createTime :: !UTCTime
+  , id         :: !Int64
+  , time       :: !UTCTime
+  , title      :: !EventTitle
+  , updateTime :: !UTCTime
+  , categories :: !(Maybe [CategoryDisplay])
   } deriving (Show, Eq, Generic, Read)
+instance ToJSON EventDisplay
+instance FromJSON EventDisplay
 
 data CategoryDisplay = CategoryDisplay {
-    name    :: CategoryName
-  , details :: Maybe CategoryDetails
+    name       :: CategoryName
+  , id         :: Int64
+  , createTime :: UTCTime
+  , updateTime :: UTCTime
+  , details    :: Maybe CategoryDetails
   } deriving (Show, Eq, Generic, Read)
+instance ToJSON CategoryDisplay
+instance FromJSON CategoryDisplay
 
 data NewUser = NewUser {
     emailAddress :: UserEmail
   , name         :: UserName
   , password     :: Text
   } deriving (Show, Eq, Generic, Read)
-
-instance ToJSON NewUser where
-
-instance FromJSON NewUser where
+instance ToJSON NewUser
+instance FromJSON NewUser
 
 data UserLogin = UserLogin {
     emailAddress :: UserEmail
   , password     :: Text
   } deriving (Show, Eq, Generic, Read)
+instance ToJSON UserLogin
+instance FromJSON UserLogin
 
 data AuthorizedUser = AuthorizedUser {
     authUserName :: UserName
   , authUserId   :: Int64
   , authUserRole :: UserRole
   } deriving (Show, Eq, Generic, Read)
-
 instance ToJSON AuthorizedUser
 instance FromJSON AuthorizedUser
 instance SAS.ToJWT AuthorizedUser
 instance SAS.FromJWT AuthorizedUser
-
-instance ToJSON UserLogin where
-
-instance FromJSON UserLogin where
 
 newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
