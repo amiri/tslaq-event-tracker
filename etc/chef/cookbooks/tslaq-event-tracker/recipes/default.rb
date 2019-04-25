@@ -45,7 +45,6 @@ end
 
 execute 'copy-react-code' do
   command 'rm -rf /var/local/tslaq-event-tracker/react && cp -r /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/react'
-  creates '/var/local/tslaq-event-tracker/react'
   notifies :run, 'directory[/var/local/tslaq-event-tracker/react]', :immediately
 end
 
