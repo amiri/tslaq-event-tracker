@@ -49,3 +49,4 @@ remote_directory '/var/local/tslaq-event-tracker/react' do
   group 'tslaq'
   mode '0755'
   action :create
+end
