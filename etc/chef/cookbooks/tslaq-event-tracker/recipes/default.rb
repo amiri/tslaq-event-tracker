@@ -44,7 +44,7 @@ remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
 end
 
 execute 'copy-react-code' do
-  command 'rm -rf /var/local/tslaq-event-tracker/react && cp -r /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/react'
+  command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/'
   notifies :run, 'directory[/var/local/tslaq-event-tracker/react]', :immediately
 end
 
