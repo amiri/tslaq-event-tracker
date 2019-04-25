@@ -13,7 +13,7 @@ import           Api.Login
 import           Api.Metrics
 import           Api.ReadEvent
 import           Api.User
-import           AppContext            (AppT (..), S3Session, jsBucket,
+import           AppContext            (Environment, AppT (..), S3Session, jsBucket,
                                         localJSFolder)
 import           Control.Monad         (void)
 import           Control.Monad.Except  (MonadIO, liftIO)
@@ -72,15 +72,15 @@ publicServer
 publicServer cs jwts = readEventServer cs jwts :<|> loginServer cs jwts
 
 -- | Generates JavaScript to query the User API.
-generateJavaScript :: S3Session -> IO Text
-generateJavaScript = withAWS $ do
+generateJavaScript :: Environment -> S3Session -> IO Text
+generateJavaScript e = withAWS $ do
   let
     js =
       encodeUtf8 $ jsForAPI (Proxy :: Proxy (TSLAQAPI '[JWT, Cookie])) vanillaJS
   let h             = md5 $ LB.fromStrict js
   let f             = "tslaq-api-" ++ (show h) ++ ".js"
   let f'            = pack f
-  let localFilename = localJSFolder ++ "Api.js"
+  let localFilename = (localJSFolder e) ++ "Api.js"
   liftIO $ B.writeFile localFilename js
   let body = toBody js
   void $ send (putObject jsBucket (ObjectKey f') body)

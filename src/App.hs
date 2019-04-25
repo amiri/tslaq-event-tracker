@@ -73,7 +73,7 @@ acquireAppContext = do
   jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
   let j          = fromJust jwtKey
   let authConfig = getAuthConfig j env
-  latestJSFile     <- generateJavaScript s3Session
+  latestJSFile     <- generateJavaScript env s3Session
   latestPricesFile <- getLatestPricesFile
   pure AppContext
     { ctxPool             = pool

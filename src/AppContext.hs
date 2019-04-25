@@ -66,11 +66,12 @@ import Types
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
 
-appDir :: FilePath
-appDir = "/var/local/tslaq-event-tracker/"
+appDir :: Environment -> FilePath
+appDir Production = "/var/local/tslaq-event-tracker/"
+appDir _ = ""
 
-localJSFolder :: FilePath
-localJSFolder = appDir ++ "react/src/"
+localJSFolder :: Environment -> FilePath
+localJSFolder e = (appDir e) <> "react/src/"
 
 jsBucket :: BucketName
 jsBucket = "tslaq-api-js"
