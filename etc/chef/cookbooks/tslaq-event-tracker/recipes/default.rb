@@ -43,11 +43,15 @@ remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
   action :create
 end
 
-remote_directory '/var/local/tslaq-event-tracker/react' do
-  source 'file:///tmp/deployments/tslaq-event-tracker/react'
+execute 'copy-react-code' do
+  command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/'
+  creates '/var/local/tslaq-event-tracker/react'
+end
+
+directory '/var/local/tslaq-event-tracker/react' do
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
-  action :create
   recursive true
+  subscribes :run, 'execute[copy-react-code]', :immediately
 end
