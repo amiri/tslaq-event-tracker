@@ -45,13 +45,10 @@ end
 
 execute 'copy-react-code' do
   command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/'
-  notifies :run, 'directory[/var/local/tslaq-event-tracker/react]', :immediately
+  notifies :run, 'execute[chown-react-code]', :immediately
 end
 
-directory '/var/local/tslaq-event-tracker/react' do
-  owner 'tslaq'
-  group 'tslaq'
-  mode '0755'
-  recursive true
+execute 'chown-react-code' do
+  command 'chown -Rf tslaq:tslaq /var/local/tslaq-event-tracker/react && chmod -Rf 0755 /var/local/tslaq-event-tracker/react'
   subscribes :run, 'execute[copy-react-code]', :immediately
 end
