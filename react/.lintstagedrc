@@ -1,0 +1,6 @@
+{
+    "linters": {
+        "*.js": ["eslint --fix", "git add"],
+        "package.json": ["fixpack", "git add"]
+    }
+}

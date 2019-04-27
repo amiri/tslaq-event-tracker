@@ -20,6 +20,7 @@
     "eslint-plugin-prettier": "^3.0.1",
     "esm": "^3.2.22",
     "husky": "^2.1.0",
+    "lint-staged": "^8.1.5",
     "prettier": "^1.17.0",
     "pretty-quick": "^1.10.0",
     "xo": "^0.24.0"
@@ -40,6 +41,7 @@
   "scripts": {
     "build": "react-scripts build",
     "eject": "react-scripts eject",
+    "lint": "xo --fix",
     "start": "react-scripts start",
     "test": "react-scripts test"
   },
