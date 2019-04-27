@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8acf0f76ee28fcbd658db87a6e73edb5cc33c1a00e7101d0a134a7b37377d008
+-- hash: 64be0092f9dc0c69e8aaa89abfafdbb6e14f8a11f48c556de5dc4e8712b2ac2d
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -35,6 +35,7 @@ library
       Api.User
       App
       AppContext
+      CustomAxios
       Instances
       Logger
       Models
