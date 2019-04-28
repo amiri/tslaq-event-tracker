@@ -70,6 +70,9 @@ appDir :: Environment -> FilePath
 appDir Production = "/var/local/tslaq-event-tracker/"
 appDir _ = ""
 
+staticDomain :: Text
+staticDomain = "prices.tslaq-event-tracker.org"
+
 localJSFolder :: Environment -> FilePath
 localJSFolder e = (appDir e) <> "react/src/"
 
@@ -168,8 +171,8 @@ data AppContext
     , ctxAuthConfig       :: !(Context '[JWTSettings, CookieSettings])
     , ctxJWTSettings      :: !(JWTSettings)
     , ctxCookieSettings   :: !(CookieSettings)
-    , ctxLatestJSFile     :: !Text
-    , ctxLatestPricesFile :: !Text
+    -- , ctxLatestJSFile     :: !Text
+    -- , ctxLatestPricesFile :: !Text
     }
 
 data PGConnectInfo = PGConnectInfo {

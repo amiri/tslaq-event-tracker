@@ -13,10 +13,11 @@ import           Api.Login
 import           Api.Metrics
 import           Api.ReadEvent
 import           Api.User
-import           AppContext            (Environment, AppT (..), S3Session, jsBucket,
-                                        localJSFolder)
+import           AppContext            (staticDomain, AppT (..), Environment, S3Session,
+                                        jsBucket, localJSFolder)
 import           Control.Monad         (void)
 import           Control.Monad.Except  (MonadIO, liftIO)
+import           CustomAxios           (customAxios)
 import qualified Data.ByteString       as B (writeFile)
 import qualified Data.ByteString.Lazy  as LB (fromStrict)
 import           Data.Digest.Pure.MD5  (md5)
@@ -29,17 +30,18 @@ import           Network.AWS.Easy      (withAWS)
 import           Network.AWS.S3        (ObjectKey (..), putObject)
 import           Servant
 import           Servant.Auth.Server   as SAS
-import           Servant.JS (defAxiosOptions, jsForAPI)
+import           Servant.JS            (defAxiosOptions, jsForAPI)
 import           System.Command
-import           Types                 (AuthorizedUser (..))
-import CustomAxios (customAxios)
+import           Types                 (AuthorizedUser (..), PriceUrl(..))
 
 -- Servant type representation
 type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
 
 type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
 
-type PublicAPI = ReadEventAPI :<|> LoginAPI
+type PublicAPI = ReadEventAPI :<|> LoginAPI :<|> PricesAPI
+
+type PricesAPI = "prices" :> Get '[JSON] PriceUrl
 
 -- Servant API
 tslaqApi :: Proxy (TSLAQAPI '[JWT, Cookie])
@@ -70,14 +72,15 @@ protectedServer SAS.Indefinite =
 
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
-publicServer cs jwts = readEventServer cs jwts :<|> loginServer cs jwts
+publicServer cs jwts = readEventServer cs jwts :<|> loginServer cs jwts :<|> pricesServer cs jwts
 
 -- | Generates JavaScript to query the User API.
 generateJavaScript :: Environment -> S3Session -> IO Text
 generateJavaScript e = withAWS $ do
-  let
-    js =
-      encodeUtf8 $ jsForAPI (Proxy :: Proxy (TSLAQAPI '[JWT, Cookie])) $ customAxios defAxiosOptions
+  let js =
+        encodeUtf8
+          $ jsForAPI (Proxy :: Proxy (TSLAQAPI '[JWT, Cookie]))
+          $ customAxios defAxiosOptions
   let h             = md5 $ LB.fromStrict js
   let f             = "tslaq-api-" ++ (show h) ++ ".js"
   let f'            = pack f
@@ -93,3 +96,12 @@ getLatestPricesFile = do
                       "/var/local/tslaq-prices/bin/tslaq-prices-exe"
                       ["--latest"]
   pure (pack l)
+
+pricesServer
+  :: MonadIO m => CookieSettings -> JWTSettings -> AppT m PriceUrl
+pricesServer = getPriceUrl
+
+getPriceUrl :: MonadIO m => CookieSettings -> JWTSettings -> m (PriceUrl)
+getPriceUrl _ _ = do
+  latest <- liftIO $ getLatestPricesFile
+  pure $ PriceUrl {url = "https://" <> staticDomain <> "/" <> latest}

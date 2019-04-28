@@ -3,8 +3,7 @@
 module App where
 
 import           Api                         (app)
-import           Api.TSLAQ                   (generateJavaScript,
-                                              getLatestPricesFile)
+-- import           Api.TSLAQ                   (generateJavaScript, getLatestPricesFile)
 import           AppContext                  (Environment(..), AppContext (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
@@ -73,8 +72,8 @@ acquireAppContext = do
   jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
   let j          = fromJust jwtKey
   let authConfig = getAuthConfig j env
-  latestJSFile     <- generateJavaScript env s3Session
-  latestPricesFile <- getLatestPricesFile
+  -- latestJSFile     <- generateJavaScript env s3Session
+  -- latestPricesFile <- getLatestPricesFile
   pure AppContext
     { ctxPool             = pool
     , ctxEnv              = env
@@ -87,8 +86,8 @@ acquireAppContext = do
     , ctxAuthConfig       = authConfig
     , ctxJWTSettings      = getJWTSettings j
     , ctxCookieSettings   = getCookieSettings env
-    , ctxLatestJSFile     = latestJSFile
-    , ctxLatestPricesFile = latestPricesFile
+    -- , ctxLatestJSFile     = latestJSFile
+    -- , ctxLatestPricesFile = latestPricesFile
     }
 
 -- | Takes care of cleaning up 'AppContext' resources

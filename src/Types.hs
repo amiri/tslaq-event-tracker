@@ -20,7 +20,11 @@ import           Database.Persist.Sql
 import           GHC.Generics
 import           Servant.Auth.Server   as SAS
 
-
+data PriceUrl = PriceUrl {
+  url :: Text
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON PriceUrl
+instance FromJSON PriceUrl
 
 data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
 instance ToJSON UserRole
