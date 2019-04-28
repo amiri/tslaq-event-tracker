@@ -1,295 +1,72 @@
-const getUsers = function(headerAuthorization, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/users', true);
-    xhr.setRequestHeader('Authorization', headerAuthorization);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
+import axios from 'axios';
 
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
+class Api {
+    constructor(jwt) {
+        this.jwt = jwt;
+    }
 
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
+    getUsers() {
+        return axios({
+            url: '/users',
+            method: 'get',
+            headers: { Authorization: 'Bearer ' + this.jwt },
+        });
+    }
 
-    xhr.send(null);
-};
+    getUsersById(id) {
+        return axios({
+            url: String('/users/' + encodeURIComponent(id)),
+            method: 'get',
+            headers: { Authorization: 'Bearer ' + this.jwt },
+        });
+    }
 
-const getUsersById = function(id, headerAuthorization, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', String('/users/' + encodeURIComponent(id)), true);
-    xhr.setRequestHeader('Authorization', headerAuthorization);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
+    postUsers(body) {
+        return axios({
+            url: '/users',
+            method: 'post',
+            data: body,
+            responseType: 'json',
+            headers: { Authorization: 'Bearer ' + this.jwt },
+        });
+    }
 
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
+    postEvents(body) {
+        return axios({
+            url: '/events',
+            method: 'post',
+            data: body,
+            responseType: 'json',
+            headers: { Authorization: 'Bearer ' + this.jwt },
+        });
+    }
 
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
+    getMetrics() {
+        return axios({
+            url: '/metrics',
+            method: 'get',
+            headers: { Authorization: 'Bearer ' + this.jwt },
+        });
+    }
 
-    xhr.send(null);
-};
+    getEvents() {
+        return axios({ url: '/events', method: 'get' });
+    }
 
-const postUsers = function(body, headerAuthorization, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/users', true);
-    xhr.setRequestHeader('Authorization', headerAuthorization);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
+    getEventsById(id) {
+        return axios({
+            url: String('/events/' + encodeURIComponent(id)),
+            method: 'get',
+        });
+    }
 
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(JSON.stringify(body));
-};
-
-const postEvents = function(body, headerAuthorization, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/events', true);
-    xhr.setRequestHeader('Authorization', headerAuthorization);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(JSON.stringify(body));
-};
-
-const getMetrics = function(headerAuthorization, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/metrics', true);
-    xhr.setRequestHeader('Authorization', headerAuthorization);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(null);
-};
-
-const getEvents = function(onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/events', true);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(null);
-};
-
-const getEventsById = function(id, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', String('/events/' + encodeURIComponent(id)), true);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(null);
-};
-
-const postLogin = function(body, onSuccess, onError) {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/login', true);
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onreadystatechange = function() {
-        let res = null;
-        if (xhr.readyState === 4) {
-            if (xhr.status === 204 || xhr.status === 205) {
-                onSuccess();
-            } else if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onSuccess(res);
-                }
-            } else {
-                try {
-                    res = JSON.parse(xhr.responseText);
-                } catch (error) {
-                    onError(error);
-                }
-
-                if (res) {
-                    onError(res);
-                }
-            }
-        }
-    };
-
-    xhr.send(JSON.stringify(body));
-};
+    postLogin(body) {
+        return axios({
+            url: '/login',
+            method: 'post',
+            data: body,
+            responseType: 'json',
+        });
+    }
+}
+export { Api as default };
