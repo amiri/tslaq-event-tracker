@@ -6,7 +6,7 @@
 
 module Api.Metrics where
 
-import           AppContext             (userHasRole, AppT (..))
+import           AppContext             (AppT (..), userHasRole)
 import           Control.Lens           ((^.))
 import           Control.Monad.Except   (MonadIO, liftIO)
 import           Control.Monad.Logger   (logDebugNS)
@@ -18,7 +18,7 @@ import           Data.IORef             (readIORef)
 import           Data.Text              (Text, pack)
 import           Servant
 import qualified System.Metrics.Counter as Counter
-import Types (AuthorizedUser(..), UserRole(..))
+import           Types                  (AuthorizedUser (..), UserRole (..))
 
 type MetricsAPI = "metrics" :> Get '[JSON] (HashMap Text Int64)
 

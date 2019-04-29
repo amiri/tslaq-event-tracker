@@ -3,6 +3,7 @@
 module App where
 
 import           Api                         (app)
+import           Api.TSLAQ                   (generateJavaScript)
 import           AppContext                  (AppContext (..), Environment (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
@@ -75,6 +76,7 @@ acquireAppContext = do
                                                   secretsSession
   let cfsk       = fromJust cloudFrontSigningKey
   let authConfig = getAuthConfig j env
+  _ <- generateJavaScript env s3Session
   pure AppContext
     { ctxPool                 = pool
     , ctxEnv                  = env
