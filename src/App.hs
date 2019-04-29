@@ -3,10 +3,10 @@
 module App where
 
 import           Api                         (app)
--- import           Api.TSLAQ                   (generateJavaScript, getLatestPricesFile)
-import           AppContext                  (Environment(..), AppContext (..),
+import           AppContext                  (AppContext (..), Environment (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
+                                              getCloudFrontSigningKey,
                                               getCookieSettings, getEnvironment,
                                               getJWTSettings, getJwtKey,
                                               getPgConnectInfo,
@@ -64,30 +64,30 @@ acquireAppContext = do
   secretsSession <- connect c secretsManagerService
   s3Session      <- connect c s3Service
   pgConnectInfo  <- case env of
-    Production  -> getPgConnectInfo "pgconnectinfo" secretsSession
-    _                     -> pure Nothing
+    Production -> getPgConnectInfo "pgconnectinfo" secretsSession
+    _          -> pure Nothing
   let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
   let pgConnectionString = getPgConnectString pgConnectInfo'
   pool   <- makePool env pgConnectionString logEnv
   jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
-  let j          = fromJust jwtKey
+  let j = fromJust jwtKey
+  cloudFrontSigningKey <- getCloudFrontSigningKey "tslaq-cloudfront-key"
+                                                  secretsSession
+  let cfsk       = fromJust cloudFrontSigningKey
   let authConfig = getAuthConfig j env
-  -- latestJSFile     <- generateJavaScript env s3Session
-  -- latestPricesFile <- getLatestPricesFile
   pure AppContext
-    { ctxPool             = pool
-    , ctxEnv              = env
-    , ctxMetrics          = metr
-    , ctxLogEnv           = logEnv
-    , ctxPort             = port
-    , ctxEkgServer        = serverThreadId ekgServer
-    , ctxSecretsSession   = secretsSession
-    , ctxS3Session        = s3Session
-    , ctxAuthConfig       = authConfig
-    , ctxJWTSettings      = getJWTSettings j
-    , ctxCookieSettings   = getCookieSettings env
-    -- , ctxLatestJSFile     = latestJSFile
-    -- , ctxLatestPricesFile = latestPricesFile
+    { ctxPool                 = pool
+    , ctxEnv                  = env
+    , ctxMetrics              = metr
+    , ctxLogEnv               = logEnv
+    , ctxPort                 = port
+    , ctxEkgServer            = serverThreadId ekgServer
+    , ctxSecretsSession       = secretsSession
+    , ctxS3Session            = s3Session
+    , ctxAuthConfig           = authConfig
+    , ctxJWTSettings          = getJWTSettings j
+    , ctxCookieSettings       = getCookieSettings env
+    , ctxCloudFrontSigningKey = cfsk
     }
 
 -- | Takes care of cleaning up 'AppContext' resources

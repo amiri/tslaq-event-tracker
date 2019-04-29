@@ -1,88 +1,88 @@
-name:                tslaq-event-tracker
-version:             0.1.0.0
-github:              "amiri/tslaq-event-tracker"
-license:             BSD3
-author:              "Amiri Barksdale"
-maintainer:          "amiribarksdale@gmail.com"
-copyright:           "2019 Amiri Barksdale"
+name: tslaq-event-tracker
+version: 0.1.0.0
+github: "amiri/tslaq-event-tracker"
+license: BSD3
+author: "Amiri Barksdale"
+maintainer: "amiribarksdale@gmail.com"
+copyright: "2019 Amiri Barksdale"
 
 extra-source-files:
-- README.md
+  - README.md
 
-description:         Please see the README on GitHub at <https://github.com/amiri/tslaq-event-tracker#readme>
+description: Please see the README on GitHub at <https://github.com/amiri/tslaq-event-tracker#readme>
 
 dependencies:
-- base >= 4.7 && < 5
-- aeson
-- amazonka
-- amazonka-core
-- amazonka-s3
-- amazonka-secretsmanager
-- aws-easy
-- bcrypt
-- bytestring
-- command
-- containers
-- directory
-- ekg
-- ekg-core
-- esqueleto
-- fast-logger
-- foreign-store
-- hostname
-- hslogger
-- hspec
-- hspec-wai
-- hspec-wai-json
-- jose
-- katip
-- lens
-- microlens
-- monad-control
-- monad-logger
-- monad-metrics
-- mtl
-- pem
-- persistent
-- persistent-postgresql
-- persistent-template
-- pureMD5
-- resource-pool
-- safe
-- servant
-- servant-auth
-- servant-auth-server
-- servant-foreign
-- servant-js
-- servant-server
-- text
-- time
-- transformers
-- unordered-containers
-- wai
-- wai-extra
-- wai-middleware-metrics
-- warp
-- x509
-- x509-store
-
+  - base >= 4.7 && < 5
+  - aeson
+  - amazonka
+  - amazonka-core
+  - amazonka-s3
+  - amazonka-secretsmanager
+  - aws-cloudfront-signer
+  - aws-easy
+  - bcrypt
+  - bytestring
+  - command
+  - containers
+  - directory
+  - ekg
+  - ekg-core
+  - esqueleto
+  - fast-logger
+  - foreign-store
+  - hostname
+  - hslogger
+  - hspec
+  - hspec-wai
+  - hspec-wai-json
+  - jose
+  - katip
+  - lens
+  - microlens
+  - monad-control
+  - monad-logger
+  - monad-metrics
+  - mtl
+  - pem
+  - persistent
+  - persistent-postgresql
+  - persistent-template
+  - pureMD5
+  - resource-pool
+  - safe
+  - servant
+  - servant-auth
+  - servant-auth-server
+  - servant-foreign
+  - servant-js
+  - servant-server
+  - text
+  - time
+  - transformers
+  - unordered-containers
+  - wai
+  - wai-extra
+  - wai-middleware-metrics
+  - warp
+  - x509
+  - x509-store
 
 library:
   source-dirs: src
 
 executables:
   tslaq-event-tracker-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options: "-Werror -Wall -threaded -rtsopts \"-with-rtsopts=-N -T\""
+    main: Main.hs
+    source-dirs: app
+    ghc-options: '-Werror -Wall -threaded -rtsopts "-with-rtsopts=-N -T"'
     dependencies:
-    - tslaq-event-tracker
+      - tslaq-event-tracker
 
 tests:
   tslaq-event-tracker-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options: "-Werror -Wall -threaded -rtsopts \"-with-rtsopts=-N -T\""
+    main: Spec.hs
+    source-dirs: test
+    ghc-options: '-Werror -Wall -threaded -rtsopts "-with-rtsopts=-N -T"'
     dependencies:
-    - tslaq-event-tracker
-    - tasty
+      - tslaq-event-tracker
+      - tasty

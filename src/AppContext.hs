@@ -16,6 +16,8 @@
 
 module AppContext where
 
+import           Aws.CloudFront.Signer       (CloudFrontSigningKey (..),
+                                              parseRSAPrivateKeyDER)
 import           Control.Concurrent          (ThreadId)
 import           Control.Lens                ((&), (.~), (^.))
 import           Control.Monad.Except        (ExceptT, MonadError)
@@ -29,6 +31,7 @@ import           Crypto.JOSE.JWK             (JWK, fromRSA)
 import           Data.Aeson                  (FromJSON, ToJSON, decode,
                                               parseJSON, withObject, (.:))
 import qualified Data.ByteString             as BS
+import qualified Data.ByteString.Lazy        as LBS
 import           Data.Maybe                  (fromJust, fromMaybe)
 import           Data.Monoid                 ((<>))
 import           Data.PEM                    (pemParseBS)
@@ -56,22 +59,26 @@ import           Network.HostName            (getHostName)
 import           Network.Wai                 (Middleware)
 import           Network.Wai.Handler.Warp    (Port)
 import           Servant
-import           Servant.Auth.Server         (IsSecure(..), CookieSettings(..), JWTSettings,
+import           Servant.Auth.Server         (CookieSettings (..),
+                                              IsSecure (..), JWTSettings,
                                               defaultCookieSettings,
                                               defaultJWTSettings)
 import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
-import Types
+import           Types
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
 
 appDir :: Environment -> FilePath
 appDir Production = "/var/local/tslaq-event-tracker/"
-appDir _ = ""
+appDir _          = ""
 
-staticDomain :: Text
-staticDomain = "prices.tslaq-event-tracker.org"
+staticDomain :: String
+staticDomain = "https://prices.tslaq-event-tracker.org/"
+
+cloudFrontKeyPairId :: String
+cloudFrontKeyPairId = "APKAJNXQDHWOTRTU7CRA"
 
 localJSFolder :: Environment -> FilePath
 localJSFolder e = (appDir e) <> "react/src/"
@@ -129,6 +136,15 @@ getJwtKey s = withAWS $ do
           pure $ Just (fromRSA p')
         _ -> pure Nothing
 
+getCloudFrontSigningKey :: Text -> SMSession -> IO (Maybe CloudFrontSigningKey)
+getCloudFrontSigningKey s = withAWS $ do
+  res <- send (getSecretValue s)
+  let res' = LBS.fromStrict $ fromJust $ res ^. gsvrsSecretBinary
+  let k    = parseRSAPrivateKeyDER res'
+  case k of
+    Left  _  -> pure Nothing
+    Right pk -> pure $ Just $ CloudFrontSigningKey cloudFrontKeyPairId pk
+
 getAuthConfig :: JWK -> Environment -> Context '[JWTSettings, CookieSettings]
 getAuthConfig j e = (getJWTSettings j) :. (getCookieSettings e) :. EmptyContext
 
@@ -138,7 +154,7 @@ getJWTSettings j = defaultJWTSettings j
 getCookieSettings :: Environment -> CookieSettings
 getCookieSettings e = case e of
   Production -> defaultCookieSettings
-  _ -> defaultCookieSettings { cookieIsSecure = NotSecure }
+  _          -> defaultCookieSettings { cookieIsSecure = NotSecure }
 
 -- | This type represents the effects we want to have for our application.
 -- We wrap the standard Servant monad with 'ReaderT AppContext', which gives us
@@ -160,17 +176,18 @@ type App = AppT IO
 -- | The AppContext for our application is a bunch of stuff
 data AppContext
     = AppContext
-    { ctxPool             :: !ConnectionPool
-    , ctxEnv              :: !Environment
-    , ctxMetrics          :: !Metrics
-    , ctxEkgServer        :: !ThreadId
-    , ctxLogEnv           :: !LogEnv
-    , ctxPort             :: !Port
-    , ctxSecretsSession   :: !(TypedSession SMService)
-    , ctxS3Session        :: !(TypedSession S3Service)
-    , ctxAuthConfig       :: !(Context '[JWTSettings, CookieSettings])
-    , ctxJWTSettings      :: !(JWTSettings)
-    , ctxCookieSettings   :: !(CookieSettings)
+    { ctxPool                 :: !ConnectionPool
+    , ctxEnv                  :: !Environment
+    , ctxMetrics              :: !Metrics
+    , ctxEkgServer            :: !ThreadId
+    , ctxLogEnv               :: !LogEnv
+    , ctxPort                 :: !Port
+    , ctxSecretsSession       :: !(TypedSession SMService)
+    , ctxS3Session            :: !(TypedSession S3Service)
+    , ctxAuthConfig           :: !(Context '[JWTSettings, CookieSettings])
+    , ctxJWTSettings          :: !(JWTSettings)
+    , ctxCookieSettings       :: !(CookieSettings)
+    , ctxCloudFrontSigningKey :: !CloudFrontSigningKey
     -- , ctxLatestJSFile     :: !Text
     -- , ctxLatestPricesFile :: !Text
     }
@@ -297,4 +314,6 @@ connStr sfx =
     <> " user=test password=test port=5432"
 
 userHasRole :: Monad m => AuthorizedUser -> UserRole -> AppT m ()
-userHasRole u r = if (authUserRole u) == r then return () else throwError err401 {errBody = "Insufficient authorization."}
+userHasRole u r = if (authUserRole u) == r
+  then return ()
+  else throwError err401 { errBody = "Insufficient authorization." }

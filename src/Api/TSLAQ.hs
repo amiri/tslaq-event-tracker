@@ -13,16 +13,19 @@ import           Api.Login
 import           Api.Metrics
 import           Api.ReadEvent
 import           Api.User
-import           AppContext            (staticDomain, AppT (..), Environment, S3Session,
+import           AppContext            (AppContext, ctxCloudFrontSigningKey, staticDomain, AppT (..), Environment, S3Session,
                                         jsBucket, localJSFolder)
+import           Aws.CloudFront.Signer       (signCannedPolicyURL)
 import           Control.Monad         (void)
-import           Control.Monad.Except  (MonadIO, liftIO)
+import Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Reader        (MonadIO, MonadReader, asks)
 import           CustomAxios           (customAxios)
 import qualified Data.ByteString       as B (writeFile)
 import qualified Data.ByteString.Lazy  as LB (fromStrict)
 import           Data.Digest.Pure.MD5  (md5)
-import           Data.Text             (Text, pack)
+import           Data.Text             (Text, pack, unpack)
 import           Data.Text.Encoding    (encodeUtf8)
+import           Data.Time.Clock             (addUTCTime, getCurrentTime)
 import           Instances
 import           Network.AWS           (send)
 import           Network.AWS.Data.Body (toBody)
@@ -33,6 +36,7 @@ import           Servant.Auth.Server   as SAS
 import           Servant.JS            (defAxiosOptions, jsForAPI)
 import           System.Command
 import           Types                 (AuthorizedUser (..), PriceUrl(..))
+import           Control.Monad.Logger        (MonadLogger, logDebugNS)
 
 -- Servant type representation
 type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
@@ -101,7 +105,12 @@ pricesServer
   :: MonadIO m => CookieSettings -> JWTSettings -> AppT m PriceUrl
 pricesServer = getPriceUrl
 
-getPriceUrl :: MonadIO m => CookieSettings -> JWTSettings -> m (PriceUrl)
+getPriceUrl :: (MonadLogger m, MonadIO m, MonadReader AppContext m) => CookieSettings -> JWTSettings -> m (PriceUrl)
 getPriceUrl _ _ = do
+  cfsk <- asks ctxCloudFrontSigningKey
   latest <- liftIO $ getLatestPricesFile
-  pure $ PriceUrl {url = "https://" <> staticDomain <> "/" <> latest}
+  let u = staticDomain ++ (unpack latest)
+  now <- liftIO $ getCurrentTime
+  let oneHourHence = 3600 `addUTCTime` now
+  let su = signCannedPolicyURL cfsk oneHourHence u
+  pure $ PriceUrl { url = (pack su) }
