@@ -68,5 +68,9 @@ class Api {
             responseType: 'json',
         });
     }
+
+    getPrices() {
+        return axios({ url: '/prices', method: 'get' });
+    }
 }
 export { Api as default };
