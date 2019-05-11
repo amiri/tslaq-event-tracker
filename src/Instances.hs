@@ -42,4 +42,3 @@ instance forall lang ftype api etc a.
         { _argName = PathSegment "Authorization"
         , _argType = typeFor lang (Proxy :: Proxy ftype) (Proxy :: Proxy T.Text)
         }
-

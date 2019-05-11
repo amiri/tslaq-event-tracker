@@ -34,7 +34,7 @@ import           Network.AWS.Easy       (withAWS)
 import           Network.AWS.S3         (ObjectKey (..), putObject)
 import           Servant
 import           Servant.Auth.Server    as SAS
-import           Servant.JS             (defAxiosOptions, jsForAPI)
+import           Servant.JS             (vanillaJS, defAxiosOptions, jsForAPI)
 import           Types                  (AuthorizedUser (..), PriceUrl (..))
 
 -- Servant type representation
@@ -81,7 +81,7 @@ generateJavaScript :: Environment -> S3Session -> IO ()
 generateJavaScript e = withAWS $ do
   let js =
         encodeUtf8
-          $ jsForAPI (Proxy :: Proxy (TSLAQAPI '[JWT, Cookie]))
+          $ jsForAPI tslaqApi
           $ customAxios defAxiosOptions
   let h             = md5 $ LB.fromStrict js
   let f             = "tslaq-api-" ++ (show h) ++ ".js"

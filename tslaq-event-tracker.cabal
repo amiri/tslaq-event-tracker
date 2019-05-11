@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 64495c88b7b9e3f3e469738440da50ec37ca2f033345a55fe20ecc0a858ad89b
+-- hash: 428abf2813e0d03525cdc0b09228cf0bcec981c27cf2a4e916e3b5d7dff143e4
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -95,6 +95,7 @@ library
     , transformers
     , unordered-containers
     , wai
+    , wai-cors
     , wai-extra
     , wai-middleware-metrics
     , warp
@@ -160,6 +161,7 @@ executable tslaq-event-tracker-exe
     , tslaq-event-tracker
     , unordered-containers
     , wai
+    , wai-cors
     , wai-extra
     , wai-middleware-metrics
     , warp
@@ -227,6 +229,7 @@ test-suite tslaq-event-tracker-test
     , tslaq-event-tracker
     , unordered-containers
     , wai
+    , wai-cors
     , wai-extra
     , wai-middleware-metrics
     , warp

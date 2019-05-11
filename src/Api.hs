@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Api (app) where
 
@@ -10,6 +11,8 @@ import           Servant.Server
 
 import           Api.TSLAQ            (TSLAQAPI, tslaqApi, tslaqServer)
 import           AppContext           (AppContext (..), AppT (..))
+import           Network.Wai.Middleware.Cors (corsRequestHeaders, cors, simpleCorsResourcePolicy)
+
 
 -- | This functions tells Servant how to run the 'App' monad with our
 -- 'server' function.
@@ -28,4 +31,9 @@ convertApp ctx appt = Handler $ runReaderT (runApp appt) ctx
 
 -- | Finally, this function takes a configuration and runs our 'TSLAQAPI'
 app :: AppContext -> Application
-app ctx = serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
+app ctx = cors (const . Just $ corsPolicy)
+  $ serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
+ where
+  corsPolicy = simpleCorsResourcePolicy
+    { corsRequestHeaders = ["Authorization", "Content-Type"]
+    }

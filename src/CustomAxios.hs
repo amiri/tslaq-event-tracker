@@ -42,6 +42,7 @@ generateCustomAxiosJSWith aopts opts req =
     <> "  return axios({ url: "
     <> url
     <> "\n"
+    <> "    , baseURL: 'http://localhost:8888/'\n"
     <> "    , method: '"
     <> method
     <> "'\n"
@@ -84,8 +85,14 @@ generateCustomAxiosJSWith aopts opts req =
     Nothing   -> ""
 
   reqheaders = if null hs
-    then ""
-    else "    , headers: { " <> headersStr <> " }\n"
+    then
+      if isJust (req ^. reqBody) && (req ^. reqBodyContentType == ReqBodyJSON)
+        then "    , headers: {\"Content-Type\":\"application/json\"}\n"
+        else ""
+    else
+      "    , headers: { "
+      <> headersStr
+      <> ", \"Content-Type\":\"application/json\" }\n"
    where
     headersStr = T.intercalate ", " $ map headerStr hs
     headerStr header =
