@@ -23,28 +23,16 @@
   },
   "devDependencies": {
     "babel-loader": "^8.0.5",
+    "eslint-config-xo-react": "^0.19.0",
     "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
     "esm": "^3.2.22",
     "husky": "^2.1.0",
     "lint-staged": "^8.1.5",
     "prettier": "^1.17.0",
     "pretty-quick": "^1.10.0",
     "xo": "^0.24.0"
-  },
-  "eslintConfig": {
-    "extends": "react-app",
-    "plugins": [
-      "prettier"
-    ],
-    "globals": {
-      "window": true,
-      "document": true
-    },
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": true
-    }
   },
   "husky": {
     "hooks": {
@@ -57,6 +45,12 @@
   },
   "xo": {
     "prettier": true,
+    "space": 2,
+    "envs": [
+      "browser",
+      "es6",
+      "node"
+    ],
     "rules": {
       "import/no-unassigned-import": [
         "error",
