@@ -12,9 +12,14 @@
     "d3fc": "^14.0.37",
     "draft-js": "^0.10.5",
     "es6-shim": "^0.35.5",
+    "node-fetch": "^2.5.0",
+    "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "2.1.8"
+    "react-redux": "^7.0.3",
+    "react-scripts": "2.1.8",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
     "babel-loader": "^8.0.5",
@@ -45,6 +50,10 @@
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amiri/tslaq-event-tracker.git"
   },
   "xo": {
     "prettier": true,

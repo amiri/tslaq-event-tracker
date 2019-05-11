@@ -1,28 +1,24 @@
 /* eslint-disable no-unused-vars */
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './app.css';
+import { Provider } from 'react-redux';
 import Api from './api';
+import Prices from './components/prices';
+import LoginForm from './components/login-form';
+import store from './store';
 
 class App extends Component {
     render() {
         return (
-            <div className="App">
-                <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo" />
-                    <p>
-                        Edit <code>src/App.js</code> and save to reload.
-                    </p>
-                    <a
-                        className="App-link"
-                        href="https://reactjs.org"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Learn React
-                    </a>
-                </header>
-            </div>
+            <Provider store={store}>
+                <div className="App">
+                    <header className="App-header" />
+                    <LoginForm />
+                    <div className="Prices">
+                        <Prices />
+                    </div>
+                </div>
+            </Provider>
         );
     }
 }
