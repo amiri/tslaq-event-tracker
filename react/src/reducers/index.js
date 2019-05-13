@@ -1,6 +1,10 @@
 import { combineReducers } from 'redux';
-import pricesReducer from './prices-reducer';
+import prices from './prices';
+import events from './events';
+import user from './authentication';
 
 export default combineReducers({
-    prices: pricesReducer,
+    prices,
+    events,
+    user,
 });

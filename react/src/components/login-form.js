@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import { login } from '../actions/user-actions';
 
 class LoginForm extends Component {
     constructor(props) {
@@ -23,9 +26,7 @@ class LoginForm extends Component {
             emailAddress: this.state.email,
             password: this.state.password,
         };
-        window.api
-            .postLogin(JSON.stringify(loginData))
-            .then(res => console.log(res));
+        this.props.login(loginData);
     }
 
     render() {
@@ -55,4 +56,23 @@ class LoginForm extends Component {
     }
 }
 
-export default LoginForm;
+LoginForm.propTypes = {
+    login: PropTypes.func.isRequired,
+    user: PropTypes.object,
+};
+
+const mapStateToProps = state => ({
+    login: state.login,
+    user: state.user.user,
+});
+
+const mapDispatchToProps = dispatch => {
+    return {
+        login: loginData => dispatch(login(loginData)),
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(LoginForm);

@@ -1,15 +1,15 @@
-import { GET_PRICES } from '../actions/types';
+import { GET_EVENTS } from '../actions/types';
 
 const initialState = {
-    prices: [],
+    events: [],
 };
 
 export default function(state = initialState, action) {
     switch (action.type) {
-        case GET_PRICES:
+        case GET_EVENTS:
             return {
                 ...state,
-                items: action.payload,
+                events: action.payload,
             };
         default:
             return state;
