@@ -1,17 +1,20 @@
-{-# LANGUAGE DataKinds     #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
 module Api (app) where
 
-import           Control.Monad.Reader (runReaderT)
-import           Servant              (Proxy (..), Server, serveWithContext)
-import           Servant.Auth.Server  as SAS
+import           Control.Monad.Reader        (runReaderT)
+import           Servant                     (Proxy (..), Server,
+                                              serveWithContext)
+import           Servant.Auth.Server         as SAS
 import           Servant.Server
 
-import           Api.TSLAQ            (TSLAQAPI, tslaqApi, tslaqServer)
-import           AppContext           (AppContext (..), AppT (..))
-import           Network.Wai.Middleware.Cors (corsRequestHeaders, cors, simpleCorsResourcePolicy)
+import           Api.TSLAQ                   (TSLAQAPI, tslaqApi, tslaqServer)
+import           AppContext                  (AppContext (..), AppT (..))
+import           Network.Wai.Middleware.Cors (cors, corsOrigins,
+                                              corsRequestHeaders,
+                                              simpleCorsResourcePolicy)
 
 
 -- | This functions tells Servant how to run the 'App' monad with our
@@ -35,5 +38,6 @@ app ctx = cors (const . Just $ corsPolicy)
   $ serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
  where
   corsPolicy = simpleCorsResourcePolicy
-    { corsRequestHeaders = ["Authorization", "Content-Type"]
+    { corsOrigins        = Just (["http://localhost:3000"], True)
+    , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
     }

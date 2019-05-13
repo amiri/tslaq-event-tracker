@@ -24,11 +24,9 @@ customAxiosWith :: AxiosOptions -> CommonGeneratorOptions -> JavaScriptGenerator
 customAxiosWith aopts opts = \reqs ->
   "import axios from 'axios';\n\n"
     <> "class Api {\n"
-    <> "  constructor(jwt) { this.jwt = jwt }\n\n"
     <> (mconcat . map (generateCustomAxiosJSWith aopts opts) $ reqs)
     <> "}\n"
     <> "export { Api as default }"
-    -- T.intercalate "\n\n" .  map (generateCustomAxiosJSWith aopts opts)
 
 -- | js codegen using axios library
 generateCustomAxiosJSWith
@@ -56,14 +54,18 @@ generateCustomAxiosJSWith aopts opts req =
  where
   argsStr = T.intercalate ", " args
   args =
-    captures ++ map (view $ queryArgName . argPath) queryparams ++ body ++ map
-      (toValidFunctionName . (<>) "header" . view (headerArg . argPath))
-      (filter (\h -> (view (headerArg . argPath) h) /= "Authorization") hs)
+    captures
+      ++ map (view $ queryArgName . argPath) queryparams
+      ++ body
+      ++ map
+           (toValidFunctionName . (<>) "header" . view (headerArg . argPath))
+           hs
 
   captures =
     map (view argPath . captureArg) . filter isCapture $ req ^. reqUrl . path
 
-  hs          = req ^. reqHeaders
+  hs = filter (\h -> (view (headerArg . argPath) h) /= "Authorization")
+              (req ^. reqHeaders)
 
   queryparams = req ^.. reqUrl . queryStr . traverse
 
@@ -96,11 +98,9 @@ generateCustomAxiosJSWith aopts opts req =
    where
     headersStr = T.intercalate ", " $ map headerStr hs
     headerStr header =
-      let headerName = header ^. headerArg . argPath
-      in  let headerValue = case headerName of
-                "Authorization" -> "\"Bearer \" + this.jwt"
-                _               -> toJSHeader header
-          in  "\"" <> headerName <> "\": " <> headerValue
+      let headerName  = header ^. headerArg . argPath
+          headerValue = toJSHeader header
+      in  "\"" <> headerName <> "\": " <> headerValue
 
   namespace = if hasNoModule then "" else (moduleName opts) <> "."
     where hasNoModule = moduleName opts == ""

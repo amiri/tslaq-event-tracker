@@ -23,7 +23,7 @@ import           Types                       (AuthorizedUser (..), BCrypt (..),
                                               UserName (..), UserRole (..),
                                               passwordValid)
 
-type LoginAPI = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] NoContent)
+type LoginAPI = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
 
 loginApi :: Proxy LoginAPI
 loginApi = Proxy
@@ -39,7 +39,7 @@ loginServer
            '[Header "Set-Cookie" SetCookie, Header
              "Set-Cookie"
              SetCookie]
-           NoContent
+           AuthorizedUser
        )
 loginServer cs jwts u = login cs jwts u
 
@@ -54,7 +54,7 @@ login
            '[Header "Set-Cookie" SetCookie, Header
              "Set-Cookie"
              SetCookie]
-           NoContent
+           AuthorizedUser
        )
 login cs jwts (UserLogin e p) = do
   increment "login"
@@ -69,7 +69,7 @@ login cs jwts (UserLogin e p) = do
           throwError err401 { errBody = "acceptLogin failed." }
         Just applyCookies -> do
           logDebugNS "web" ((pack $ show (authUserId u)) <> " logged in")
-          pure $ applyCookies NoContent
+          pure $ applyCookies u
 
 
 validateLogin
