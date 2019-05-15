@@ -10,6 +10,7 @@ module Api.TSLAQ where
 
 import           Api.Event
 import           Api.Login
+import           Api.Logout
 import           Api.Metrics
 import           Api.Prices
 import           Api.ReadEvent
@@ -41,7 +42,7 @@ import           Types                  (AuthorizedUser (..), PriceUrl (..))
 -- Servant type representation
 type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
 
-type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI
+type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI
 
 type PublicAPI = ReadEventAPI :<|> LoginAPI :<|> PricesAPI
 
@@ -66,7 +67,7 @@ tslaqServer cs jwts = protectedServer :<|> publicServer cs jwts
 protectedServer
   :: MonadIO m => AuthResult AuthorizedUser -> ServerT ProtectedAPI (AppT m)
 protectedServer (SAS.Authenticated u) =
-  userServer u :<|> eventServer u :<|> metricsServer u
+  userServer u :<|> eventServer u :<|> metricsServer u :<|> logoutServer u
 protectedServer SAS.BadPassword = throwAll err401 { errBody = "Bad password." }
 protectedServer SAS.NoSuchUser  = throwAll err401 { errBody = "No such user." }
 protectedServer SAS.Indefinite =
