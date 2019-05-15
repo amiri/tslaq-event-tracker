@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 428abf2813e0d03525cdc0b09228cf0bcec981c27cf2a4e916e3b5d7dff143e4
+-- hash: 497390efd9b9f17358a85ee7b8f72e7b4cb36526364996e27c67afdca194aa34
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
       Api
       Api.Event
       Api.Login
+      Api.Logout
       Api.Metrics
       Api.Prices
       Api.ReadEvent

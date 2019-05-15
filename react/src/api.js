@@ -12,7 +12,7 @@ class Api {
 
     getUsersById(id) {
         return axios({
-            url: String('/users/' + encodeURIComponent(id)),
+            url: '/users/' + encodeURIComponent(id) + '',
             baseURL: 'http://localhost:8888/',
             method: 'get',
             withCredentials: true,
@@ -52,6 +52,15 @@ class Api {
         });
     }
 
+    getLogout() {
+        return axios({
+            url: '/logout',
+            baseURL: 'http://localhost:8888/',
+            method: 'get',
+            withCredentials: true,
+        });
+    }
+
     getEvents() {
         return axios({
             url: '/events',
@@ -63,7 +72,7 @@ class Api {
 
     getEventsById(id) {
         return axios({
-            url: String('/events/' + encodeURIComponent(id)),
+            url: '/events/' + encodeURIComponent(id) + '',
             baseURL: 'http://localhost:8888/',
             method: 'get',
             withCredentials: true,
