@@ -52,6 +52,14 @@ data CategoryDisplay = CategoryDisplay {
 instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
 
+data UserRegistration = UserRegistration {
+    emailAddress :: UserEmail
+  , name         :: UserName
+  , password     :: Text
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON UserRegistration
+instance FromJSON UserRegistration
+
 data NewUser = NewUser {
     emailAddress :: UserEmail
   , name         :: UserName

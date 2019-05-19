@@ -6,7 +6,7 @@
 
 module Api.User where
 
-import           AppContext                  (userHasRole, AppT (..))
+import           AppContext                  (AppT (..), userHasRole)
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
@@ -21,7 +21,8 @@ import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
 import           Models                      (Key, User (User), runDb)
 import           Servant
 import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              NewUser (..), hashPassword, UserRole(..))
+                                              NewUser (..), UserRole (..),
+                                              hashPassword)
 
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
@@ -47,16 +48,18 @@ listUsers u = do
 
 -- | Returns a user by id or throws a 404 error.
 getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
-getUser au i = if (authUserId au) /= i then throwError err401 {errBody = "Not you"} else do
-  increment "getUser"
-  logDebugNS "web" "getUser"
-  logDebugNS
-    "web"
-    ((pack $ show $ authUserId au) <> " get user " <> (pack $ show i))
-  maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
-  case maybeUser of
-    Nothing -> throwError err404
-    Just u  -> pure u
+getUser au i = if (authUserId au) /= i
+  then throwError err401 { errBody = "Not you" }
+  else do
+    increment "getUser"
+    logDebugNS "web" "getUser"
+    logDebugNS
+      "web"
+      ((pack $ show $ authUserId au) <> " get user " <> (pack $ show i))
+    maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
+    case maybeUser of
+      Nothing -> throwError err404
+      Just u  -> pure u
 
 -- | Creates a user in the database.
 createUser :: MonadIO m => AuthorizedUser -> NewUser -> AppT m Int64

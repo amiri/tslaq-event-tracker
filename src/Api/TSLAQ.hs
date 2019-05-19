@@ -15,6 +15,7 @@ import           Api.Metrics
 import           Api.Prices
 import           Api.ReadEvent
 import           Api.User
+import           Api.Register
 import           AppContext             (AppContext, AppT (..), Environment,
                                          S3Session, ctxCloudFrontSigningKey,
                                          jsBucket, localJSFolder, staticDomain)
@@ -44,7 +45,7 @@ type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> Publi
 
 type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI
 
-type PublicAPI = ReadEventAPI :<|> LoginAPI :<|> PricesAPI
+type PublicAPI = ReadEventAPI :<|> LoginAPI :<|> PricesAPI :<|> RegisterAPI
 
 -- Servant API
 tslaqApi :: Proxy (TSLAQAPI '[JWT, Cookie])
@@ -76,7 +77,7 @@ protectedServer SAS.Indefinite =
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
 publicServer cs jwts =
-  readEventServer cs jwts :<|> loginServer cs jwts :<|> pricesServer cs jwts
+  readEventServer cs jwts :<|> loginServer cs jwts :<|> pricesServer cs jwts :<|> registerServer cs jwts
 
 -- | Generates JavaScript to query the User API.
 generateJavaScript :: Environment -> S3Session -> IO ()
