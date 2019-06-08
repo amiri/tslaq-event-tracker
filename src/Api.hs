@@ -38,6 +38,6 @@ app ctx = cors (const . Just $ corsPolicy)
   $ serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
  where
   corsPolicy = simpleCorsResourcePolicy
-    { corsOrigins        = Just (["http://localhost:3000"], True)
+    { corsOrigins        = Just (["http://localhost:7777"], True)
     , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
     }

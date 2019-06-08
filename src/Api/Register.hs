@@ -45,7 +45,7 @@ register
   -> AppT m (Entity User)
 register _ _ (UserRegistration e n p) = do
   increment "register"
-  logDebugNS "web" ("register" <> (pack $ show n) <> ": " <> (pack $ show e))
+  logDebugNS "web" ("register " <> (pack $ show n) <> ": " <> (pack $ show e))
   u <- existingUser e
   case u of
     Just (Entity _ _) ->
