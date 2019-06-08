@@ -68,7 +68,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "lint": "xo --space --prettier --fix",
-    "start": "react-scripts start",
+    "start": "PORT=7777 react-scripts start",
     "test": "react-scripts test"
   },
   "version": "0.1.0"

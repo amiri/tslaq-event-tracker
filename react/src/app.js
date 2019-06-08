@@ -1,11 +1,14 @@
 /* eslint-disable no-unused-vars */
 import React, { Component } from 'react';
-import './app.css';
 import { Provider } from 'react-redux';
 import Api from './api';
 import Chart from './components/chart';
 import LoginForm from './components/login-form';
 import store from './store';
+import './app.css';
+import 'antd/dist/antd.css';
+
+window.api = new Api();
 
 class App extends Component {
     render() {

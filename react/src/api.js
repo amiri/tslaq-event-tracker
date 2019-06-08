@@ -12,7 +12,7 @@ class Api {
 
     getUsersById(id) {
         return axios({
-            url: '/users/' + encodeURIComponent(id) + '',
+            url: String('/users/' + encodeURIComponent(id)),
             baseURL: 'http://localhost:8888/',
             method: 'get',
             withCredentials: true,
@@ -72,7 +72,7 @@ class Api {
 
     getEventsById(id) {
         return axios({
-            url: '/events/' + encodeURIComponent(id) + '',
+            url: String('/events/' + encodeURIComponent(id)),
             baseURL: 'http://localhost:8888/',
             method: 'get',
             withCredentials: true,
@@ -96,6 +96,18 @@ class Api {
             url: '/prices',
             baseURL: 'http://localhost:8888/',
             method: 'get',
+            withCredentials: true,
+        });
+    }
+
+    postRegister(body) {
+        return axios({
+            url: '/register',
+            baseURL: 'http://localhost:8888/',
+            method: 'post',
+            data: body,
+            responseType: 'json',
+            headers: { 'Content-Type': 'application/json' },
             withCredentials: true,
         });
     }

@@ -1,28 +1,49 @@
-import Api from '../api';
-import { USER_LOGIN, USER_LOGOUT } from './types';
+import {
+    USER_LOGIN_SUCCESS,
+    USER_LOGIN,
+    USER_LOGOUT,
+    USER_LOGIN_FAILURE,
+} from './types';
+import * as alertActions from './alerts';
 
 export const login = loginData => dispatch => {
-    window.api = new Api();
+    const { emailAddress } = loginData;
+    dispatch({
+        type: USER_LOGIN,
+        payload: emailAddress,
+    });
     window.api
         .postLogin(loginData)
         .then(res => res.data)
         .then(data =>
             dispatch({
-                type: USER_LOGIN,
+                type: USER_LOGIN_SUCCESS,
                 payload: data,
             }),
-        );
+        )
+        .then(dispatch(alertActions.success('Login successful')))
+        .catch(error => {
+            logout();
+            dispatch({
+                type: USER_LOGIN_FAILURE,
+                payload: error,
+            });
+            dispatch(
+                alertActions.error(
+                    'You entered the wrong email address or password',
+                ),
+            );
+        });
 };
 
-export const logout = user => dispatch => {
-    window.api = new Api();
+export const logout = () => dispatch => {
     window.api
         .getLogout()
         .then(res => res.data)
         .then(data =>
             dispatch({
                 type: USER_LOGOUT,
-                payload: user,
+                payload: data,
             }),
         );
 };
