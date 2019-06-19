@@ -22,6 +22,7 @@ import           Types                       (AuthorizedUser (..), BCrypt (..),
                                               UserEmail, UserLogin (..),
                                               UserName (..), UserRole (..),
                                               passwordValid)
+import Errors
 
 type LoginAPI = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
 
@@ -61,12 +62,12 @@ login cs jwts (UserLogin e p) = do
   logDebugNS "web" "login"
   maybeAuthUser <- validateLogin e p
   case maybeAuthUser of
-    Nothing -> throwError err401 { errBody = "Invalid login." }
+    Nothing -> throwError $ encodeJSONError (JSONError 401 "InvalidLogin" "Your login information is invalid.")
     Just u  -> do
       mApplyCookies <- liftIO $ SAS.acceptLogin cs jwts u
       case mApplyCookies of
         Nothing -> do
-          throwError err401 { errBody = "acceptLogin failed." }
+          throwError $ encodeJSONError (JSONError 401 "AcceptLoginFailure" "Your login information was not accepted.")
         Just applyCookies -> do
           logDebugNS "web" ((pack $ show (authUserId u)) <> " logged in")
           pure $ applyCookies u

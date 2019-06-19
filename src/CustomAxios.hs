@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 module CustomAxios where
 
 -- import           Prelude ()
@@ -13,16 +14,29 @@ import           Servant.Foreign
 import           Servant.JS.Axios    (AxiosOptions, withCredentials,
                                       xsrfCookieName, xsrfHeaderName)
 import           Servant.JS.Internal
+import Text.RawString.QQ
 
 -- | Generate regular javacript functions that use
 --   the axios library, using default values for 'CommonGeneratorOptions'.
 customAxios :: AxiosOptions -> JavaScriptGenerator
 customAxios aopts = customAxiosWith aopts defCommonGeneratorOptions
 
+responseInterceptor :: Text
+responseInterceptor = [r|axios.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        console.log('Interception');
+        return Promise.reject(error.response);
+    },
+);|]
+
 -- | Generate regular javascript functions that use the axios library.
 customAxiosWith :: AxiosOptions -> CommonGeneratorOptions -> JavaScriptGenerator
 customAxiosWith aopts opts = \reqs ->
   "import axios from 'axios';\n\n"
+    <> responseInterceptor
     <> "class Api {\n"
     <> (mconcat . map (generateCustomAxiosJSWith aopts opts) $ reqs)
     <> "}\n"

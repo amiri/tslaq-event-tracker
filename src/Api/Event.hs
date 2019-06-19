@@ -59,5 +59,5 @@ createEvent u p = do
 --   runDb (update k e)
 --   updated <- runDb (getEntity k)
 --   case updated of
---     Nothing -> throwError err404
+--     Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchEvent" "There is no such event.")
 --     Just ue -> pure ue

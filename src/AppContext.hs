@@ -66,6 +66,7 @@ import           Servant.Auth.Server         (CookieSettings (..),
 import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import           Types
+import Errors
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
@@ -316,4 +317,4 @@ connStr sfx =
 userHasRole :: Monad m => AuthorizedUser -> UserRole -> AppT m ()
 userHasRole u r = if (authUserRole u) == r
   then return ()
-  else throwError err401 { errBody = "Insufficient authorization." }
+  else throwError $ encodeJSONError (JSONError 401 "InsufficientAuthorization" "You have insufficient authorization for this action.")

@@ -22,6 +22,7 @@ dependencies:
   - aws-easy
   - bcrypt
   - bytestring
+  - case-insensitive
   - command
   - containers
   - directory
@@ -48,6 +49,7 @@ dependencies:
   - persistent-postgresql
   - persistent-template
   - pureMD5
+  - raw-strings-qq
   - resource-pool
   - safe
   - servant

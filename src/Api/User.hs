@@ -23,6 +23,7 @@ import           Servant
 import           Types                       (AuthorizedUser (..), BCrypt (..),
                                               NewUser (..), UserRole (..),
                                               hashPassword)
+import Errors
 
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
@@ -49,7 +50,7 @@ listUsers u = do
 -- | Returns a user by id or throws a 404 error.
 getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
 getUser au i = if (authUserId au) /= i
-  then throwError err401 { errBody = "Not you" }
+  then throwError $ encodeJSONError (JSONError 401 "NotUser" "You are requesting another user's information.")
   else do
     increment "getUser"
     logDebugNS "web" "getUser"
@@ -58,7 +59,7 @@ getUser au i = if (authUserId au) /= i
       ((pack $ show $ authUserId au) <> " get user " <> (pack $ show i))
     maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
     case maybeUser of
-      Nothing -> throwError err404
+      Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchUser" "There is no such user.")
       Just u  -> pure u
 
 -- | Creates a user in the database.
@@ -92,5 +93,5 @@ createUser u p = do
 --   runDb (update k e)
 --   updated <- runDb (getEntity k)
 --   case updated of
---     Nothing -> throwError err404
+--     Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchUser" "There is no such user.")
 --     Just uu -> pure uu

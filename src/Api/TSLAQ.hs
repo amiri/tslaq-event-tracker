@@ -14,8 +14,8 @@ import           Api.Logout
 import           Api.Metrics
 import           Api.Prices
 import           Api.ReadEvent
-import           Api.User
 import           Api.Register
+import           Api.User
 import           AppContext             (AppContext, AppT (..), Environment,
                                          S3Session, ctxCloudFrontSigningKey,
                                          jsBucket, localJSFolder, staticDomain)
@@ -29,6 +29,7 @@ import qualified Data.ByteString.Lazy   as LB (fromStrict)
 import           Data.Digest.Pure.MD5   (md5)
 import           Data.Text              (Text, pack, unpack)
 import           Data.Text.Encoding     (encodeUtf8)
+import           Errors
 import           Instances
 import           Network.AWS            (send)
 import           Network.AWS.Data.Body  (toBody)
@@ -69,15 +70,20 @@ protectedServer
   :: MonadIO m => AuthResult AuthorizedUser -> ServerT ProtectedAPI (AppT m)
 protectedServer (SAS.Authenticated u) =
   userServer u :<|> eventServer u :<|> metricsServer u :<|> logoutServer u
-protectedServer SAS.BadPassword = throwAll err401 { errBody = "Bad password." }
-protectedServer SAS.NoSuchUser  = throwAll err401 { errBody = "No such user." }
-protectedServer SAS.Indefinite =
-  throwAll err401 { errBody = "Indefinite error." }
+protectedServer SAS.BadPassword = throwAll $ encodeJSONError
+  (JSONError 401 "BadPassword" "You entered the wrong password.")
+protectedServer SAS.NoSuchUser = throwAll
+  $ encodeJSONError (JSONError 401 "NoSuchUser" "There is no such user.")
+protectedServer SAS.Indefinite = throwAll $ encodeJSONError
+  (JSONError 401 "Indefinite" "There has been an indefinite error.")
 
 publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
 publicServer cs jwts =
-  readEventServer cs jwts :<|> loginServer cs jwts :<|> pricesServer cs jwts :<|> registerServer cs jwts
+  readEventServer cs jwts
+    :<|> loginServer    cs jwts
+    :<|> pricesServer   cs jwts
+    :<|> registerServer cs jwts
 
 -- | Generates JavaScript to query the User API.
 generateJavaScript :: Environment -> S3Session -> IO ()

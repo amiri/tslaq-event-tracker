@@ -16,15 +16,13 @@ import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
 import qualified Data.Map.Strict             as Map
 import           Data.Maybe                  (catMaybes)
-import           Data.Text                   (pack)
-import           Data.Text.Lazy              (fromStrict)
-import           Data.Text.Lazy.Encoding     (encodeUtf8)
 import           Database.Esqueleto
 import           Database.Persist.Postgresql (Entity (..), toSqlKey)
 import           Models
 import           Servant
 import           Servant.Auth.Server         as SAS
 import Types
+import Errors
 
 type ReadEventAPI = "events" :> Get '[JSON] [EventDisplay]
     :<|> "events" :> Capture "id" Int64 :> Get '[JSON] EventDisplay
@@ -104,8 +102,4 @@ getEvent i = do
   let te = transformEventsAndCategories ecs
   if length te > 0
     then pure (head te)
-    else throwError err404
-      { errBody = "Event "
-        <> (encodeUtf8 $ fromStrict $ pack $ show i)
-        <> " not found"
-      }
+    else throwError $ encodeJSONError (JSONError 404 "EventNotFound" ("Event " ++ (show i) ++ " not found"))

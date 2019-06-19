@@ -23,6 +23,7 @@ import           Servant.Auth.Server         as SAS
 import           Types                       (BCrypt (..), UserEmail (..),
                                               UserRegistration (..),
                                               hashPassword)
+import Errors
 
 type RegisterAPI = "register" :> ReqBody '[JSON] UserRegistration :> Post '[JSON] (Entity User)
 
@@ -49,7 +50,7 @@ register _ _ (UserRegistration e n p) = do
   u <- existingUser e
   case u of
     Just (Entity _ _) ->
-      throwError err409 { errBody = "Conflicting registration." }
+      throwError $ encodeJSONError (JSONError 409 "RegistrationConflict" "Conflicting registration.")
     Nothing -> do
       currentTime <- liftIO $ getCurrentTime
       pw          <- liftIO $ hashPassword p
