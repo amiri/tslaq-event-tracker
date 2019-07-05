@@ -16,18 +16,16 @@ import           Api.Prices
 import           Api.ReadEvent
 import           Api.Register
 import           Api.User
-import           AppContext             (AppContext, AppT (..), Environment,
-                                         S3Session, ctxCloudFrontSigningKey,
-                                         jsBucket, localJSFolder, staticDomain)
+import           AppContext             (AppT (..), Environment, S3Session,
+                                         jsBucket, localJSFolder)
 import           Control.Monad          (void)
 import           Control.Monad.IO.Class (liftIO)
-import           Control.Monad.Logger   (MonadLogger, logDebugNS)
-import           Control.Monad.Reader   (MonadIO, MonadReader, asks)
+import           Control.Monad.Reader   (MonadIO)
 import           CustomAxios            (customAxios)
 import qualified Data.ByteString        as B (writeFile)
 import qualified Data.ByteString.Lazy   as LB (fromStrict)
 import           Data.Digest.Pure.MD5   (md5)
-import           Data.Text              (Text, pack, unpack)
+import           Data.Text              (pack)
 import           Data.Text.Encoding     (encodeUtf8)
 import           Errors
 import           Instances
@@ -37,9 +35,9 @@ import           Network.AWS.Easy       (withAWS)
 import           Network.AWS.S3         (ObjectKey (..), putObject)
 import           Servant
 import           Servant.Auth.Server    as SAS
-import           Servant.JS             (defAxiosOptions, jsForAPI, vanillaJS,
+import           Servant.JS             (defAxiosOptions, jsForAPI,
                                          withCredentials)
-import           Types                  (AuthorizedUser (..), PriceUrl (..))
+import           Types                  (AuthorizedUser (..))
 
 -- Servant type representation
 type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
@@ -98,5 +96,3 @@ generateJavaScript e = withAWS $ do
   liftIO $ B.writeFile localFilename js
   let body = toBody js
   void $ send (putObject jsBucket (ObjectKey f') body)
-  -- pure f'
-
