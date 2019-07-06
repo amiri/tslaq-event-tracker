@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3937b0993c4b47cc69bea769df04649b7cd64afff02628b58566efce9fb0f419
+-- hash: 39ac84f7cc1ff03b8cef4dbd2df27424ba6918abec88d21bb82d0fdde74874c9
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -178,11 +178,12 @@ executable tslaq-event-tracker-exe
 
 test-suite tslaq-event-tracker-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  main-is: Main.hs
   other-modules:
+      Tests.Api
       Paths_tslaq_event_tracker
   hs-source-dirs:
-      test
+      tests
   ghc-options: -Werror -Wall -threaded -rtsopts "-with-rtsopts=-N -T"
   build-depends:
       aeson
@@ -228,10 +229,14 @@ test-suite tslaq-event-tracker-test
     , servant
     , servant-auth
     , servant-auth-server
+    , servant-client
     , servant-foreign
     , servant-js
+    , servant-quickcheck
     , servant-server
     , tasty
+    , tasty-hedgehog
+    , tasty-hspec >=1.1.5.1
     , text
     , time
     , transformers

@@ -2,17 +2,19 @@ flags: {}
 packages:
   - .
 extra-deps:
-  - amazonka-1.6.1
-  - amazonka-core-1.6.1
-  - amazonka-dynamodb-1.6.1
-  - amazonka-s3-1.6.1
   - amazonka-secretsmanager-1.6.1
   - aws-cloudfront-signer-1.1.0.3
   - aws-easy-0.1.0.2
   - command-0.1.1
-  - ekg-0.4.0.15
-  - ekg-json-0.1.0.6
-  - esqueleto-2.7.0
-  - monad-metrics-0.2.1.2
+  - monad-metrics-0.2.1.4
   - wai-middleware-metrics-0.2.4
-resolver: lts-13.6
+  - servant-quickcheck-0.0.7.4
+  - tasty-hedgehog-1.0.0.1
+  - hedgehog-1.0
+  - amazonka-1.6.1
+  - amazonka-core-1.6.1
+  - amazonka-dynamodb-1.6.1
+  - amazonka-s3-1.6.1
+  - http-client-0.5.14
+  - clock-0.7.2
+resolver: nightly-2019-07-05

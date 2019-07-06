@@ -19,7 +19,7 @@ import qualified System.Log.FastLogger as FastLogger
 
 defaultLogEnv :: Text -> IO LogEnv
 defaultLogEnv e = do
-  handleScribe <- mkHandleScribe ColorIfTerminal IO.stdout DebugS V2
+  handleScribe <- mkHandleScribe ColorIfTerminal IO.stdout (permitItem DebugS) V2
   env <- initLogEnv "tslaq-event-tracker" Environment {getEnvironment = e}
   registerScribe "stdout" handleScribe defaultScribeSettings env
 

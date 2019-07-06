@@ -17,7 +17,7 @@ data JSONError = JSONError
 
 instance ToJSON JSONError
 
-encodeJSONError :: JSONError -> S.ServantErr
+encodeJSONError :: JSONError -> S.ServerError
 encodeJSONError jsonError = err {S.errBody = jsonBody, S.errHeaders = [jsonHeader]}
   where
     err        = getErrorFromCode $ statusCode jsonError
@@ -27,7 +27,7 @@ encodeJSONError jsonError = err {S.errBody = jsonBody, S.errHeaders = [jsonHeade
 
 -- Non-exhaustive. Trivial to add more, just only adding the ones I
 -- am currently using.
-getErrorFromCode :: Int -> S.ServantErr
+getErrorFromCode :: Int -> S.ServerError
 getErrorFromCode 401 = S.err401
 getErrorFromCode 404 = S.err404
 getErrorFromCode 409 = S.err409

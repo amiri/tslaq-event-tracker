@@ -166,9 +166,9 @@ getCookieSettings e = case e of
 -- monad stack without having to modify code that uses the current layout.
 newtype AppT m a
     = AppT
-    { runApp :: ReaderT AppContext (ExceptT ServantErr m) a
+    { runApp :: ReaderT AppContext (ExceptT ServerError m) a
     } deriving
-    ( Functor, Applicative, Monad, MonadReader AppContext, MonadError ServantErr
+    ( Functor, Applicative, Monad, MonadReader AppContext, MonadError ServerError
     , MonadIO
     )
 

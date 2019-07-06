@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module Api (app) where
+module Api (app, appToServer) where
 
 import           Control.Monad.Reader        (runReaderT)
 import           Servant                     (Proxy (..), Server,
@@ -18,7 +18,7 @@ import           Network.Wai.Middleware.Cors (cors, corsOrigins,
 
 
 -- | This functions tells Servant how to run the 'App' monad with our
--- 'server' function.
+-- 'app' function.
 appToServer :: AppContext -> Server (TSLAQAPI '[JWT, Cookie])
 appToServer ctx = hoistServerWithContext
   tslaqApi
