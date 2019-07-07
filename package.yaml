@@ -33,7 +33,7 @@ dependencies:
   - foreign-store
   - hostname
   - hslogger
-  - hspec
+  - hspec >= 2.7.1
   - hspec-wai
   - hspec-wai-json
   - jose

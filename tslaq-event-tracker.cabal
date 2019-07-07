@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 39ac84f7cc1ff03b8cef4dbd2df27424ba6918abec88d21bb82d0fdde74874c9
+-- hash: fb19c45b8847441349377a8415e61e0db2f60d0481b9f4becf86807cc1d0e824
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -70,7 +70,7 @@ library
     , foreign-store
     , hostname
     , hslogger
-    , hspec
+    , hspec >=2.7.1
     , hspec-wai
     , hspec-wai-json
     , jose
@@ -137,7 +137,7 @@ executable tslaq-event-tracker-exe
     , foreign-store
     , hostname
     , hslogger
-    , hspec
+    , hspec >=2.7.1
     , hspec-wai
     , hspec-wai-json
     , jose
@@ -207,7 +207,7 @@ test-suite tslaq-event-tracker-test
     , foreign-store
     , hostname
     , hslogger
-    , hspec
+    , hspec >=2.7.1
     , hspec-wai
     , hspec-wai-json
     , jose

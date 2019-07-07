@@ -26,9 +26,10 @@ import           Servant.QuickCheck.Internal               (HasGenRequest,
 import           Servant.QuickCheck.Internal.HasGenRequest
 import           Servant.Server
 import           System.IO.Unsafe                          (unsafePerformIO)
-import           Test.Tasty                                (testGroup, TestTree,
-                                                            localOption)
-import Test.Tasty.Hspec
+import           Test.Tasty                                (TestTree,
+                                                            localOption,
+                                                            testGroup)
+import           Test.Tasty.Hspec
 import           Types
 
 args :: Args
@@ -44,9 +45,9 @@ getServer = do
   pure (appToServer ctx)
 
 tests :: TestTree
-tests = testGroup
-  "Api"
-  [unsafePerformIO (testSpec "servant-quickcheck" spec_servantQuickCheck)]
+tests =
+  testGroup "Api"
+    $ [unsafePerformIO (testSpec "servant-quickcheck" spec_servantQuickCheck)]
 
 -- instance (HasGenRequest a) => HasGenRequest (Servant.Auth.Auth '[Servant.Auth.JWT, Servant.Auth.Cookie] Types.AuthorizedUser :> ProtectedAPI) where
 --     genRequest _ = genRequest (Proxy :: Proxy a)
