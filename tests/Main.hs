@@ -1,10 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main
-  where
+module Main where
 
-import qualified  Tests.Api
 import           Test.Tasty
+import qualified Tests.Api
 
 main :: IO ()
 main = defaultMain $ testGroup "All Tests" [Tests.Api.tests]

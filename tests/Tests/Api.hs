@@ -46,7 +46,7 @@ getServer = do
 
 tests :: TestTree
 tests =
-  testGroup "Api"
+  localOption Success $ testGroup "Api"
     $ [unsafePerformIO (testSpec "servant-quickcheck" spec_servantQuickCheck)]
 
 -- instance (HasGenRequest a) => HasGenRequest (Servant.Auth.Auth '[Servant.Auth.JWT, Servant.Auth.Cookie] Types.AuthorizedUser :> ProtectedAPI) where
