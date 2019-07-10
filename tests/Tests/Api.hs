@@ -38,11 +38,6 @@ import           Types
 args :: Args
 args = defaultArgs
 
-withCtx :: IO AppContext
-withCtx = do
-  appCtx <- acquireAppContext
-  pure appCtx
-
 getServer = do
   ctx <- withCtx
   pure (appToServer ctx)
@@ -62,21 +57,21 @@ tests =
 
 -- spec_servantQuickCheck :: SpecWith ()
 spec_servantQuickCheck = do
-  before withCtx $ do
-    it "API demonstrates best practices" $ \(ctx) -> do
-      pendingWith "No instance for (HasGenRequest (Auth '[JWT, Cookie] AuthorizedUser :> ProtectedAPI))"
+  before testJWK $ do
+    it "API demonstrates best practices" $ \(j) -> do
+      -- pendingWith "No instance for (HasGenRequest (Auth '[JWT, Cookie] AuthorizedUser :> ProtectedAPI))"
       -- withServantServerAndContext tslaqApi (ctxAuthConfig ctx) getServer
       -- j <- testJWK
-      -- withServantServerAndContext tslaqApi (basicAuthCtx j) getServer $ \burl ->
-      --   serverSatisfies
-      --     tslaqApi
-      --     burl
-      --     args
-      --     (   unauthorizedContainsWWWAuthenticate
-      --     <%> not500
-      --     <%> onlyJsonObjects
-      --     <%> mempty
-      --     )
+      withServantServerAndContext tslaqApi (basicAuthCtx j) getServer $ \burl ->
+        serverSatisfies
+          tslaqApi
+          burl
+          args
+          (   unauthorizedContainsWWWAuthenticate
+          <%> not500
+          <%> onlyJsonObjects
+          <%> mempty
+          )
   --   it "API doesn't have these things implemented yet" $ \(ctx) -> do
   --     pendingWith "Need instance for HasGenRequest"
   --     withServantServerAndContext tslaqApi (ctxAuthConfig ctx) getServer
