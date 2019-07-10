@@ -27,7 +27,7 @@ import           Control.Monad.Metrics       (Metrics, MonadMetrics, getMetrics)
 import           Control.Monad.Reader        (MonadIO, MonadReader, ReaderT,
                                               asks)
 import           Control.Monad.Trans.AWS     (Credentials (..), Region (..))
-import           Crypto.JOSE.JWK             (JWK, fromRSA)
+import           Crypto.JOSE.JWK             (JWK, fromRSA, genJWK, KeyMaterialGenParam(..))
 import           Data.Aeson                  (FromJSON, ToJSON, decode,
                                               parseJSON, withObject, (.:))
 import qualified Data.ByteString             as BS
@@ -151,6 +151,11 @@ getAuthConfig j e = (getJWTSettings j) :. (getCookieSettings e) :. EmptyContext
 
 getJWTSettings :: JWK -> JWTSettings
 getJWTSettings j = defaultJWTSettings j
+
+testJWK :: IO JWK
+testJWK = do
+  jwk <- genJWK (RSAGenParam (4096 `div` 8))
+  pure jwk
 
 getCookieSettings :: Environment -> CookieSettings
 getCookieSettings e = case e of
