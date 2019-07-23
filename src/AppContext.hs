@@ -67,6 +67,7 @@ import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
 import           Types
 import Errors
+import System.Environment (getProgName)
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
@@ -90,16 +91,19 @@ jsBucket = "tslaq-api-js"
 awsRegion :: Region
 awsRegion = NorthVirginia
 
-getCredentials :: Bool -> Credentials
-getCredentials b = do
+getCredentials :: Bool -> Environment -> Credentials
+getCredentials b e = do
   case b of
     True  -> FromFile "tslaq-user" "/home/amiri/.aws/credentials"
-    False -> Discover
+    False -> do
+      case e of
+        Test -> FromEnv "ACCESS_KEY_ID" "SECRET_ACCESS_KEY" Nothing (Just "NorthVirginia")
+        _ -> Discover
 
-getAWSConfig :: IO AWSConfig
-getAWSConfig = do
+getAWSConfig :: Environment -> IO AWSConfig
+getAWSConfig e = do
   b <- doesFileExist "/home/amiri/.aws/credentials"
-  let creds = getCredentials b
+  let creds = getCredentials b e
   let r     = AWSRegion awsRegion
   let c     = awsConfig r & awscCredentials .~ creds
   pure c
@@ -260,12 +264,14 @@ katipLogger logEnv app req respond = runKatipT logEnv $ do
   logMsg "web" InfoS (logStr (show req))
   liftIO $ app req respond
 
-getEnvironment :: IO Environment
-getEnvironment = do
+getAppEnvironment :: IO Environment
+getAppEnvironment = do
   getHostName >>= \case
     "tslaq-event-tracker" -> pure Production
-    _                     -> pure Development
-
+    _ -> do
+      getProgName >>= \case
+        "tslaq-event-tracker-test" -> pure Test
+        _ -> pure Development
 
 getPgConnectString :: PGConnectInfo -> ConnectionString
 getPgConnectString i = BS.intercalate " " $ zipWith (<>) pgKeys pgVals

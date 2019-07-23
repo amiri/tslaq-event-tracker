@@ -34,12 +34,16 @@ import           Test.Tasty                                (TestTree,
                                                             testGroup)
 import           Test.Tasty.Hspec
 import           Types
+import Debug.Trace
+import System.Environment
 
 args :: Args
 args = defaultArgs
 
 getServer = do
-  ctx <- withCtx
+  j <- testJWK
+  -- ctx <- basicAuthCtx j
+  ctx <- acquireAppContext
   pure (appToServer ctx)
 
 basicAuthCtx :: JWK -> Context '[JWTSettings, CookieSettings]

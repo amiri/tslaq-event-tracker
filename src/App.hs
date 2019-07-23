@@ -8,7 +8,7 @@ import           AppContext                  (AppContext (..), Environment (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAuthConfig,
                                               getCloudFrontSigningKey,
-                                              getCookieSettings, getEnvironment,
+                                              getCookieSettings, getAppEnvironment,
                                               getJWTSettings, getJwtKey,
                                               getPgConnectInfo,
                                               getPgConnectString, makePool,
@@ -55,13 +55,13 @@ initialize ctx = do
 acquireAppContext :: IO AppContext
 acquireAppContext = do
   let port = 8888
-  env       <- getEnvironment
+  env       <- getAppEnvironment
   logEnv    <- defaultLogEnv (T.pack $ map toLower $ show env)
   ekgServer <- forkServer "localhost" 8000
   let store = serverMetricStore ekgServer
   _              <- registerWaiMetrics store
   metr           <- M.initializeWith store
-  c              <- getAWSConfig
+  c              <- getAWSConfig env
   secretsSession <- connect c secretsManagerService
   s3Session      <- connect c s3Service
   pgConnectInfo  <- case env of
