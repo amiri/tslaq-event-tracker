@@ -97,7 +97,7 @@ getCredentials b e = do
     True  -> FromFile "tslaq-user" "/home/amiri/.aws/credentials"
     False -> do
       case e of
-        Test -> FromEnv "ACCESS_KEY_ID" "SECRET_ACCESS_KEY" Nothing (Just "NorthVirginia")
+        Test -> FromEnv "TQ_AK" "TQ_AS" Nothing (Just "NorthVirginia")
         _ -> Discover
 
 getAWSConfig :: Environment -> IO AWSConfig
