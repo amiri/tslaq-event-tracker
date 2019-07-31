@@ -8,3 +8,4 @@ chef-cache
 *.pid
 *.out
 local-mode-cache
+react-orig/

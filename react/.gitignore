@@ -1,0 +1,14 @@
+.DS_STORE
+node_modules/
+.cache/
+dist/
+.vscode/
+.grunt
+.env
+_SpecRunner.html
+__benchmarks__
+build/
+remote-repo/
+coverage/
+.module-cache
+*.log*

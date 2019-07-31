@@ -1,0 +1,36 @@
+{
+  "name": "tslaq-event-tracker-react",
+  "version": "1.0.0",
+  "description": "Frontend for tslaq-event-tracker",
+  "main": "index.html",
+  "repository": "https://github.com/amiri/tslaq-event-tracker",
+  "author": "Amiri Barksdale",
+  "license": "LicenseRef-LICENSE",
+  "scripts": {
+    "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",
+    "format": "prettier \"src/**/*.{js,html,json}\" --write",
+    "dev": "parcel src/index.html --port 7777"
+  },
+  "private": true,
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "babel-eslint": "^10.0.2",
+    "babel-preset-modern-browsers": "^14.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "parcel-bundler": "^1.12.3",
+    "prettier": "^1.18.2"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.5.5",
+    "axios": "^0.19.0",
+    "babel-polyfill": "^6.26.0",
+    "node-fetch": "^2.6.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  }
+}
