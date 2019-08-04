@@ -1,10 +1,10 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, * as react from 'react';
 const fetch = require('node-fetch');
 
-export const PricesContext = createContext();
+export const PricesContext = react.createContext();
 
 const PricesContextProvider = props => {
-  const [prices, setPrices] = useState([]);
+  const [prices, setPrices] = react.useState([]);
 
   async function getPrices() {
     const p = await window.api
@@ -15,12 +15,12 @@ const PricesContextProvider = props => {
     setPrices(p);
   }
 
-  useEffect(() => {
+  react.useEffect(() => {
     getPrices();
   }, []);
 
   // Reload prices every hour
-  useEffect(() => {
+  react.useEffect(() => {
     const timer = setTimeout(() => {
       getPrices();
     }, 3600000);
