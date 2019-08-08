@@ -7,7 +7,7 @@ axios.interceptors.response.use(
   error => {
     console.log('Interception');
     return Promise.reject(error.response);
-  }
+  },
 );
 
 class Api {
@@ -16,7 +16,7 @@ class Api {
       url: '/users',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -25,7 +25,7 @@ class Api {
       url: '/users/' + encodeURIComponent(id) + '',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -37,7 +37,7 @@ class Api {
       data: body,
       responseType: 'json',
       headers: { 'Content-Type': 'application/json' },
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -49,7 +49,7 @@ class Api {
       data: body,
       responseType: 'json',
       headers: { 'Content-Type': 'application/json' },
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -58,7 +58,7 @@ class Api {
       url: '/metrics',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -67,7 +67,7 @@ class Api {
       url: '/logout',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -76,7 +76,7 @@ class Api {
       url: '/events',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -85,7 +85,7 @@ class Api {
       url: '/events/' + encodeURIComponent(id) + '',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -97,7 +97,7 @@ class Api {
       data: body,
       responseType: 'json',
       headers: { 'Content-Type': 'application/json' },
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -106,7 +106,7 @@ class Api {
       url: '/prices',
       baseURL: 'http://localhost:8888/',
       method: 'get',
-      withCredentials: true
+      withCredentials: true,
     });
   }
 
@@ -118,7 +118,7 @@ class Api {
       data: body,
       responseType: 'json',
       headers: { 'Content-Type': 'application/json' },
-      withCredentials: true
+      withCredentials: true,
     });
   }
 }
