@@ -30,7 +30,9 @@ responseInterceptor = [r|axios.interceptors.response.use(
         console.log('Interception');
         return Promise.reject(error.response);
     },
-);\n\n|]
+);
+
+|]
 
 -- | Generate regular javascript functions that use the axios library.
 customAxiosWith :: AxiosOptions -> CommonGeneratorOptions -> JavaScriptGenerator

@@ -92,7 +92,7 @@ generateJavaScript e = withAWS $ do
   let h             = md5 $ LB.fromStrict js
   let f             = "tslaq-api-" ++ (show h) ++ ".js"
   let f'            = pack f
-  let localFilename = (localJSFolder e) ++ "TSLAQApi.js"
+  let localFilename = (localJSFolder e) ++ "Api.js"
   liftIO $ B.writeFile localFilename js
   let body = toBody js
   void $ send (putObject jsBucket (ObjectKey f') body)
