@@ -12,7 +12,7 @@ const PricesContextProvider = props => {
       .then(res => res.data)
       .then(data => fetch(data.url))
       .then(res => res.json());
-    setPrices(p);
+    setPrices(p.prices);
   }
 
   react.useEffect(() => {

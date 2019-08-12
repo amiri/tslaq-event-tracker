@@ -1,13 +1,20 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useEffect, useReducer } from 'react';
+import { eventsReducer } from '../reducers/EventsReducer';
 
 export const EventsContext = createContext();
 
+const s = [];
+
 const EventsContextProvider = props => {
-  const [events, setEvents] = useState([]);
+  const [events, dispatch] = useReducer(eventsReducer, s);
 
   async function getEvents() {
-    const e = await window.api.getEvents().then(res => res.data);
-    setEvents(e);
+    await window.api.getEvents().then(res =>
+      dispatch({
+        type: 'GET_EVENTS',
+        payload: res.data,
+      }),
+    );
   }
 
   useEffect(() => {
@@ -23,7 +30,7 @@ const EventsContextProvider = props => {
   });
 
   return (
-    <EventsContext.Provider value={{ events, setEvents }}>
+    <EventsContext.Provider value={{ events, dispatch }}>
       {props.children}
     </EventsContext.Provider>
   );

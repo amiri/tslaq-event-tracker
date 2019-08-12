@@ -4,6 +4,7 @@ import Api from './Api';
 import PricesContextProvider from './contexts/PricesContext';
 import EventsContextProvider from './contexts/EventsContext';
 import AuthContextProvider from './contexts/AuthContext';
+import ChartContextProvider from './contexts/ChartContext';
 import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import './App.css';
@@ -19,14 +20,16 @@ const App = () => {
     <AuthContextProvider>
       <PricesContextProvider>
         <EventsContextProvider>
-          <Layout>
-            <Header>
-              <NavBar />
-            </Header>
-            <Content>
-              <Chart />
-            </Content>
-          </Layout>
+          <ChartContextProvider>
+            <Layout style={{ height: '100%', width: '100%' }}>
+              <Header>
+                <NavBar />
+              </Header>
+              <Content style={{ height: '100%', width: '100%' }}>
+                <Chart />
+              </Content>
+            </Layout>
+          </ChartContextProvider>
         </EventsContextProvider>
       </PricesContextProvider>
     </AuthContextProvider>
