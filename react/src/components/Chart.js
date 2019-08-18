@@ -34,16 +34,18 @@ const Chart = () => {
     const { height, width } = dimensions;
     const getXScale = ({ xExtent, width, margin }) =>
       d3
-        .scaleBand()
-        .domain(
-          d3.timeDay
-            .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
-            .filter(d => {
-              const est = moment(d).tz('America/New_York');
-              const test = est.day() !== 0 && est.day() !== 6 ? true : false;
-              return test;
-            }),
-        )
+        .scaleTime()
+        .domain([xExtent[0].toDate(), +xExtent[1].toDate() + 1])
+        // .scaleBand()
+        // .domain(
+        //   d3.timeDay
+        //     .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
+        //     .filter(d => {
+        //       const est = moment(d).tz('America/New_York');
+        //       const test = est.day() !== 0 && est.day() !== 6 ? true : false;
+        //       return test;
+        //     }),
+        // )
         .range([margin.left, width - margin.right]);
 
     const getYScale = ({ yExtent, height, margin }) =>
@@ -122,6 +124,30 @@ const Chart = () => {
         .attr('viewBox', `0 0 ${width} ${height}`);
       svg.append('g').call(getXAxis);
       svg.append('g').call(getYAxis);
+      const candle = svg
+        .append('g')
+        .attr('stroke-linecap', 'square')
+        .attr('stroke', 'black')
+        .selectAll('g')
+        .data(ps)
+        .join('g')
+        .attr('transform', d => `translate(${xScale(d.priceTime.toDate())},0)`);
+      candle
+        .append('line')
+        .attr('y1', d => yScale(d.low))
+        .attr('y2', d => yScale(d.high));
+      candle
+        .append('line')
+        .attr('y1', d => yScale(d.open))
+        .attr('y2', d => yScale(d.close))
+        .attr('stroke', d =>
+          d.open > d.close
+            ? d3.schemeSet1[0]
+            : d.close > d.open
+            ? d3.schemeSet1[2]
+            : d3.schemeSet1[8],
+        );
+      // .attr('stroke-width', xScale.bandwidth())
     }
   }, [dimensions, config, events, prices, config]);
 
