@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars, no-inner-declarations */
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
@@ -8,9 +8,11 @@ import * as d3 from 'd3';
 import { isNil } from 'lodash';
 import { Spin } from 'antd';
 require('moment-timezone');
+import { timeInterval, durationMinute, durationWeek } from 'd3-time';
 
 const Chart = () => {
   const [dimensions, setDimensions] = useState({ height: null, width: null });
+  const [svg, setSvg] = useState(null);
 
   const chartRef = useRef();
 
@@ -27,81 +29,124 @@ const Chart = () => {
   const { prices } = useContext(PricesContext);
   const { config } = useContext(ChartContext);
 
-  const { margin, timeZone } = config;
-  const { height, width } = dimensions;
+  useEffect(() => {
+    const { margin, timeZone } = config;
+    const { height, width } = dimensions;
+    const getXScale = ({ xExtent, width, margin }) =>
+      d3
+        .scaleBand()
+        .domain(
+          d3.timeDay
+            .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
+            .filter(d => {
+              const est = moment(d).tz('America/New_York');
+              const test = est.day() !== 0 && est.day() !== 6 ? true : false;
+              return test;
+            }),
+        )
+        .range([margin.left, width - margin.right]);
 
-  // convert dates
-  const ps = prices.map(p => {
-    const m = moment.utc(p.priceTime).tz(timeZone);
-    return Object.assign(p, { priceTime: m });
-  });
+    const getYScale = ({ yExtent, height, margin }) =>
+      d3
+        .scaleLinear()
+        .domain([0, yExtent[1]])
+        .range([height - margin.bottom, margin.top]);
 
-  // scales
-  const xExtent = d3.extent(ps, p => p.priceTime);
-  const yExtent = d3.extent(ps, p => p.high);
+    if (!isNil(height) && !isNil(width) && prices.length) {
+      // convert dates
+      const ps = prices.map(p => {
+        const m = moment.utc(p.priceTime).tz(timeZone);
+        return Object.assign(p, { priceTime: m });
+      });
 
-  if (!isNil(xExtent[0])) {
-    console.log(xExtent);
-  }
+      // Function for xAxis intervals
+      const timeMondayEST = () =>
+        timeInterval(
+          function(date) {
+            const est = moment(date)
+              .tz('America/New_York')
+              .toDate();
+            date.setDate(est.getDate() - ((est.getDay() + 7 - 1) % 7));
+            date.setHours(0, 0, 0, 0);
+          },
+          function(date, step) {
+            const est = moment(date)
+              .tz('America/New_York')
+              .toDate();
+            date.setDate(est.getDate() + step * 7);
+          },
+          function(start, end) {
+            return (
+              (end -
+                start -
+                (end.getTimezoneOffset() - start.getTimezoneOffset()) *
+                  durationMinute) /
+              durationWeek
+            );
+          },
+        );
 
-  const xScale =
-    !isNil(xExtent[0]) && !isNil(xExtent[1]) && !isNil(width)
-      ? d3
-          .scaleBand()
-          .domain(
-            d3.timeDay.range(xExtent[0].toDate(), xExtent[1].toDate())
-            // .filter(d => {
-            //   const est = moment(d).tz('America/New_York');
-            //   const test = est.day() !== 0 && est.day() !== 6 ? true : false;
-            //     return test;
-            // }),
+      // scales
+      const xExtent = d3.extent(ps, p => p.priceTime);
+      const yExtent = d3.extent(ps, p => p.high);
+      const xScale = getXScale({ xExtent, width, margin });
+      const yScale = getYScale({ yExtent, height, margin });
+
+      const getXAxis = g => {
+        g.attr('transform', `translate(0,${height - margin.bottom})`)
+          .call(
+            d3
+              .axisBottom(xScale)
+              .tickValues(
+                timeMondayEST()
+                  .every(width > 720 ? 1 : 2)
+                  .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1),
+              )
+              .tickFormat(d3.timeFormat('%Y-%m-%d')),
           )
-          .range([margin.left, width - margin.right])
-      : null;
+          .call(g => g.select('.domain').remove());
+      };
+      const getYAxis = g => {
+        g.attr('transform', `translate(${margin.left},0)`)
+          .call(d3.axisLeft(yScale))
+          .call(g => g.select('.domain').remove());
+      };
 
-  if (xScale) {
-    // console.log(xScale(new Date("Mon Jul 14 2014 06:00:00 GMT-0700 (Pacific Daylight Time)")));
-    console.log(
-      xScale(
-        new Date('Sat Aug 03 2019 09:00:00 GMT-0700 (Pacific Daylight Time)'),
-      ),
-    );
-    console.log(
-      xScale(
-        new Date('Tue Aug 06 2019 09:00:00 GMT-0700 (Pacific Daylight Time)'),
-      ),
-    );
-  }
+      // CODE HERE
 
-  const yScale =
-    !isNil(yExtent[0]) && !isNil(yExtent[1]) && !isNil(height)
-      ? d3
-          .scaleLinear()
-          .domain([0, yExtent[1]])
-          .range([0, height - margin.bottom, margin.top])
-      : null;
+      d3.select('#chart').remove();
+      const svg = d3
+        .select('#chart-container')
+        .append('svg')
+        .attr('preserveAspectRatio', 'xMinYMin meet')
+        .attr('viewBox', `0 0 ${width} ${height}`);
+      svg.append('g').call(getXAxis);
+      svg.append('g').call(getYAxis);
+    }
+  }, [dimensions, config, events, prices, config]);
 
-  const halfHeight = Math.round(height / 2);
+  const halfHeight = dimensions.height ? Math.round(dimensions.height / 2) : 0;
 
   return (
-    <div ref={chartRef} id='chart' style={{ width: '100%', height: '100%' }}>
-      {ps.length ? (
-        <svg width={width} height={height}></svg>
-      ) : (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            textAlign: 'center',
-            padding: '5%',
-          }}
-        >
-          <Spin
-            size='large'
-            style={{ height: '`${halfHeight}px`', margin: 'auto' }}
-          />
-        </div>
-      )}
+    <div
+      ref={chartRef}
+      id='chart-container'
+      style={{ width: '100%', height: '100%' }}
+    >
+      <div
+        id='chart'
+        style={{
+          width: '100%',
+          height: '100%',
+          textAlign: 'center',
+          padding: '5%',
+        }}
+      >
+        <Spin
+          size='large'
+          style={{ height: '`${halfHeight}px`', margin: 'auto' }}
+        />
+      </div>
     </div>
   );
 };

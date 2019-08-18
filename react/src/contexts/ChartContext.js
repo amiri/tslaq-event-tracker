@@ -4,7 +4,7 @@ export const ChartContext = createContext();
 
 const s = {
   timeZone: 'America/New_York',
-  margin: { top: 20, right: 20, bottom: 20, left: 20 },
+  margin: { top: 25, right: 25, bottom: 25, left: 25 },
 };
 
 const ChartContextProvider = props => {

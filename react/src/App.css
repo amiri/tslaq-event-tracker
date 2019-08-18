@@ -1,6 +1,6 @@
 @import "../node_modules/antd/dist/antd.css"
 
-div#chart, div#root {
+div#chart-container, div#root {
     height: 100%;
     width: 100%;
 }
