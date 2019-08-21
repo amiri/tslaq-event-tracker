@@ -115,10 +115,10 @@ const Chart = () => {
               .axisBottom(xScale)
               .tickValues(
                 timeMondayEST()
-                  .every(width > 720 ? 1 : 2)
+                  .every(width > 720 ? 4 : 8)
                   .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1),
               )
-              .tickFormat(d3.timeFormat('%Y-%m-%d')),
+              .tickFormat(d3.timeFormat('%Y-%m-%d EST')),
           )
           .call(g => g.select('.domain').remove());
       };
