@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 export const PricesContext = react.createContext();
 
 const PricesContextProvider = props => {
-  const [prices, setPrices] = react.useState([]);
+  const [prices, setPrices] = react.useState({});
 
   async function getPrices() {
     const p = await window.api
@@ -12,7 +12,7 @@ const PricesContextProvider = props => {
       .then(res => res.data)
       .then(data => fetch(data.url))
       .then(res => res.json());
-    setPrices(p.prices);
+    setPrices({ daily: p.daily.partialPrices, hourly: p.hourly.prices });
   }
 
   react.useEffect(() => {

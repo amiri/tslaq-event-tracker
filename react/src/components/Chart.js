@@ -5,7 +5,7 @@ import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
 import moment from 'moment';
 import * as d3 from 'd3';
-import { isNil } from 'lodash';
+import { isNil, isEmpty } from 'lodash';
 import { Spin } from 'antd';
 require('moment-timezone');
 import { timeInterval, durationMinute, durationWeek } from 'd3-time';
@@ -30,22 +30,25 @@ const Chart = () => {
   const { config } = useContext(ChartContext);
 
   useEffect(() => {
-    const { margin, timeZone } = config;
+    const { margin, timeZone, resolution } = config;
     const { height, width } = dimensions;
+    const priceList = resolution === 'daily' ? prices.daily : prices.hourly;
     const getXScale = ({ xExtent, width, margin }) =>
       d3
-        .scaleTime()
-        .domain([xExtent[0].toDate(), +xExtent[1].toDate() + 1])
-        // .scaleBand()
-        // .domain(
-        //   d3.timeDay
-        //     .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
-        //     .filter(d => {
-        //       const est = moment(d).tz('America/New_York');
-        //       const test = est.day() !== 0 && est.day() !== 6 ? true : false;
-        //       return test;
-        //     }),
-        // )
+        .scaleBand()
+        .domain(
+          d3.timeDay
+            .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
+            .filter(
+              d =>
+                moment(d)
+                  .tz('America/New_York')
+                  .day() !== 0 &&
+                moment(d)
+                  .tz('America/New_York')
+                  .day() !== 6,
+            ),
+        )
         .range([margin.left, width - margin.right]);
 
     const getYScale = ({ yExtent, height, margin }) =>
@@ -54,10 +57,21 @@ const Chart = () => {
         .domain([0, yExtent[1]])
         .range([height - margin.bottom, margin.top]);
 
-    if (!isNil(height) && !isNil(width) && prices.length) {
+    if (
+      !isNil(height) &&
+      !isNil(width) &&
+      !isNil(priceList) &&
+      priceList.length
+    ) {
       // convert dates
-      const ps = prices.map(p => {
-        const m = moment.utc(p.priceTime).tz(timeZone);
+      const timeField = resolution == 'daily' ? 'partialTime' : 'priceTime';
+      const ps = priceList.map(p => {
+        const m =
+          resolution === 'daily'
+            ? moment(p[timeField])
+                .tz('America/New_York')
+                .tz(timeZone)
+            : moment.utc(p[timeField]).tz(timeZone);
         return Object.assign(p, { priceTime: m });
       });
 
@@ -146,8 +160,8 @@ const Chart = () => {
             : d.close > d.open
             ? d3.schemeSet1[2]
             : d3.schemeSet1[8],
-        );
-      // .attr('stroke-width', xScale.bandwidth())
+        )
+        .attr('stroke-width', xScale.bandwidth());
     }
   }, [dimensions, config, events, prices, config]);
 
