@@ -32,22 +32,18 @@ const Chart = () => {
   useEffect(() => {
     const { margin, timeZone, resolution } = config;
     const { height, width } = dimensions;
-    const priceList = resolution === 'daily' ? prices.daily : prices.hourly;
+    const priceList =
+      resolution === 'daily' && !isNil(prices) ? prices.daily : prices.hourly;
     const getXScale = ({ xExtent, width, margin }) =>
       d3
         .scaleBand()
         .domain(
           d3.timeDay
             .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
-            .filter(
-              d =>
-                moment(d)
-                  .tz('America/New_York')
-                  .day() !== 0 &&
-                moment(d)
-                  .tz('America/New_York')
-                  .day() !== 6,
-            ),
+            .filter(d => {
+              const est = moment(d).tz('America/New_York');
+              return est.dayOfYear(1) || (est.day() !== 0 && est.day() !== 6);
+            }),
         )
         .range([margin.left, width - margin.right]);
 
@@ -108,24 +104,38 @@ const Chart = () => {
       const xScale = getXScale({ xExtent, width, margin });
       const yScale = getYScale({ yExtent, height, margin });
 
+      const tickVals = d3.timeMonth
+        .range(xExtent[0].toDate(), xExtent[1].toDate())
+        .filter(d => d.getMonth() % 3 === 0);
+
       const getXAxis = g => {
         g.attr('transform', `translate(0,${height - margin.bottom})`)
           .call(
             d3
               .axisBottom(xScale)
-              .tickValues(
-                timeMondayEST()
-                  .every(width > 720 ? 4 : 8)
-                  .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1),
-              )
-              .tickFormat(d3.timeFormat('%Y-%m-%d EST')),
+              .tickValues(tickVals)
+              .tickFormat(d =>
+                d <= d3.timeYear(d) ? d3.timeFormat('%Y')(d) : null,
+              ),
           )
           .call(g => g.select('.domain').remove());
       };
       const getYAxis = g => {
         g.attr('transform', `translate(${margin.left},0)`)
-          .call(d3.axisLeft(yScale))
-          .call(g => g.select('.domain').remove());
+          .call(d3.axisRight(yScale).tickSize(width - margin.left - margin.right))
+          .call(g => g.select('.domain').remove())
+          .call(g =>
+            g
+              .selectAll('.tick:not(:first-of-type) line')
+              .attr('stroke-opacity', 0.15)
+              .attr('stroke-dasharray', '2,2'),
+          )
+          .call(g =>
+            g
+              .selectAll('.tick text')
+              .attr('x', 4)
+              .attr('dy', -4),
+          );
       };
 
       // CODE HERE
@@ -138,6 +148,19 @@ const Chart = () => {
         .attr('viewBox', `0 0 ${width} ${height}`);
       svg.append('g').call(getXAxis);
       svg.append('g').call(getYAxis);
+      svg.append("g")
+       .attr("transform", `translate(0, ${yScale(yExtent[1])})`)
+       .append("line")
+       .attr("x2", width)
+       .style("stroke", "#85bb65")
+       .style("stroke-width", "1px");
+      svg.append("g")
+       .attr("transform", `translate(0, ${yScale(yExtent[0])})`)
+       .append("line")
+       .attr("x2", width)
+       .style("stroke", "#8A0707")
+       .style("stroke-width", "1px");
+
       const candle = svg
         .append('g')
         .attr('stroke-linecap', 'square')
