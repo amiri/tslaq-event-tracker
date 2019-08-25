@@ -12,10 +12,10 @@ import { timeInterval, durationMinute, durationWeek } from 'd3-time';
 
 const Chart = () => {
   const [dimensions, setDimensions] = useState({ height: null, width: null });
-  const [svg, setSvg] = useState(null);
 
   const chartRef = useRef();
 
+  // Grab height and width from browser
   useEffect(() => {
     if (chartRef.current) {
       setDimensions({
@@ -29,6 +29,7 @@ const Chart = () => {
   const { prices } = useContext(PricesContext);
   const { config } = useContext(ChartContext);
 
+  // Draw chart, now that we have dimensions and contextual data loaded.
   useEffect(() => {
     const { margin, timeZone, resolution } = config;
     const { height, width } = dimensions;
@@ -122,7 +123,9 @@ const Chart = () => {
       };
       const getYAxis = g => {
         g.attr('transform', `translate(${margin.left},0)`)
-          .call(d3.axisRight(yScale).tickSize(width - margin.left - margin.right))
+          .call(
+            d3.axisRight(yScale).tickSize(width - margin.left - margin.right),
+          )
           .call(g => g.select('.domain').remove())
           .call(g =>
             g
@@ -148,18 +151,20 @@ const Chart = () => {
         .attr('viewBox', `0 0 ${width} ${height}`);
       svg.append('g').call(getXAxis);
       svg.append('g').call(getYAxis);
-      svg.append("g")
-       .attr("transform", `translate(0, ${yScale(yExtent[1])})`)
-       .append("line")
-       .attr("x2", width)
-       .style("stroke", "#85bb65")
-       .style("stroke-width", "1px");
-      svg.append("g")
-       .attr("transform", `translate(0, ${yScale(yExtent[0])})`)
-       .append("line")
-       .attr("x2", width)
-       .style("stroke", "#8A0707")
-       .style("stroke-width", "1px");
+      svg
+        .append('g')
+        .attr('transform', `translate(0, ${yScale(yExtent[1])})`)
+        .append('line')
+        .attr('x2', width)
+        .style('stroke', '#85bb65')
+        .style('stroke-width', '1px');
+      svg
+        .append('g')
+        .attr('transform', `translate(0, ${yScale(yExtent[0])})`)
+        .append('line')
+        .attr('x2', width)
+        .style('stroke', '#8A0707')
+        .style('stroke-width', '1px');
 
       const candle = svg
         .append('g')
@@ -177,13 +182,14 @@ const Chart = () => {
         .append('line')
         .attr('y1', d => yScale(d.open))
         .attr('y2', d => yScale(d.close))
-        .attr('stroke', d =>
-          d.open > d.close
+        .attr('stroke', (d,i) => {
+          console.log(i);
+          return d.open > d.close
             ? d3.schemeSet1[0]
             : d.close > d.open
             ? d3.schemeSet1[2]
-            : d3.schemeSet1[8],
-        )
+            : d3.schemeSet1[8];
+        })
         .attr('stroke-width', xScale.bandwidth());
     }
   }, [dimensions, config, events, prices, config]);
