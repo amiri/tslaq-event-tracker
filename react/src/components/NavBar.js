@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import { ChartContext } from '../contexts/ChartContext';
 import LoginForm from './LoginForm';
 import { Row, Col, Button } from 'antd';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -22,6 +23,11 @@ const colStyle = {
 
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
+  const { config, setConfig } = useContext(ChartContext);
+  const updateRange = dates => {
+    const estDates = dates.map(d => d.clone().tz(config.timeZone));
+    setConfig({ ...config, dateRange: estDates });
+  };
   return (
     <Router>
       <div>
@@ -37,7 +43,11 @@ const NavBar = () => {
             )}
           </Col>
           <Col style={colStyle}>
-            Chart daterange: <RangePicker />
+            Chart daterange:{' '}
+            <RangePicker
+              allowClear={true}
+              onChange={dates => updateRange(dates)}
+            />
           </Col>
         </Row>
       </div>
