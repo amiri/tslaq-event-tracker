@@ -44,19 +44,13 @@ export const calculateDimensions = ({ height }) => {
   };
 };
 
-export const getXAxis = (g, { xScale, tickVals, height, margin }) => {
+export const getXAxis = (g, { xScale, tickVals, tickFmt, height, margin }) => {
   g.attr('transform', `translate(0,${height - margin.bottom})`)
     .call(
       d3
         .axisBottom(xScale)
         .tickValues(tickVals)
-        .tickFormat(d =>
-          d <= d3.timeYear(d)
-            ? d3.timeFormat('%Y')(d)
-            : d3
-                .timeFormat('%b')(d)
-                .charAt(0),
-        ),
+        .tickFormat(tickFmt),
     )
     .call(g => g.select('.domain').remove());
 };
@@ -79,33 +73,51 @@ export const getYAxis = (g, { yScale, margin, width }) => {
     );
 };
 
-export const getTickVals = (xExtent) => {
-    const duration = moment.duration(xExtent[1].diff(xExtent[0]));
-    if (duration.asWeeks() < 4) {
-        console.log(d3.timeDay.range(xExtent[0].toDate(), xExtent[1].toDate()).filter(d => d.getDay() == 1));
-    }
-    console.log(duration.humanize());
-    const switchTicks = (dur) => {
-        switch (dur) {
-            case dur.asWeeks() < 4:
-              return d3.timeDay
-              .range(xExtent[0].toDate(), xExtent[1].toDate())
-              .filter(d => d.getDay() == 1);
-            case dur.asMonths() < 4:
-              return d3.timeWeek
-              .range(xExtent[0].toDate(), xExtent[1].toDate())
-              .filter(d => d.getDate() == 1);
-            case dur.asYears() > 1:
-              return d3.timeMonth
-              .range(xExtent[0].toDate(), xExtent[1].toDate())
-              .filter(d => d.getMonth() % 3 === 0);
-            default:
-              return d3.timeMonth
-              .range(xExtent[0].toDate(), xExtent[1].toDate())
-              .filter(d => d.getMonth() % 3 === 0);
+const dayFormatter = d => {
+  console.log('dayFormatter: ', d3.timeFormat('%B %d')(d));
+  return d3.timeFormat('%b %d')(d);
+};
+
+const yearFormatter = d => {
+  console.log('yearFormatter: ', d3.timeFormat('%Y')(d));
+  const fmt =
+    d <= d3.timeYear(d)
+      ? d3.timeFormat('%Y')(d)
+      : d3
+          .timeFormat('%b')(d)
+          .charAt(0);
+  return fmt;
+};
+
+export const getTickVals = xExtent => {
+  const duration = moment.duration(xExtent[1].diff(xExtent[0]));
+  const ticks =
+    duration.asWeeks() < 4
+      ? {
+          tickVals: d3.timeDay
+            .range(xExtent[0].toDate(), xExtent[1].toDate())
+            .filter(d => d.getDay() == 1),
+          tickFmt: dayFormatter,
         }
-    };
-    const ret = switchTicks(duration);
-    console.log(ret);
-    return ret;
+      : duration.asMonths() < 4
+      ? {
+          tickVals: d3.timeWeek
+            .range(xExtent[0].toDate(), xExtent[1].toDate())
+            .filter(d => d.getDate() == 1),
+          tickFmt: dayFormatter,
+        }
+      : duration.asYears() > 1
+      ? {
+          tickVals: d3.timeMonth
+            .range(xExtent[0].toDate(), xExtent[1].toDate())
+            .filter(d => d.getMonth() % 3 === 0),
+          tickFmt: yearFormatter,
+        }
+      : {
+          tickVals: d3.timeMonth
+            .range(xExtent[0].toDate(), xExtent[1].toDate())
+            .filter(d => d.getMonth() % 3 === 0),
+          tickFmt: yearFormatter,
+        };
+  return ticks;
 };

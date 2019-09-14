@@ -103,9 +103,10 @@ const Chart = () => {
         // Tick values
         console.log(moment.duration(xExtent[1].diff(xExtent[0])));
 
-        const tickVals = getTickVals(xExtent)
+        const { tickVals, tickFmt } = getTickVals(xExtent);
 
         console.log(tickVals);
+        console.log(tickFmt);
         console.log('heightFocus: ', heightFocus);
         console.log('heightContext: ', heightContext);
 
@@ -118,20 +119,22 @@ const Chart = () => {
         const context = d3.select(contextRef.current);
 
         // Focus
-        const focusXAxis = focus
-          .selectAll('.x-axis')
-          .data(['dummy']);
+        const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
 
         focusXAxis
           .enter()
           .append('g')
           .attr('class', 'x-axis')
           .merge(focusXAxis)
-          .call(getXAxis, { xScale, tickVals, height: heightFocus, margin });
+          .call(getXAxis, {
+            xScale,
+            tickVals,
+            tickFmt,
+            height: heightFocus,
+            margin,
+          });
 
-        const focusYAxis = focus
-          .selectAll('.y-axis')
-          .data(['dummy']);
+        const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
 
         focusYAxis
           .enter()
@@ -141,16 +144,20 @@ const Chart = () => {
           .call(getYAxis, { yScale, margin, width });
 
         // Context Enter
-        const contextXAxis = context
-          .selectAll('.x-axis')
-          .data(['dummy']);
+        const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
 
         contextXAxis
           .enter()
           .append('g')
           .attr('class', 'x-axis')
           .merge(contextXAxis)
-          .call(getXAxis, { xScale, tickVals, height: heightFocus + heightContext + margin.bottom, margin });
+          .call(getXAxis, {
+            xScale,
+            tickVals,
+            tickFmt,
+            height: heightFocus + heightContext + margin.bottom,
+            margin,
+          });
 
         setSpin(false);
       }
