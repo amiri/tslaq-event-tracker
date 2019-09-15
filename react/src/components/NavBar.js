@@ -5,6 +5,7 @@ import LoginForm from './LoginForm';
 import { Row, Col, Button } from 'antd';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { DatePicker } from 'antd';
+import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 
@@ -25,7 +26,9 @@ const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
   const { config, setConfig } = useContext(ChartContext);
   const updateRange = dates => {
-    const estDates = dates.map(d => d.clone().tz(config.timeZone));
+    const estDates = dates.map(d =>
+      moment.tz(d.format('YYYY-MM-DD 00:00:00'), config.timeZone),
+    );
     setConfig({ ...config, dateRange: estDates });
   };
   return (

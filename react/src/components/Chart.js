@@ -103,10 +103,9 @@ const Chart = () => {
         // Tick values
         console.log(moment.duration(xExtent[1].diff(xExtent[0])));
 
-        const { tickVals, tickFmt } = getTickVals(xExtent);
+        const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
 
         console.log(tickVals);
-        console.log(tickFmt);
         console.log('heightFocus: ', heightFocus);
         console.log('heightContext: ', heightContext);
 

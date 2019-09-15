@@ -1,17 +1,21 @@
 import moment from 'moment';
 import * as d3 from 'd3';
 
+const xBand = xExtent =>
+  d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
+    const est = moment(d).tz('America/New_York');
+    return (
+      est.dayOfYear() === 1 ||
+      est.date() === 1 ||
+      est.day() === 1 ||
+      (est.day() !== 0 && est.day() !== 6)
+    );
+  });
+
 export const getXScale = ({ xExtent, width, margin }) =>
   d3
     .scaleBand()
-    .domain(
-      d3.timeDay
-        .range(xExtent[0].toDate(), +xExtent[1].toDate() + 1)
-        .filter(d => {
-          const est = moment(d).tz('America/New_York');
-          return est.dayOfYear(1) || (est.day() !== 0 && est.day() !== 6);
-        }),
-    )
+    .domain(xBand(xExtent))
     .range([margin.left, width - margin.right]);
 
 export const getYScale = ({ yExtent, height, margin }) =>
@@ -74,12 +78,10 @@ export const getYAxis = (g, { yScale, margin, width }) => {
 };
 
 const dayFormatter = d => {
-  console.log('dayFormatter: ', d3.timeFormat('%B %d')(d));
   return d3.timeFormat('%b %d')(d);
 };
 
 const yearFormatter = d => {
-  console.log('yearFormatter: ', d3.timeFormat('%Y')(d));
   const fmt =
     d <= d3.timeYear(d)
       ? d3.timeFormat('%Y')(d)
@@ -89,21 +91,22 @@ const yearFormatter = d => {
   return fmt;
 };
 
-export const getTickVals = xExtent => {
+export const getTickVals = ({ xExtent, timeZone }) => {
   const duration = moment.duration(xExtent[1].diff(xExtent[0]));
   const ticks =
     duration.asWeeks() < 4
       ? {
-          tickVals: d3.timeDay
-            .range(xExtent[0].toDate(), xExtent[1].toDate())
-            .filter(d => d.getDay() == 1),
+          tickVals: xBand(xExtent),
           tickFmt: dayFormatter,
         }
       : duration.asMonths() < 4
       ? {
-          tickVals: d3.timeWeek
-            .range(xExtent[0].toDate(), xExtent[1].toDate())
-            .filter(d => d.getDate() == 1),
+          tickVals: xBand(xExtent).filter(
+            d =>
+              moment(d)
+                .tz(timeZone)
+                .day() === 1,
+          ),
           tickFmt: dayFormatter,
         }
       : duration.asYears() > 1
