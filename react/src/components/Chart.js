@@ -22,6 +22,7 @@ import {
   getXAxis,
   getYAxis,
   getTickVals,
+  getLines,
 } from './utils/Chart';
 
 const Chart = () => {
@@ -76,13 +77,6 @@ const Chart = () => {
             : p.priceTime.isSameOrAfter(dateRange[0]) &&
               p.priceTime.isSameOrBefore(dateRange[1]),
         );
-      console.log('ps: ', ps);
-      if (!isEmpty(dateRange)) {
-        console.log(
-          ps[0].priceTime.isSameOrAfter(dateRange[0]) &&
-            ps[0].priceTime.isSameOrBefore(dateRange[1]),
-        );
-      }
 
       if (!isEmpty(ps)) {
         // Extents
@@ -101,25 +95,77 @@ const Chart = () => {
         });
 
         // Tick values
-        console.log(moment.duration(xExtent[1].diff(xExtent[0])));
-
         const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
 
-        console.log(tickVals);
-        console.log('heightFocus: ', heightFocus);
-        console.log('heightContext: ', heightContext);
-
+        // Size svg and g refs
         const svg = d3
           .select(svgRef.current)
           .attr('preserveAspectRatio', 'xMinYMin meet')
           .attr('viewBox', `0 0 ${width ? width : 0} ${height ? height : 0}`);
 
-        const focus = d3.select(focusRef.current);
-        const context = d3.select(contextRef.current);
+        const focus = d3
+          .select(focusRef.current)
+          .attr('transform', `translate(0, ${margin.top})`);
 
-        // Focus
+        const context = d3
+          .select(contextRef.current)
+          .attr(
+            'transform',
+            `translate(0, ${heightFocus + margin.bottom + margin.top})`,
+          );
+
+        // ClipPath
+        const clipPath = svg.selectAll('defs').data(['dummy']);
+
+        // ClipPath Enter + Update
+        clipPath
+          .enter()
+          .append('defs')
+          .append('clipPath')
+          .attr('id', 'clip')
+          .append('rect')
+          .attr('width', width)
+          .attr('height', heightFocus)
+          .merge(clipPath);
+
+        // ClipPath Exit
+        clipPath.exit().remove();
+
+        // ContextLines
+        const contextLines = context.selectAll('.line').data([ps]);
+
+        // ContextLines Enter + Update
+        contextLines
+          .enter()
+          .append('path')
+          .attr('class', 'line')
+          .merge(contextLines)
+          .attr(
+            'd',
+            getLines({ xScale: xScaleContext, yScale: yScaleContext }),
+          );
+
+        // ContextLines Exit
+        contextLines.exit().remove();
+
+        // FocusLines
+        const focusLines = focus.selectAll('.line').data([ps]);
+
+        // FocusLines Enter + Update
+        focusLines
+          .enter()
+          .append('path')
+          .attr('class', 'line')
+          .merge(focusLines)
+          .attr('d', getLines({ xScale, yScale }));
+
+        // FocusLines Exit
+        focusLines.exit().remove();
+
+        // FocusXAxis
         const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
 
+        // FocusXAxis Enter + Update
         focusXAxis
           .enter()
           .append('g')
@@ -133,8 +179,13 @@ const Chart = () => {
             margin,
           });
 
+        // FocusXAxis Exit
+        focusXAxis.exit().remove();
+
+        // FocusYAxis
         const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
 
+        // FocusYAxis Enter + Update
         focusYAxis
           .enter()
           .append('g')
@@ -142,9 +193,13 @@ const Chart = () => {
           .merge(focusYAxis)
           .call(getYAxis, { yScale, margin, width });
 
-        // Context Enter
+        // FocusYAxis Exit
+        focusYAxis.exit().remove();
+
+        // ContextXAxis
         const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
 
+        // ContextXAxis Enter + Update
         contextXAxis
           .enter()
           .append('g')
@@ -154,9 +209,12 @@ const Chart = () => {
             xScale,
             tickVals,
             tickFmt,
-            height: heightFocus + heightContext + margin.bottom,
+            height: heightContext + margin.bottom,
             margin,
           });
+
+        // ContextXAxis Exit
+        contextXAxis.exit().remove();
 
         setSpin(false);
       }

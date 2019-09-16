@@ -1,6 +1,13 @@
 import moment from 'moment';
 import * as d3 from 'd3';
 
+export const getLines = ({ xScale, yScale }) =>
+  d3
+    .line()
+    .x(d => xScale(d.priceTime.toDate()))
+    .y(d => yScale(d.close))
+    .curve(d3.curveMonotoneX);
+
 const xBand = xExtent =>
   d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
     const est = moment(d).tz('America/New_York');
@@ -24,21 +31,14 @@ export const getYScale = ({ yExtent, height, margin }) =>
     .domain([0, yExtent[1]])
     .range([height - margin.bottom, margin.top]);
 
-// export const getMarginContext = (margin, dimensions) => {};
-
 export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
   const totalHeightFocus = height - totalHeightContext;
-
-  // console.log('totalHeightContext: ', totalHeightContext);
-  // console.log('totalHeightFocus: ', totalHeightFocus);
 
   const margin = { top: 10, right: 10, bottom: 15, left: 15 };
   const heightContext = totalHeightContext - margin.top - margin.bottom;
   const heightFocus = totalHeightFocus - margin.top - margin.bottom;
 
-  // console.log('heightContext: ', heightContext);
-  // console.log('heightFocus: ', heightFocus);
   return {
     totalHeightContext,
     totalHeightFocus,
@@ -123,4 +123,18 @@ export const getTickVals = ({ xExtent, timeZone }) => {
           tickFmt: yearFormatter,
         };
   return ticks;
+};
+
+export const getBrush = ({ width, height, brushed }) => {
+  d3.brushX()
+    .extent([[0, 0], [width, height]])
+    .on('brush end', brushed);
+};
+
+export const getZoom = ({ width, height, zoomed }) => {
+  d3.zoom()
+    .scaleExtent([1, Infinity])
+    .translateExtent([[0, 0], [width, height]])
+    .extent([[0, 0], [width, height]])
+    .on('zoom', zoomed);
 };
