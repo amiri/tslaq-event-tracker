@@ -5,6 +5,10 @@ div#chart-container, div#root {
     width: 100%;
 }
 
+div#chart {
+    overflow:hidden;
+}
+
 .line {
     fill: none;
     stroke: #555;

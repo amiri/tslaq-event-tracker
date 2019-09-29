@@ -16,13 +16,28 @@ import { Spin } from 'antd';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
 import {
-  getXScale,
-  getYScale,
   calculateDimensions,
-  getXAxis,
-  getYAxis,
-  getTickVals,
+  getBrush,
+  getZoom,
   getLines,
+  getTickVals,
+  getXAxis,
+  getXScale,
+  scaleBandInvert,
+  getYAxis,
+  getYScale,
+  updateClipPath,
+  updateContextBrush,
+  updateContextLines,
+  updateContextXAxis,
+  updateFocusLines,
+  updateFocusXAxis,
+  updateFocusYAxis,
+  updateZoom,
+  transformZoom,
+  getBrushF,
+  getZoomF,
+  xBand,
 } from './utils/Chart';
 
 const Chart = () => {
@@ -38,6 +53,7 @@ const Chart = () => {
 
   const dimensions = useComponentSize(chartRef);
   const { height, width } = dimensions;
+
   useEffect(() => {
     if (
       height &&
@@ -79,6 +95,8 @@ const Chart = () => {
         );
 
       if (!isEmpty(ps)) {
+        console.log(heightContext);
+        console.log(heightFocus);
         // Extents
         const xExtent = d3.extent(ps, p => p.priceTime);
         const yExtent = d3.extent(ps, p => p.high);
@@ -116,105 +134,102 @@ const Chart = () => {
 
         // ClipPath
         const clipPath = svg.selectAll('defs').data(['dummy']);
-
-        // ClipPath Enter + Update
-        clipPath
-          .enter()
-          .append('defs')
-          .append('clipPath')
-          .attr('id', 'clip')
-          .append('rect')
-          .attr('width', width)
-          .attr('height', heightFocus)
-          .merge(clipPath);
-
-        // ClipPath Exit
-        clipPath.exit().remove();
+        updateClipPath({ s: clipPath, width, height: heightFocus, margin });
 
         // ContextLines
         const contextLines = context.selectAll('.line').data([ps]);
-
-        // ContextLines Enter + Update
-        contextLines
-          .enter()
-          .append('path')
-          .attr('class', 'line')
-          .merge(contextLines)
-          .attr(
-            'd',
-            getLines({ xScale: xScaleContext, yScale: yScaleContext }),
-          );
-
-        // ContextLines Exit
-        contextLines.exit().remove();
+        updateContextLines({
+          s: contextLines,
+          xScale,
+          yScale: yScaleContext,
+        });
 
         // FocusLines
         const focusLines = focus.selectAll('.line').data([ps]);
-
-        // FocusLines Enter + Update
-        focusLines
-          .enter()
-          .append('path')
-          .attr('class', 'line')
-          .merge(focusLines)
-          .attr('d', getLines({ xScale, yScale }));
-
-        // FocusLines Exit
-        focusLines.exit().remove();
+        updateFocusLines({ s: focusLines, xScale, yScale });
 
         // FocusXAxis
         const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
+        updateFocusXAxis({
+          s: focusXAxis,
+          getXAxis,
+          xScale,
+          tickVals,
+          tickFmt,
+          height: heightFocus,
+          margin,
+        });
 
-        // FocusXAxis Enter + Update
-        focusXAxis
-          .enter()
-          .append('g')
-          .attr('class', 'x-axis')
-          .merge(focusXAxis)
-          .call(getXAxis, {
-            xScale,
+        // FocusYAxis
+        const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
+        updateFocusYAxis({ s: focusYAxis, margin, yScale, width });
+
+        // ContextXAxis
+        const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
+        updateContextXAxis({
+          s: contextXAxis,
+          xScale,
+          tickVals,
+          tickFmt,
+          height: heightContext + margin.bottom,
+          margin,
+        });
+
+        var brush = d3
+          .brushX()
+          .extent([[0, 0], [width, heightContext]])
+          .on('brush end', brushed);
+
+        var zoom = d3
+          .zoom()
+          .scaleExtent([1, Infinity])
+          .translateExtent([[0, 0], [width, heightFocus]])
+          .extent([[0, 0], [width, heightFocus]])
+          .on('zoom', zoomed);
+
+        // FocusZoom
+        const focusZoom = svg.selectAll('.zoom').data(['dummy']);
+        const contextBrush = context.selectAll('.brush').data(['dummy']);
+
+        function brushed() {
+          if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
+            return; // ignore brush-by-zoom
+          var s = d3.event.selection || xScaleContext.range();
+          const x2 = d3
+            .scaleBand()
+            .domain(s.map(scaleBandInvert(xScaleContext), xScaleContext))
+            .range([margin.left, width - margin.right]);
+          updateFocusLines({ s: focusLines, xScale: x2, yScale });
+          updateFocusXAxis({
+            s: focusXAxis,
+            getXAxis,
+            xScale: x2,
             tickVals,
             tickFmt,
             height: heightFocus,
             margin,
           });
+          focusZoom.call(
+            zoom.transform,
+            d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0),
+          );
+        }
 
-        // FocusXAxis Exit
-        focusXAxis.exit().remove();
+        function zoomed() {
+          if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush')
+            return; // ignore zoom-by-brush
+          // Make new xScale
+          // Move brush to new xScale range
+          // Update FocusLines
+          // Update FocusXAxis
+        }
 
-        // FocusYAxis
-        const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
-
-        // FocusYAxis Enter + Update
-        focusYAxis
-          .enter()
-          .append('g')
-          .attr('class', 'y-axis')
-          .merge(focusYAxis)
-          .call(getYAxis, { yScale, margin, width });
-
-        // FocusYAxis Exit
-        focusYAxis.exit().remove();
-
-        // ContextXAxis
-        const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
-
-        // ContextXAxis Enter + Update
-        contextXAxis
-          .enter()
-          .append('g')
-          .attr('class', 'x-axis')
-          .merge(contextXAxis)
-          .call(getXAxis, {
-            xScale,
-            tickVals,
-            tickFmt,
-            height: heightContext + margin.bottom,
-            margin,
-          });
-
-        // ContextXAxis Exit
-        contextXAxis.exit().remove();
+        updateZoom({ s: focusZoom, width, height: heightFocus, zoom, margin });
+        updateContextBrush({
+          brush,
+          s: contextBrush,
+          xScale,
+        });
 
         setSpin(false);
       }

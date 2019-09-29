@@ -8,7 +8,7 @@ export const getLines = ({ xScale, yScale }) =>
     .y(d => yScale(d.close))
     .curve(d3.curveMonotoneX);
 
-const xBand = xExtent =>
+export const xBand = xExtent =>
   d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
     const est = moment(d).tz('America/New_York');
     return (
@@ -35,7 +35,7 @@ export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
   const totalHeightFocus = height - totalHeightContext;
 
-  const margin = { top: 10, right: 10, bottom: 15, left: 15 };
+  const margin = { top: 10, right: 20, bottom: 15, left: 15 };
   const heightContext = totalHeightContext - margin.top - margin.bottom;
   const heightFocus = totalHeightFocus - margin.top - margin.bottom;
 
@@ -77,9 +77,7 @@ export const getYAxis = (g, { yScale, margin, width }) => {
     );
 };
 
-const dayFormatter = d => {
-  return d3.timeFormat('%b %d')(d);
-};
+const dayFormatter = d => d3.timeFormat('%b %d')(d);
 
 const yearFormatter = d => {
   const fmt =
@@ -125,16 +123,242 @@ export const getTickVals = ({ xExtent, timeZone }) => {
   return ticks;
 };
 
-export const getBrush = ({ width, height, brushed }) => {
-  d3.brushX()
+export const getBrush = ({ width, height, brushed }) =>
+  d3
+    .brushX()
     .extent([[0, 0], [width, height]])
     .on('brush end', brushed);
-};
 
-export const getZoom = ({ width, height, zoomed }) => {
-  d3.zoom()
+export const getZoom = ({ width, height, zoomed }) =>
+  d3
+    .zoom()
     .scaleExtent([1, Infinity])
     .translateExtent([[0, 0], [width, height]])
     .extent([[0, 0], [width, height]])
     .on('zoom', zoomed);
+
+// FocusLines Enter + Update + Remove
+export const updateFocusLines = ({ s, xScale, yScale }) => {
+  s.enter()
+    .append('path')
+    .attr('class', 'line')
+    .merge(s)
+    .attr('d', getLines({ xScale, yScale }));
+
+  // FocusLines Exit
+  s.exit().remove();
+};
+
+// ContextLines Enter + Update + Remove
+export const updateContextLines = ({ s, xScale, yScale }) => {
+  s.enter()
+    .append('path')
+    .attr('class', 'line')
+    .merge(s)
+    .attr('d', getLines({ xScale, yScale }));
+
+  // ContextLines Exit
+  s.exit().remove();
+};
+// FocusXAxis Enter + Update + Remove
+export const updateFocusXAxis = ({
+  s,
+  getXAxis,
+  xScale,
+  tickVals,
+  tickFmt,
+  height,
+  margin,
+}) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'x-axis')
+    .merge(s)
+    .call(getXAxis, {
+      xScale,
+      tickVals,
+      tickFmt,
+      height,
+      margin,
+    });
+
+  // FocusXAxis Exit
+  s.exit().remove();
+};
+
+// ClipPath Enter + Update + Remove
+export const updateClipPath = ({ s, width, height, margin }) => {
+  s.enter()
+    .append('defs')
+    .append('clipPath')
+    .attr('id', 'clip')
+    .append('rect')
+    .attr('width', width)
+    .attr('height', height)
+    .merge(s)
+    .attr('transform', `translate(${margin.left},${margin.top})`)
+    ;
+
+  // ClipPath Exit
+  s.exit().remove();
+};
+
+// FocusYAxis Enter + Update + Remove
+export const updateFocusYAxis = ({ s, yScale, margin, width }) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'y-axis')
+    .merge(s)
+    .call(getYAxis, { yScale, margin, width });
+
+  // FocusYAxis Exit
+  s.exit().remove();
+};
+
+// ContextXAxis Enter + Update + Remove
+export const updateContextXAxis = ({
+  s,
+  xScale,
+  tickVals,
+  tickFmt,
+  height,
+  margin,
+}) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'x-axis')
+    .merge(s)
+    .call(getXAxis, {
+      xScale,
+      tickVals,
+      tickFmt,
+      height,
+      margin,
+    });
+
+  // ContextXAxis Exit
+  s.exit().remove();
+};
+
+export const updateContextBrush = ({ brush, s, xScale }) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'brush')
+    .merge(s)
+    .call(brush)
+    .call(brush.move, xScale.range());
+  s.exit().remove();
+};
+
+export const updateContextBrushInvert = ({ brush, s, t, xScale }) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'brush')
+    .merge(s)
+    .call(brush.move, xScale.range().map(t.invertX, t));
+  s.exit().remove();
+};
+
+export const scaleBandInvert = scale => val => {
+  console.log('Val: ', val);
+  const domain = scale.domain();
+  const paddingOuter = scale(domain[0]);
+  const eachBand = scale.step();
+  const index = Math.floor((val - paddingOuter) / eachBand);
+  console.log('Index val: ', val, index);
+  console.log(
+    'Val Index val: ',
+    val,
+    index,
+    domain[Math.max(0, Math.min(index, domain.length - 1))],
+  );
+  return domain[Math.max(0, Math.min(index, domain.length - 1))];
+};
+
+export const updateZoom = ({ s, width, height, zoom, margin }) => {
+  s.enter()
+    .append('rect')
+    .attr('class', 'zoom')
+    .merge(s)
+    .attr('width', width)
+    .attr('height', height)
+    .attr('transform', `translate(${margin.left},${margin.top})`)
+    .call(zoom);
+};
+
+export const transformZoom = ({ s, e, zoom, width }) => {
+  s.select('.zoom').call(
+    zoom.transform,
+    d3.zoomIdentity.scale(width / (e[1] - e[0])).translate(-e[0], 0),
+  );
+};
+
+export const getZoomF = ({
+  width,
+  xScale,
+  focusLines,
+  contextBrush,
+  focusXAxis,
+  yScale,
+  tickVals,
+  tickFmt,
+  heightFocus,
+  heightContext,
+  margin,
+  brush,
+  brushed,
+}) => () => {
+  if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
+  const t = d3.event.transform;
+  xScale.domain(t.rescaleX(xScale).domain());
+  updateFocusLines({ s: focusLines, xScale, yScale });
+  updateFocusXAxis({
+    s: focusXAxis,
+    getXAxis,
+    xScale,
+    tickVals,
+    tickFmt,
+    height: heightFocus,
+    margin,
+  });
+  updateContextBrushInvert({
+    s: contextBrush,
+    brush,
+    width,
+    height: heightContext,
+    xScale,
+    brushed,
+    t,
+  });
+};
+
+export const getBrushF = ({
+  xScale,
+  svg,
+  focusLines,
+  focusXAxis,
+  yScale,
+  tickVals,
+  tickFmt,
+  height,
+  width,
+  margin,
+  zoom,
+}) => () => {
+  if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
+  const s = d3.event.selection || xScale.range();
+  // console.log(xScale.domain);
+  // console.log(s);
+  xScale.domain(s.map(scaleBandInvert(xScale), xScale));
+  updateFocusLines({ s: focusLines, xScale, yScale });
+  updateFocusXAxis({
+    s: focusXAxis,
+    getXAxis,
+    xScale,
+    tickVals,
+    tickFmt,
+    height,
+    margin,
+  });
+  transformZoom({ s: svg, e: s, zoom, height, width, margin });
 };
