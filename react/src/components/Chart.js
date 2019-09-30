@@ -1,11 +1,5 @@
 /* eslint-disable no-unused-vars, no-inner-declarations */
-import React, {
-  useLayoutEffect,
-  useContext,
-  useEffect,
-  useState,
-  useRef,
-} from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
@@ -19,12 +13,9 @@ import {
   calculateDimensions,
   getBrush,
   getZoom,
-  getLines,
   getTickVals,
   getXAxis,
   getXScale,
-  scaleBandInvert,
-  getYAxis,
   getYScale,
   updateClipPath,
   updateContextBrush,
@@ -34,16 +25,13 @@ import {
   updateFocusXAxis,
   updateFocusYAxis,
   updateZoom,
-  transformZoom,
-  getBrushF,
-  getZoomF,
-  xBand,
+  draw,
 } from './utils/Chart';
 
 const Chart = () => {
   const { events } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
-  const { config } = useContext(ChartContext);
+  const { config, setConfig } = useContext(ChartContext);
   const [spin, setSpin] = useState(true);
 
   const chartRef = useRef(null);
@@ -66,16 +54,13 @@ const Chart = () => {
       contextRef.current
     ) {
       const { timeZone, resolution, dateRange } = config;
-      const {
-        totalHeightContext,
-        totalHeightFocus,
-        margin,
-        heightContext,
-        heightFocus,
-      } = calculateDimensions({ height, width });
+      const { margin, heightContext, heightFocus } = calculateDimensions({
+        height,
+        width,
+      });
 
       const priceList = resolution === 'daily' ? prices.daily : prices.hourly;
-      const timeField = resolution == 'daily' ? 'partialTime' : 'priceTime';
+      const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
 
       const ps = priceList
         .map(p => {
@@ -95,144 +80,73 @@ const Chart = () => {
         );
 
       if (!isEmpty(ps)) {
-        console.log(heightContext);
-        console.log(heightFocus);
-        // Extents
-        const xExtent = d3.extent(ps, p => p.priceTime);
-        const yExtent = d3.extent(ps, p => p.high);
-
-        // Scales
-        const xScale = getXScale({ xExtent, width, margin });
-        const xScaleContext = getXScale({ xExtent, width, margin });
-
-        const yScale = getYScale({ yExtent, height: heightFocus, margin });
-        const yScaleContext = getYScale({
-          yExtent,
-          height: heightContext,
+        draw({
+          ps,
+          events,
+          width,
+          height,
           margin,
+          heightContext,
+          heightFocus,
+          timeZone,
+          svgRef,
+          contextRef,
+          focusRef,
         });
+        // function brushed() {
+        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
+        //     return; // ignore brush-by-zoom
+        //   var s = d3.event.selection || xScaleContext.range();
+        //   xScale.domain(s.map(xScaleContext.invert, xScaleContext));
+        //   updateFocusLines({ s: focusLines, xScale, yScale });
+        //   updateFocusXAxis({
+        //     s: focusXAxis,
+        //     getXAxis,
+        //     xScale,
+        //     tickVals,
+        //     tickFmt,
+        //     height: heightFocus,
+        //     margin,
+        //   });
+        //   focusZoom.call(
+        //     zoom.transform,
+        //     d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0),
+        //   );
+        // }
 
-        // Tick values
-        const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
+        // function zoomed() {
+        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush')
+        //     return; // ignore zoom-by-brush
+        //   var t = d3.event.transform;
+        //   xScale.domain(t.rescaleX(xScaleContext).domain());
+        //   updateFocusLines({ s: focusLines, xScale, yScale });
+        //   updateFocusXAxis({
+        //     s: focusXAxis,
+        //     getXAxis,
+        //     xScale,
+        //     tickVals,
+        //     tickFmt,
+        //     height: heightFocus,
+        //     margin,
+        //   });
+        //   updateContextBrush({
+        //     brush,
+        //     s: contextBrush,
+        //     xScale,
+        //   });
+        // }
 
-        // Size svg and g refs
-        const svg = d3
-          .select(svgRef.current)
-          .attr('preserveAspectRatio', 'xMinYMin meet')
-          .attr('viewBox', `0 0 ${width ? width : 0} ${height ? height : 0}`);
+        // var brush = getBrush({ width, height: heightContext, brushed });
+        // var zoom = getZoom({ width, height: heightFocus, zoomed });
 
-        const focus = d3
-          .select(focusRef.current)
-          .attr('transform', `translate(0, ${margin.top})`);
+        // // FocusZoom
+        // const focusZoom = svg.selectAll('.zoom').data(['dummy']);
+        // const contextBrush = context.selectAll('.brush').data(['dummy']);
 
-        const context = d3
-          .select(contextRef.current)
-          .attr(
-            'transform',
-            `translate(0, ${heightFocus + margin.bottom + margin.top})`,
-          );
-
-        // ClipPath
-        const clipPath = svg.selectAll('defs').data(['dummy']);
-        updateClipPath({ s: clipPath, width, height: heightFocus, margin });
-
-        // ContextLines
-        const contextLines = context.selectAll('.line').data([ps]);
-        updateContextLines({
-          s: contextLines,
-          xScale,
-          yScale: yScaleContext,
-        });
-
-        // FocusLines
-        const focusLines = focus.selectAll('.line').data([ps]);
-        updateFocusLines({ s: focusLines, xScale, yScale });
-
-        // FocusXAxis
-        const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
-        updateFocusXAxis({
-          s: focusXAxis,
-          getXAxis,
-          xScale,
-          tickVals,
-          tickFmt,
-          height: heightFocus,
-          margin,
-        });
-
-        // FocusYAxis
-        const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
-        updateFocusYAxis({ s: focusYAxis, margin, yScale, width });
-
-        // ContextXAxis
-        const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
-        updateContextXAxis({
-          s: contextXAxis,
-          xScale,
-          tickVals,
-          tickFmt,
-          height: heightContext + margin.bottom,
-          margin,
-        });
-
-        var brush = d3
-          .brushX()
-          .extent([[0, 0], [width, heightContext]])
-          .on('brush end', brushed);
-
-        var zoom = d3
-          .zoom()
-          .scaleExtent([1, Infinity])
-          .translateExtent([[0, 0], [width, heightFocus]])
-          .extent([[0, 0], [width, heightFocus]])
-          .on('zoom', zoomed);
-
-        // FocusZoom
-        const focusZoom = svg.selectAll('.zoom').data(['dummy']);
-        const contextBrush = context.selectAll('.brush').data(['dummy']);
-
-        function brushed() {
-          if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
-            return; // ignore brush-by-zoom
-          var s = d3.event.selection || xScaleContext.range();
-          const x2 = d3
-            .scaleBand()
-            .domain(s.map(scaleBandInvert(xScaleContext), xScaleContext))
-            .range([margin.left, width - margin.right]);
-          updateFocusLines({ s: focusLines, xScale: x2, yScale });
-          updateFocusXAxis({
-            s: focusXAxis,
-            getXAxis,
-            xScale: x2,
-            tickVals,
-            tickFmt,
-            height: heightFocus,
-            margin,
-          });
-          focusZoom.call(
-            zoom.transform,
-            d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0),
-          );
-        }
-
-        function zoomed() {
-          if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush')
-            return; // ignore zoom-by-brush
-          // Make new xScale
-          // Move brush to new xScale range
-          // Update FocusLines
-          // Update FocusXAxis
-        }
-
-        updateZoom({ s: focusZoom, width, height: heightFocus, zoom, margin });
-        updateContextBrush({
-          brush,
-          s: contextBrush,
-          xScale,
-        });
-
-        setSpin(false);
+        // updateZoom({ s: focusZoom, width, height: heightFocus, zoom, margin });
+        // updateContextBrush({ brush, s: contextBrush, xScale });
       }
+      setSpin(false);
     }
   }, [
     height,

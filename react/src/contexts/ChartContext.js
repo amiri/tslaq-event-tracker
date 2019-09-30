@@ -7,6 +7,7 @@ const s = {
   margin: { top: 25, right: 25, bottom: 25, left: 25 },
   resolution: 'daily',
   dateRange: [],
+  xScale: null,
 };
 
 const ChartContextProvider = props => {

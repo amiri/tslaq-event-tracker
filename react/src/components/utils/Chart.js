@@ -21,8 +21,8 @@ export const xBand = xExtent =>
 
 export const getXScale = ({ xExtent, width, margin }) =>
   d3
-    .scaleBand()
-    .domain(xBand(xExtent))
+    .scaleTime()
+    .domain(xExtent)
     .range([margin.left, width - margin.right]);
 
 export const getYScale = ({ yExtent, height, margin }) =>
@@ -196,8 +196,7 @@ export const updateClipPath = ({ s, width, height, margin }) => {
     .attr('width', width)
     .attr('height', height)
     .merge(s)
-    .attr('transform', `translate(${margin.left},${margin.top})`)
-    ;
+    .attr('transform', `translate(${margin.left},${margin.top})`);
 
   // ClipPath Exit
   s.exit().remove();
@@ -286,32 +285,71 @@ export const updateZoom = ({ s, width, height, zoom, margin }) => {
     .call(zoom);
 };
 
-export const transformZoom = ({ s, e, zoom, width }) => {
-  s.select('.zoom').call(
-    zoom.transform,
-    d3.zoomIdentity.scale(width / (e[1] - e[0])).translate(-e[0], 0),
-  );
-};
-
-export const getZoomF = ({
+export const draw = ({
+  ps,
   width,
-  xScale,
-  focusLines,
-  contextBrush,
-  focusXAxis,
-  yScale,
-  tickVals,
-  tickFmt,
-  heightFocus,
-  heightContext,
+  height,
   margin,
-  brush,
-  brushed,
-}) => () => {
-  if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
-  const t = d3.event.transform;
-  xScale.domain(t.rescaleX(xScale).domain());
+  heightContext,
+  heightFocus,
+  timeZone,
+  svgRef,
+  contextRef,
+  focusRef,
+}) => {
+  // Extents
+  const xExtent = d3.extent(ps, p => p.priceTime);
+  const yExtent = d3.extent(ps, p => p.high);
+
+  // Scales
+  var xScale = getXScale({ xExtent, width, margin });
+  // var xScaleContext = getXScale({ xExtent, width, margin });
+
+  constyScale = getYScale({ yExtent, height: heightFocus, margin });
+  const yScaleContext = getYScale({
+    yExtent,
+    height: heightContext,
+    margin,
+  });
+
+  // Tick values
+  const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
+
+  // Size svg and g refs
+  const svg = d3
+    .select(svgRef.current)
+    .attr('preserveAspectRatio', 'xMinYMin meet')
+    .attr('viewBox', `0 0 ${width ? width : 0} ${height ? height : 0}`);
+
+  const focus = d3
+    .select(focusRef.current)
+    .attr('transform', `translate(0, ${margin.top})`);
+
+  const context = d3
+    .select(contextRef.current)
+    .attr(
+      'transform',
+      `translate(0, ${heightFocus + margin.bottom + margin.top})`,
+    );
+
+  // ClipPath
+  const clipPath = svg.selectAll('defs').data(['dummy']);
+  updateClipPath({ s: clipPath, width, height: heightFocus, margin });
+
+  // ContextLines
+  const contextLines = context.selectAll('.line').data([ps]);
+  updateContextLines({
+    s: contextLines,
+    xScale,
+    yScale: yScaleContext,
+  });
+
+  // FocusLines
+  const focusLines = focus.selectAll('.line').data([ps]);
   updateFocusLines({ s: focusLines, xScale, yScale });
+
+  // FocusXAxis
+  const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
   updateFocusXAxis({
     s: focusXAxis,
     getXAxis,
@@ -321,44 +359,19 @@ export const getZoomF = ({
     height: heightFocus,
     margin,
   });
-  updateContextBrushInvert({
-    s: contextBrush,
-    brush,
-    width,
-    height: heightContext,
-    xScale,
-    brushed,
-    t,
-  });
-};
 
-export const getBrushF = ({
-  xScale,
-  svg,
-  focusLines,
-  focusXAxis,
-  yScale,
-  tickVals,
-  tickFmt,
-  height,
-  width,
-  margin,
-  zoom,
-}) => () => {
-  if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
-  const s = d3.event.selection || xScale.range();
-  // console.log(xScale.domain);
-  // console.log(s);
-  xScale.domain(s.map(scaleBandInvert(xScale), xScale));
-  updateFocusLines({ s: focusLines, xScale, yScale });
-  updateFocusXAxis({
-    s: focusXAxis,
-    getXAxis,
+  // FocusYAxis
+  const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
+  updateFocusYAxis({ s: focusYAxis, margin, yScale, width });
+
+  // ContextXAxis
+  const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
+  updateContextXAxis({
+    s: contextXAxis,
     xScale,
     tickVals,
     tickFmt,
-    height,
+    height: heightContext + margin.bottom,
     margin,
   });
-  transformZoom({ s: svg, e: s, zoom, height, width, margin });
 };
