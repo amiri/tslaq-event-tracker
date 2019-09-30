@@ -305,7 +305,7 @@ export const draw = ({
   var xScale = getXScale({ xExtent, width, margin });
   // var xScaleContext = getXScale({ xExtent, width, margin });
 
-  constyScale = getYScale({ yExtent, height: heightFocus, margin });
+  const yScale = getYScale({ yExtent, height: heightFocus, margin });
   const yScaleContext = getYScale({
     yExtent,
     height: heightContext,
