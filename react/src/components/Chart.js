@@ -93,58 +93,6 @@ const Chart = () => {
           contextRef,
           focusRef,
         });
-        // function brushed() {
-        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom')
-        //     return; // ignore brush-by-zoom
-        //   var s = d3.event.selection || xScaleContext.range();
-        //   xScale.domain(s.map(xScaleContext.invert, xScaleContext));
-        //   updateFocusLines({ s: focusLines, xScale, yScale });
-        //   updateFocusXAxis({
-        //     s: focusXAxis,
-        //     getXAxis,
-        //     xScale,
-        //     tickVals,
-        //     tickFmt,
-        //     height: heightFocus,
-        //     margin,
-        //   });
-        //   focusZoom.call(
-        //     zoom.transform,
-        //     d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0),
-        //   );
-        // }
-
-        // function zoomed() {
-        //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush')
-        //     return; // ignore zoom-by-brush
-        //   var t = d3.event.transform;
-        //   xScale.domain(t.rescaleX(xScaleContext).domain());
-        //   updateFocusLines({ s: focusLines, xScale, yScale });
-        //   updateFocusXAxis({
-        //     s: focusXAxis,
-        //     getXAxis,
-        //     xScale,
-        //     tickVals,
-        //     tickFmt,
-        //     height: heightFocus,
-        //     margin,
-        //   });
-        //   updateContextBrush({
-        //     brush,
-        //     s: contextBrush,
-        //     xScale,
-        //   });
-        // }
-
-        // var brush = getBrush({ width, height: heightContext, brushed });
-        // var zoom = getZoom({ width, height: heightFocus, zoomed });
-
-        // // FocusZoom
-        // const focusZoom = svg.selectAll('.zoom').data(['dummy']);
-        // const contextBrush = context.selectAll('.brush').data(['dummy']);
-
-        // updateZoom({ s: focusZoom, width, height: heightFocus, zoom, margin });
-        // updateContextBrush({ brush, s: contextBrush, xScale });
       }
       setSpin(false);
     }

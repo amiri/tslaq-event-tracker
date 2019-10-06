@@ -28,7 +28,7 @@ export const getXScale = ({ xExtent, width, margin }) =>
 export const getYScale = ({ yExtent, height, margin }) =>
   d3
     .scaleLinear()
-    .domain([0, yExtent[1]])
+    .domain([yExtent[0] - 5, yExtent[1]])
     .range([height - margin.bottom, margin.top]);
 
 export const calculateDimensions = ({ height }) => {
@@ -65,7 +65,8 @@ export const getYAxis = (g, { yScale, margin, width }) => {
     .call(g => g.select('.domain').remove())
     .call(g =>
       g
-        .selectAll('.tick:not(:first-of-type) line')
+        // .selectAll('.tick:not(:first-of-type) line')
+        .selectAll('.tick line')
         .attr('stroke-opacity', 0.15)
         .attr('stroke-dasharray', '2,2'),
     )
@@ -239,50 +240,17 @@ export const updateContextXAxis = ({
   s.exit().remove();
 };
 
-export const updateContextBrush = ({ brush, s, xScale }) => {
+export const updateZeroLine = ({ s, yScale, yExtent, width, margin }) => {
   s.enter()
-    .append('g')
-    .attr('class', 'brush')
+    .append('line')
+    .attr('class', 'zero')
     .merge(s)
-    .call(brush)
-    .call(brush.move, xScale.range());
-  s.exit().remove();
-};
-
-export const updateContextBrushInvert = ({ brush, s, t, xScale }) => {
-  s.enter()
-    .append('g')
-    .attr('class', 'brush')
-    .merge(s)
-    .call(brush.move, xScale.range().map(t.invertX, t));
-  s.exit().remove();
-};
-
-export const scaleBandInvert = scale => val => {
-  console.log('Val: ', val);
-  const domain = scale.domain();
-  const paddingOuter = scale(domain[0]);
-  const eachBand = scale.step();
-  const index = Math.floor((val - paddingOuter) / eachBand);
-  console.log('Index val: ', val, index);
-  console.log(
-    'Val Index val: ',
-    val,
-    index,
-    domain[Math.max(0, Math.min(index, domain.length - 1))],
-  );
-  return domain[Math.max(0, Math.min(index, domain.length - 1))];
-};
-
-export const updateZoom = ({ s, width, height, zoom, margin }) => {
-  s.enter()
-    .append('rect')
-    .attr('class', 'zoom')
-    .merge(s)
-    .attr('width', width)
-    .attr('height', height)
-    .attr('transform', `translate(${margin.left},${margin.top})`)
-    .call(zoom);
+    .attr('x1', margin.left)
+    .attr('y1', yScale(yExtent[0] - 5))
+    .attr('x2', width - margin.left - margin.right)
+    .attr('y2', yScale(yExtent[0] - 5))
+    .attr('stroke-width', 1)
+    .attr('stroke', 'black');
 };
 
 export const draw = ({
@@ -372,6 +340,16 @@ export const draw = ({
     tickVals,
     tickFmt,
     height: heightContext + margin.bottom,
+    margin,
+  });
+
+  // ZeroLine
+  const zeroLine = focus.selectAll('.zero').data(['dummy']);
+  updateZeroLine({
+    s: zeroLine,
+    yScale,
+    yExtent,
+    width,
     margin,
   });
 };
