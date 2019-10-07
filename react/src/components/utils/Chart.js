@@ -161,6 +161,16 @@ export const updateContextLines = ({ s, xScale, yScale }) => {
   // ContextLines Exit
   s.exit().remove();
 };
+
+export const updateContextBrush = ({ brush, s, xScale }) => {
+  s.enter()
+    .append('g')
+    .attr('class', 'brush')
+    .call(brush)
+    .call(brush.move, xScale.range());
+  s.exit().remove();
+};
+
 // FocusXAxis Enter + Update + Remove
 export const updateFocusXAxis = ({
   s,

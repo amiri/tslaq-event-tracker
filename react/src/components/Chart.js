@@ -1,68 +1,35 @@
-/* eslint-disable no-unused-vars, no-inner-declarations */
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
 import moment from 'moment';
-import * as d3 from 'd3';
-import { isEmpty } from 'lodash';
-import { Spin } from 'antd';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
-import {
-  calculateDimensions,
-  getBrush,
-  getZoom,
-  getTickVals,
-  getXAxis,
-  getXScale,
-  getYScale,
-  updateClipPath,
-  updateContextBrush,
-  updateContextLines,
-  updateContextXAxis,
-  updateFocusLines,
-  updateFocusXAxis,
-  updateFocusYAxis,
-  updateZoom,
-  draw,
-} from './utils/Chart';
+import { calculateDimensions } from './utils/Chart';
+import { isEmpty } from 'lodash';
+import Focus from './Focus';
+import Context from './Context';
 
 const Chart = () => {
   const { events } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
-  const { config, setConfig } = useContext(ChartContext);
-  const [spin, setSpin] = useState(true);
+  const { config } = useContext(ChartContext);
 
   const chartRef = useRef(null);
-  const svgRef = useRef(null);
-  const contextRef = useRef(null);
-  const focusRef = useRef(null);
-
   const dimensions = useComponentSize(chartRef);
   const { height, width } = dimensions;
+  const { margin, heightContext, heightFocus } = calculateDimensions({
+    height,
+    width,
+  });
+  const { timeZone, resolution, dateRange } = config;
 
-  useEffect(() => {
-    if (
-      height &&
-      width &&
-      config &&
-      !isEmpty(prices) &&
-      !isEmpty(events) &&
-      svgRef.current &&
-      focusRef.current &&
-      contextRef.current
-    ) {
-      const { timeZone, resolution, dateRange } = config;
-      const { margin, heightContext, heightFocus } = calculateDimensions({
-        height,
-        width,
-      });
+  const priceList =
+    prices && resolution === 'daily' ? prices.daily : prices.hourly;
+  const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
 
-      const priceList = resolution === 'daily' ? prices.daily : prices.hourly;
-      const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
-
-      const ps = priceList
+  const ps = priceList
+    ? priceList
         .map(p => {
           const m =
             resolution === 'daily'
@@ -77,35 +44,18 @@ const Chart = () => {
             ? true
             : p.priceTime.isSameOrAfter(dateRange[0]) &&
               p.priceTime.isSameOrBefore(dateRange[1]),
-        );
+        )
+    : null;
 
-      if (!isEmpty(ps)) {
-        draw({
-          ps,
-          events,
-          width,
-          height,
-          margin,
-          heightContext,
-          heightFocus,
-          timeZone,
-          svgRef,
-          contextRef,
-          focusRef,
-        });
-      }
-      setSpin(false);
-    }
-  }, [
-    height,
-    width,
-    config,
-    prices,
-    events,
-    svgRef.current,
-    focusRef.current,
-    contextRef.current,
-  ]);
+  const onBrush = ({ xScale, range }) => {
+    console.log('Brush data: ', range);
+    const newDomain = range.map(xScale.invert, xScale);
+    console.log('New domain: ', newDomain);
+  };
+
+  // const onZoom = d => {
+  //   console.log('Brush data: ', d);
+  // };
 
   return (
     <div
@@ -113,20 +63,34 @@ const Chart = () => {
       id='chart-container'
       style={{ width: '100%', height: '100%' }}
     >
-      <div
-        id='chart'
-        style={{
-          width: '100%',
-          height: '100%',
-          textAlign: 'center',
-        }}
-      >
-        {spin && <Spin size='large' style={{ margin: 'auto' }} />}
-        <svg ref={svgRef}>
-          <g className='focus' ref={focusRef} />
-          <g className='context' ref={contextRef} />
-        </svg>
-      </div>
+      {!isEmpty(ps) && (
+        <div
+          id='chart'
+          style={{
+            width: '100%',
+            height: '100%',
+            textAlign: 'center',
+          }}
+        >
+          <Focus
+            width={width}
+            height={heightFocus}
+            margin={margin}
+            ps={ps}
+            events={events}
+            config={config}
+          />
+          <Context
+            width={width}
+            height={heightContext}
+            focusHeight={heightFocus}
+            margin={margin}
+            ps={ps}
+            config={config}
+            brushFn={onBrush}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -40,3 +40,41 @@ https://draftjs.org/
 - draft.js image plugin
 
 https://www.draft-js-plugins.com/plugin/image
+
+# React app
+
+`Chart` needs to be divided into more than 1 component. It will render html that in turn renders 2 svgs: context and focus.
+
+Move spin into Focus and Context, each.
+
+## src/components/Chart.js
+
+- calculates dimensions of `Focus` and `Context`
+
+- calculates filtered prices/events list based on config from `ChartContext`.
+
+- onZoom sets state
+
+- onBrush sets state
+
+- zoomTransform is a function that brushed calls to modify the zoom.
+
+- moveBrush is a function that zoomed calls to modify the brush.
+
+`Chart` can be the main component. It includes `Focus` and `Context`.
+
+## src/components/Focus.js
+
+Renders candlesticks of the selected price/event domain.
+
+Renders a zoom.
+
+## src/components/Context.js
+
+Renders line chart of the entire price/event domain.
+
+Renders a brush.
+
+## src/components/Brush.js
+
+## src/components/Zoom.js
