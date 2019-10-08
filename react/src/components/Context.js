@@ -16,7 +16,7 @@ const Context = ({
   focusHeight,
   margin,
   ps,
-  brushFn,
+  brushF,
 }) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
@@ -30,9 +30,9 @@ const Context = ({
   function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
     const s = d3.event.selection || xScale.range();
-    brushFn({ range: s, xScale });
+    brushF({ range: s, xScale });
   }
-  const brush = getBrush({ width, height, brushed });
+  const brush = getBrush({ width, height: height + 5, brushed });
 
   const contextRef = useRef(null);
   const { timeZone } = config;
@@ -57,7 +57,7 @@ const Context = ({
     <svg
       className='context-svg'
       preserveAspectRatio='xMinYMin meet'
-      viewBox={`0 0 ${width ? width : 0} ${height ? height : 0}`}
+      viewBox={`0 0 ${width ? width : 0} ${height ? height + 5 : 0}`}
       transform={`translate(0, ${focusHeight})`}
     >
       <g className='context' ref={contextRef}>

@@ -13,7 +13,7 @@ import Context from './Context';
 const Chart = () => {
   const { events } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
-  const { config } = useContext(ChartContext);
+  const { config, setConfig } = useContext(ChartContext);
 
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
@@ -29,28 +29,31 @@ const Chart = () => {
   const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
 
   const ps = priceList
-    ? priceList
-        .map(p => {
-          const m =
-            resolution === 'daily'
-              ? moment(p[timeField])
-                  .tz('America/New_York')
-                  .tz(timeZone)
-              : moment.utc(p[timeField]).tz(timeZone);
-          return Object.assign(p, { priceTime: m });
-        })
-        .filter(p =>
-          isEmpty(dateRange)
-            ? true
-            : p.priceTime.isSameOrAfter(dateRange[0]) &&
-              p.priceTime.isSameOrBefore(dateRange[1]),
-        )
+    ? priceList.map(p => {
+        const m =
+          resolution === 'daily'
+            ? moment(p[timeField])
+                .tz('America/New_York')
+                .tz(timeZone)
+            : moment.utc(p[timeField]).tz(timeZone);
+        return Object.assign(p, { priceTime: m });
+      })
+    : null;
+  const psFiltered = ps
+    ? ps.filter(p =>
+        isEmpty(dateRange)
+          ? true
+          : p.priceTime.isSameOrAfter(dateRange[0]) &&
+            p.priceTime.isSameOrBefore(dateRange[1]),
+      )
     : null;
 
   const onBrush = ({ xScale, range }) => {
-    console.log('Brush data: ', range);
     const newDomain = range.map(xScale.invert, xScale);
-    console.log('New domain: ', newDomain);
+    // console.log('New domain: ', newDomain);
+    const moments = newDomain.map(t => moment(t).tz('America/New_York'));
+    // console.log('New moments: ', moments);
+    setConfig({ ...config, dateRange: moments });
   };
 
   // const onZoom = d => {
@@ -76,7 +79,7 @@ const Chart = () => {
             width={width}
             height={heightFocus}
             margin={margin}
-            ps={ps}
+            ps={psFiltered}
             events={events}
             config={config}
           />
@@ -87,7 +90,7 @@ const Chart = () => {
             margin={margin}
             ps={ps}
             config={config}
-            brushFn={onBrush}
+            brushF={onBrush}
           />
         </div>
       )}

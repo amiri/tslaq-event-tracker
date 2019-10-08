@@ -6,6 +6,7 @@ import { Row, Col, Button } from 'antd';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { DatePicker } from 'antd';
 import moment from 'moment';
+import { isEmpty } from 'lodash';
 
 const { RangePicker } = DatePicker;
 
@@ -31,6 +32,7 @@ const NavBar = () => {
     );
     setConfig({ ...config, dateRange: estDates });
   };
+  // console.log('DateRange in navbar: ', config.dateRange);
   return (
     <Router>
       <div>
@@ -50,6 +52,7 @@ const NavBar = () => {
             <RangePicker
               allowClear={true}
               onChange={dates => updateRange(dates)}
+              value={!isEmpty(config.dateRange) ? config.dateRange : []}
             />
           </Col>
         </Row>
