@@ -56,9 +56,9 @@ const Chart = () => {
     setConfig({ ...config, dateRange: moments });
   };
 
-  // const onZoom = d => {
-  //   console.log('Brush data: ', d);
-  // };
+  const onZoom = d => {
+    console.log('Zoom data: ', d);
+  };
 
   return (
     <div
@@ -82,11 +82,11 @@ const Chart = () => {
             ps={psFiltered}
             events={events}
             config={config}
+            zoomF={onZoom}
           />
           <Context
             width={width}
             height={heightContext}
-            focusHeight={heightFocus}
             margin={margin}
             ps={ps}
             config={config}

@@ -6,18 +6,10 @@ import {
   getLines,
   getTickVals,
   getBrush,
-  updateContextXAxis,
+  updateXAxis,
 } from './utils/Chart';
 
-const Context = ({
-  config,
-  width,
-  height,
-  focusHeight,
-  margin,
-  ps,
-  brushF,
-}) => {
+const Context = ({ config, width, height, margin, ps, brushF }) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.high);
@@ -41,7 +33,7 @@ const Context = ({
     const context = d3.select(contextRef.current);
     const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
     const contextXAxis = context.selectAll('.x-axis').data([0]);
-    updateContextXAxis({
+    updateXAxis({
       s: contextXAxis,
       xScale,
       tickVals,
@@ -51,14 +43,14 @@ const Context = ({
     });
     const contextBrush = context.selectAll('.brush').data([0]);
     contextBrush.call(brush).call(brush.move, xScale.range());
-  }, [contextRef, height]);
+  }, [contextRef, height, width]);
 
   return (
     <svg
       className='context-svg'
       preserveAspectRatio='xMinYMin meet'
       viewBox={`0 0 ${width ? width : 0} ${height ? height + 5 : 0}`}
-      transform={`translate(0, ${focusHeight})`}
+      transform={`translate(0, ${margin.top})`}
     >
       <g className='context' ref={contextRef}>
         <path className='line' d={getLines({ xScale, yScale })(ps)} />

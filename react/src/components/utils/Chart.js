@@ -128,7 +128,7 @@ export const getBrush = ({ width, height, brushed }) =>
   d3
     .brushX()
     .extent([[0, 0], [width, height]])
-    .on('brush end', brushed);
+    .on('end', brushed);
 
 export const getZoom = ({ width, height, zoomed }) =>
   d3
@@ -171,10 +171,9 @@ export const updateContextBrush = ({ brush, s, xScale }) => {
   s.exit().remove();
 };
 
-// FocusXAxis Enter + Update + Remove
-export const updateFocusXAxis = ({
+// XAxis Enter + Update + Remove
+export const updateXAxis = ({
   s,
-  getXAxis,
   xScale,
   tickVals,
   tickFmt,
@@ -193,7 +192,7 @@ export const updateFocusXAxis = ({
       margin,
     });
 
-  // FocusXAxis Exit
+  // XAxis Exit
   s.exit().remove();
 };
 
@@ -214,7 +213,7 @@ export const updateClipPath = ({ s, width, height, margin }) => {
 };
 
 // FocusYAxis Enter + Update + Remove
-export const updateFocusYAxis = ({ s, yScale, margin, width }) => {
+export const updateYAxis = ({ s, yScale, margin, width }) => {
   s.enter()
     .append('g')
     .attr('class', 'y-axis')
@@ -225,31 +224,6 @@ export const updateFocusYAxis = ({ s, yScale, margin, width }) => {
   s.exit().remove();
 };
 
-// ContextXAxis Enter + Update + Remove
-export const updateContextXAxis = ({
-  s,
-  xScale,
-  tickVals,
-  tickFmt,
-  height,
-  margin,
-}) => {
-  s.enter()
-    .append('g')
-    .attr('class', 'x-axis')
-    .merge(s)
-    .call(getXAxis, {
-      xScale,
-      tickVals,
-      tickFmt,
-      height,
-      margin,
-    });
-
-  // ContextXAxis Exit
-  s.exit().remove();
-};
-
 export const updateZeroLine = ({ s, yScale, yExtent, width, margin }) => {
   s.enter()
     .append('line')
@@ -257,10 +231,36 @@ export const updateZeroLine = ({ s, yScale, yExtent, width, margin }) => {
     .merge(s)
     .attr('x1', margin.left)
     .attr('y1', yScale(yExtent[0] - 5))
-    .attr('x2', width - margin.left - margin.right)
+    .attr('x2', width - margin.right)
     .attr('y2', yScale(yExtent[0] - 5))
     .attr('stroke-width', 1)
     .attr('stroke', 'black');
+};
+
+export const updateHighLine = ({ s, yScale, yExtent, width, margin }) => {
+  s.enter()
+    .append('line')
+    .attr('class', 'high')
+    .merge(s)
+    .attr('x1', margin.left)
+    .attr('y1', yScale(yExtent[1]))
+    .attr('x2', width - margin.right)
+    .attr('y2', yScale(yExtent[1]))
+    .attr('stroke-width', '0.5px')
+    .attr('stroke', '#85bb65');
+};
+
+export const updateLowLine = ({ s, yScale, yExtent, width, margin }) => {
+  s.enter()
+    .append('line')
+    .attr('class', 'low')
+    .merge(s)
+    .attr('x1', margin.left)
+    .attr('y1', yScale(yExtent[0]))
+    .attr('x2', width - margin.right)
+    .attr('y2', yScale(yExtent[0]))
+    .attr('stroke-width', '0.25px')
+    .attr('stroke', '#8A0707');
 };
 
 export const draw = ({
@@ -328,7 +328,7 @@ export const draw = ({
 
   // FocusXAxis
   const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
-  updateFocusXAxis({
+  updateXAxis({
     s: focusXAxis,
     getXAxis,
     xScale,
@@ -340,11 +340,11 @@ export const draw = ({
 
   // FocusYAxis
   const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
-  updateFocusYAxis({ s: focusYAxis, margin, yScale, width });
+  updateYAxis({ s: focusYAxis, margin, yScale, width });
 
   // ContextXAxis
   const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
-  updateContextXAxis({
+  updateXAxis({
     s: contextXAxis,
     xScale,
     tickVals,
