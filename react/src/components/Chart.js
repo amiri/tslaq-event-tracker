@@ -64,8 +64,9 @@ const Chart = () => {
     setConfig({ ...config, dateRange: moments });
   };
 
-  const onZoom = d => {
-    console.log('Zoom data: ', d);
+  const onZoom = ({ domain, range }) => {
+    console.log('Zoom domain: ', domain);
+    console.log('Zoom range: ', range);
   };
 
   return (

@@ -203,7 +203,7 @@ export const updateClipPath = ({ s, width, height, margin }) => {
     .append('clipPath')
     .attr('id', 'clip')
     .append('rect')
-    .attr('width', width)
+    .attr('width', width - margin.left - margin.right)
     .attr('height', height)
     .merge(s)
     .attr('transform', `translate(${margin.left},${margin.top})`);

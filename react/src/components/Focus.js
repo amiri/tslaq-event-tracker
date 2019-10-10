@@ -5,8 +5,8 @@ import {
   getYScale,
   getLines,
   getTickVals,
-  // getZoom,
-  // updateClipPath,
+  getZoom,
+  updateClipPath,
   updateXAxis,
   updateYAxis,
   updateZeroLine,
@@ -14,7 +14,7 @@ import {
   updateLowLine,
 } from './utils/Chart';
 
-const Focus = ({ width, height, margin, ps, config }) => {
+const Focus = ({ width, height, margin, ps, config, zoomF }) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.close);
@@ -24,27 +24,28 @@ const Focus = ({ width, height, margin, ps, config }) => {
   const yScale = getYScale({ yExtent, height, margin });
 
   // Zoom
-  // function zoomed() {
-  //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
-  //   const t = d3.event.transform;
-  //   const newDomain = t.rescaleX(xScale).domain();
-  //   console.log(newDomain);
-  // }
+  function zoomed() {
+    if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
+    const t = d3.event.transform;
+    const newXScaleDomain = t.rescaleX(xScale).domain();
+    const newXScaleRange = xScale.range().map(t.invertX, t);
+    zoomF({ domain: newXScaleDomain, range: newXScaleRange });
+  }
 
-  // const zoom = getZoom({ width, height, zoomed });
+  const zoom = getZoom({ width, height, zoomed });
 
   const focusRef = useRef(null);
   const svgRef = useRef(null);
   const { timeZone } = config;
 
   useEffect(() => {
-    // const svg = d3.select(svgRef.current);
+    const svg = d3.select(svgRef.current);
     const focus = d3.select(focusRef.current);
     const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
 
     // ClipPath
-    // const clipPath = svg.selectAll('defs').data([0]);
-    // updateClipPath({ s: clipPath, width, height, margin });
+    const clipPath = svg.selectAll('defs').data([0]);
+    updateClipPath({ s: clipPath, width, height, margin });
 
     // FocusYAxis
     const focusYAxis = focus.selectAll('.y-axis').data([0]);
@@ -88,8 +89,8 @@ const Focus = ({ width, height, margin, ps, config }) => {
       yExtent,
     });
 
-    // const focusZoom = focus.selectAll('.zoom').data([0]);
-    // focusZoom.call(zoom);
+    const focusZoom = focus.selectAll('.zoom');
+    focusZoom.call(zoom);
   }, [svgRef, focusRef, height, width, yExtent, xExtent]);
 
   return (
@@ -100,14 +101,14 @@ const Focus = ({ width, height, margin, ps, config }) => {
       viewBox={`0 0 ${width ? width : 0} ${height ? height + 5 : 0}`}
       transform={`translate(0, ${margin.top})`}
     >
-      //{' '}
-      <defs>
-        // <clipPath id='clip'></clipPath>
-        //{' '}
-      </defs>
       <g className='focus' ref={focusRef}>
         <path className='line' d={getLines({ xScale, yScale })(ps)} />
-        // <rect className='zoom' />
+        <rect
+          className='zoom'
+          width={width ? width - margin.left - margin.right : 0}
+          height={height ? height : 0}
+          transform={`translate(${margin.left},${margin.top})`}
+        />
       </g>
     </svg>
   );
