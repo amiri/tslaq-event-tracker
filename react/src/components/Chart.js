@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useMemo } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
@@ -28,25 +28,33 @@ const Chart = () => {
     prices && resolution === 'daily' ? prices.daily : prices.hourly;
   const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
 
-  const ps = priceList
-    ? priceList.map(p => {
-        const m =
-          resolution === 'daily'
-            ? moment(p[timeField])
-                .tz('America/New_York')
-                .tz(timeZone)
-            : moment.utc(p[timeField]).tz(timeZone);
-        return Object.assign(p, { priceTime: m });
-      })
-    : null;
-  const psFiltered = ps
-    ? ps.filter(p =>
-        isEmpty(dateRange)
-          ? true
-          : p.priceTime.isSameOrAfter(dateRange[0]) &&
-            p.priceTime.isSameOrBefore(dateRange[1]),
-      )
-    : null;
+  const ps = useMemo(
+    () =>
+      priceList
+        ? priceList.map(p => {
+            const m =
+              resolution === 'daily'
+                ? moment(p[timeField])
+                    .tz('America/New_York')
+                    .tz(timeZone)
+                : moment.utc(p[timeField]).tz(timeZone);
+            return Object.assign(p, { priceTime: m });
+          })
+        : null,
+    [priceList, timeField],
+  );
+  const psFiltered = useMemo(
+    () =>
+      ps
+        ? ps.filter(p =>
+            isEmpty(dateRange)
+              ? true
+              : p.priceTime.isSameOrAfter(dateRange[0]) &&
+                p.priceTime.isSameOrBefore(dateRange[1]),
+          )
+        : null,
+    [ps, dateRange],
+  );
 
   const onBrush = ({ xScale, range }) => {
     const newDomain = range.map(xScale.invert, xScale);

@@ -17,7 +17,7 @@ import {
 const Focus = ({ width, height, margin, ps, config }) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
-  const yExtent = d3.extent(ps, p => p.high);
+  const yExtent = d3.extent(ps, p => p.close);
 
   // Scales
   const xScale = getXScale({ xExtent, width, margin });

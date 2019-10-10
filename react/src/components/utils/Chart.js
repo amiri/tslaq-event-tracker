@@ -128,7 +128,7 @@ export const getBrush = ({ width, height, brushed }) =>
   d3
     .brushX()
     .extent([[0, 0], [width, height]])
-    .on('end', brushed);
+    .on('brush end', brushed);
 
 export const getZoom = ({ width, height, zoomed }) =>
   d3
