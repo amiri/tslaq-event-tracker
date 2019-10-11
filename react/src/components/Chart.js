@@ -58,9 +58,7 @@ const Chart = () => {
 
   const onBrush = ({ xScale, range }) => {
     const newDomain = range.map(xScale.invert, xScale);
-    // console.log('New domain: ', newDomain);
     const moments = newDomain.map(t => moment(t).tz('America/New_York'));
-    // console.log('New moments: ', moments);
     setConfig({ ...config, dateRange: moments });
   };
 

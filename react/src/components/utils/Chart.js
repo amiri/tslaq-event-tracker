@@ -1,36 +1,6 @@
 import moment from 'moment';
 import * as d3 from 'd3';
 
-export const getLines = ({ xScale, yScale }) =>
-  d3
-    .line()
-    .x(d => xScale(d.priceTime.toDate()))
-    .y(d => yScale(d.close))
-    .curve(d3.curveMonotoneX);
-
-export const xBand = xExtent =>
-  d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
-    const est = moment(d).tz('America/New_York');
-    return (
-      est.dayOfYear() === 1 ||
-      est.date() === 1 ||
-      est.day() === 1 ||
-      (est.day() !== 0 && est.day() !== 6)
-    );
-  });
-
-export const getXScale = ({ xExtent, width, margin }) =>
-  d3
-    .scaleTime()
-    .domain(xExtent)
-    .range([margin.left, width - margin.right]);
-
-export const getYScale = ({ yExtent, height, margin }) =>
-  d3
-    .scaleLinear()
-    .domain([yExtent[0] - 5, yExtent[1]])
-    .range([height - margin.bottom, margin.top]);
-
 export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
   const totalHeightFocus = height - totalHeightContext;
@@ -47,6 +17,25 @@ export const calculateDimensions = ({ height }) => {
     heightFocus,
   };
 };
+
+export const getLines = ({ xScale, yScale }) =>
+  d3
+    .line()
+    .x(d => xScale(d.priceTime.toDate()))
+    .y(d => yScale(d.close))
+    .curve(d3.curveMonotoneX);
+
+export const getXScale = ({ xExtent, width, margin }) =>
+  d3
+    .scaleTime()
+    .domain(xExtent)
+    .range([margin.left, width - margin.right]);
+
+export const getYScale = ({ yExtent, height, margin }) =>
+  d3
+    .scaleLinear()
+    .domain([yExtent[0] - 5, yExtent[1]])
+    .range([height - margin.bottom, margin.top]);
 
 export const getXAxis = (g, { xScale, tickVals, tickFmt, height, margin }) => {
   g.attr('transform', `translate(0,${height - margin.bottom})`)
@@ -89,6 +78,17 @@ const yearFormatter = d => {
           .charAt(0);
   return fmt;
 };
+
+export const xBand = xExtent =>
+  d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
+    const est = moment(d).tz('America/New_York');
+    return (
+      est.dayOfYear() === 1 ||
+      est.date() === 1 ||
+      est.day() === 1 ||
+      (est.day() !== 0 && est.day() !== 6)
+    );
+  });
 
 export const getTickVals = ({ xExtent, timeZone }) => {
   const duration = moment.duration(xExtent[1].diff(xExtent[0]));
@@ -137,30 +137,6 @@ export const getZoom = ({ width, height, zoomed }) =>
     .translateExtent([[0, 0], [width, height]])
     .extent([[0, 0], [width, height]])
     .on('zoom', zoomed);
-
-// FocusLines Enter + Update + Remove
-export const updateFocusLines = ({ s, xScale, yScale }) => {
-  s.enter()
-    .append('path')
-    .attr('class', 'line')
-    .merge(s)
-    .attr('d', getLines({ xScale, yScale }));
-
-  // FocusLines Exit
-  s.exit().remove();
-};
-
-// ContextLines Enter + Update + Remove
-export const updateContextLines = ({ s, xScale, yScale }) => {
-  s.enter()
-    .append('path')
-    .attr('class', 'line')
-    .merge(s)
-    .attr('d', getLines({ xScale, yScale }));
-
-  // ContextLines Exit
-  s.exit().remove();
-};
 
 export const updateContextBrush = ({ brush, s, xScale }) => {
   s.enter()
@@ -261,105 +237,4 @@ export const updateLowLine = ({ s, yScale, yExtent, width, margin }) => {
     .attr('y2', yScale(yExtent[0]))
     .attr('stroke-width', '0.25px')
     .attr('stroke', '#8A0707');
-};
-
-export const draw = ({
-  ps,
-  width,
-  height,
-  margin,
-  heightContext,
-  heightFocus,
-  timeZone,
-  svgRef,
-  contextRef,
-  focusRef,
-}) => {
-  // Extents
-  const xExtent = d3.extent(ps, p => p.priceTime);
-  const yExtent = d3.extent(ps, p => p.high);
-
-  // Scales
-  var xScale = getXScale({ xExtent, width, margin });
-  // var xScaleContext = getXScale({ xExtent, width, margin });
-
-  const yScale = getYScale({ yExtent, height: heightFocus, margin });
-  const yScaleContext = getYScale({
-    yExtent,
-    height: heightContext,
-    margin,
-  });
-
-  // Tick values
-  const { tickVals, tickFmt } = getTickVals({ xExtent, timeZone });
-
-  // Size svg and g refs
-  const svg = d3
-    .select(svgRef.current)
-    .attr('preserveAspectRatio', 'xMinYMin meet')
-    .attr('viewBox', `0 0 ${width ? width : 0} ${height ? height : 0}`);
-
-  const focus = d3
-    .select(focusRef.current)
-    .attr('transform', `translate(0, ${margin.top})`);
-
-  const context = d3
-    .select(contextRef.current)
-    .attr(
-      'transform',
-      `translate(0, ${heightFocus + margin.bottom + margin.top})`,
-    );
-
-  // ClipPath
-  const clipPath = svg.selectAll('defs').data(['dummy']);
-  updateClipPath({ s: clipPath, width, height: heightFocus, margin });
-
-  // ContextLines
-  const contextLines = context.selectAll('.line').data([ps]);
-  updateContextLines({
-    s: contextLines,
-    xScale,
-    yScale: yScaleContext,
-  });
-
-  // FocusLines
-  const focusLines = focus.selectAll('.line').data([ps]);
-  updateFocusLines({ s: focusLines, xScale, yScale });
-
-  // FocusXAxis
-  const focusXAxis = focus.selectAll('.x-axis').data(['dummy']);
-  updateXAxis({
-    s: focusXAxis,
-    getXAxis,
-    xScale,
-    tickVals,
-    tickFmt,
-    height: heightFocus,
-    margin,
-  });
-
-  // FocusYAxis
-  const focusYAxis = focus.selectAll('.y-axis').data(['dummy']);
-  updateYAxis({ s: focusYAxis, margin, yScale, width });
-
-  // ContextXAxis
-  const contextXAxis = context.selectAll('.x-axis').data(['dummy']);
-  updateXAxis({
-    s: contextXAxis,
-    xScale,
-    tickVals,
-    tickFmt,
-    height: heightContext + margin.bottom,
-    margin,
-  });
-
-  // ZeroLine
-  const zeroLine = focus.selectAll('.zero').data(['dummy']);
-  updateZeroLine({
-    s: zeroLine,
-    yScale,
-    yExtent,
-    width,
-    margin,
-  });
 };
