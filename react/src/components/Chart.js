@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useMemo } from 'react';
+import React, { useState, useContext, useRef, useMemo } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
@@ -56,15 +56,32 @@ const Chart = () => {
     [ps, dateRange],
   );
 
-  const onBrush = ({ xScale, range }) => {
-    const newDomain = range.map(xScale.invert, xScale);
-    const moments = newDomain.map(t => moment(t).tz('America/New_York'));
-    setConfig({ ...config, dateRange: moments });
+  const [zoomDomain, setZoomDomain] = useState([
+    margin.left,
+    width - margin.right,
+  ]);
+
+  const [brushDomain, setBrushDomain] = useState([
+    margin.left,
+    width - margin.right,
+  ]);
+
+  const onBrush = ({ xScale, range, eventType }) => {
+    const newDomain = xScale ? range.map(xScale.invert, xScale) : null;
+    const moments = newDomain
+      ? newDomain.map(t => moment(t).tz('America/New_York'))
+      : null;
+    setConfig({
+      ...config,
+      ...(moments && { dateRange: moments }),
+    });
+    if (eventType) {
+      setZoomDomain(range);
+    }
   };
 
-  const onZoom = ({ domain, range }) => {
-    console.log('Zoom domain: ', domain);
-    console.log('Zoom range: ', range);
+  const onZoom = ({ params }) => {
+    setBrushDomain(params);
   };
 
   return (
@@ -90,6 +107,7 @@ const Chart = () => {
             events={events}
             config={config}
             zoomF={onZoom}
+            zoomDomain={zoomDomain}
           />
           <Context
             width={width}
@@ -98,6 +116,7 @@ const Chart = () => {
             ps={ps}
             config={config}
             brushF={onBrush}
+            brushDomain={brushDomain}
           />
         </div>
       )}

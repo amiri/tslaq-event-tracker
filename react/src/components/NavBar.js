@@ -52,7 +52,7 @@ const NavBar = () => {
             <RangePicker
               allowClear={true}
               onChange={dates => updateRange(dates)}
-              value={!isEmpty(config.dateRange) ? config.dateRange : []}
+              value={!isEmpty(config.dateRange) ? config.dateRange : null}
             />
           </Col>
         </Row>

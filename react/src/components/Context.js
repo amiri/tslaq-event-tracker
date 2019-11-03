@@ -8,8 +8,17 @@ import {
   getBrush,
   updateXAxis,
 } from './utils/Chart';
+// import { isEmpty } from 'lodash';
 
-const Context = ({ config, width, height, margin, ps, brushF }) => {
+const Context = ({
+  config,
+  width,
+  height,
+  margin,
+  ps,
+  brushF,
+  brushDomain,
+}) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.high);
@@ -20,9 +29,22 @@ const Context = ({ config, width, height, margin, ps, brushF }) => {
 
   // Brush
   function brushed() {
+    if (!d3.event.sourceEvent) {
+      console.log('No brush sourceEvent');
+      // console.log('no brush sourceEvent arguments: ', arguments);
+      // return;
+      // brushF({range: xScale.range});
+    }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
+    if (d3.event.sourceEvent) {
+        console.log('brush sourceEvent.type: ', d3.event.sourceEvent.type);
+    }
     const s = d3.event.selection || xScale.range();
-    brushF({ range: s, xScale });
+    brushF({
+      range: s,
+      xScale,
+      eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
+    });
   }
   const brush = getBrush({ width, height: height + 5, brushed });
 
@@ -43,7 +65,16 @@ const Context = ({ config, width, height, margin, ps, brushF }) => {
     });
     const contextBrush = context.selectAll('.brush').data([0]);
     contextBrush.call(brush).call(brush.move, xScale.range());
-  }, [contextRef, height, width]);
+  }, [height, width]);
+
+  // Brush
+  useEffect(() => {
+    if (brushDomain[0] >= 0 && brushDomain[1] >= 0) {
+      const context = d3.select(contextRef.current);
+      const contextBrush = context.selectAll('.brush');
+      contextBrush.call(brush.move, brushDomain);
+    }
+  }, [brushDomain]);
 
   return (
     <svg

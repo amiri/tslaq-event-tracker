@@ -6,6 +6,8 @@ const s = {
   timeZone: 'America/New_York',
   resolution: 'daily',
   dateRange: [],
+  // brushDomain: [],
+  // zoomDomain: [],
 };
 
 const ChartContextProvider = props => {
