@@ -70,6 +70,7 @@ const Context = ({
   // Brush
   useEffect(() => {
     if (brushDomain[0] >= 0 && brushDomain[1] >= 0) {
+      console.log('brushDomain: ', brushDomain);
       const context = d3.select(contextRef.current);
       const contextBrush = context.selectAll('.brush');
       contextBrush.call(brush.move, brushDomain);

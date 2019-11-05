@@ -81,7 +81,9 @@ const Chart = () => {
   };
 
   const onZoom = ({ params }) => {
-    setBrushDomain(params);
+    const l = params[0] < margin.left ? margin.left : params[0];
+    const r = params[1] > width - margin.right ? width - margin.right : params[1];
+    setBrushDomain([l, r]);
   };
 
   return (
