@@ -37,7 +37,7 @@ const Context = ({
     }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
     if (d3.event.sourceEvent) {
-        console.log('brush sourceEvent.type: ', d3.event.sourceEvent.type);
+      console.log('brush sourceEvent.type: ', d3.event.sourceEvent.type);
     }
     const s = d3.event.selection || xScale.range();
     brushF({

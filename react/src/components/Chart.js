@@ -12,6 +12,7 @@ import Context from './Context';
 
 const Chart = () => {
   const { events } = useContext(EventsContext);
+  console.log(events);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
 
@@ -27,6 +28,28 @@ const Chart = () => {
   const priceList =
     prices && resolution === 'daily' ? prices.daily : prices.hourly;
   const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
+
+  const es = useMemo(() =>
+    events
+      ? events.map(e => {
+          const et = moment.utc(e.time).tz('America/New_York');
+          return Object.assign(e, { eventTime: et });
+        })
+      : null[events],
+  );
+
+  const esFiltered = useMemo(
+    () =>
+      es
+        ? es.filter(e =>
+            isEmpty(dateRange)
+              ? true
+              : e.eventTime.isSameOrAfter(dateRange[0]) &&
+                e.eventTime.isSameOrBefore(dateRange[1]),
+          )
+        : null,
+    [es, dateRange],
+  );
 
   const ps = useMemo(
     () =>
@@ -82,7 +105,8 @@ const Chart = () => {
 
   const onZoom = ({ params }) => {
     const l = params[0] < margin.left ? margin.left : params[0];
-    const r = params[1] > width - margin.right ? width - margin.right : params[1];
+    const r =
+      params[1] > width - margin.right ? width - margin.right : params[1];
     setBrushDomain([l, r]);
   };
 
@@ -106,7 +130,7 @@ const Chart = () => {
             height={heightFocus}
             margin={margin}
             ps={psFiltered}
-            events={events}
+            events={esFiltered}
             config={config}
             zoomF={onZoom}
             zoomDomain={zoomDomain}

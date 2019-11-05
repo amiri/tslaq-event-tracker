@@ -13,7 +13,6 @@ import {
   updateHighLine,
   updateLowLine,
 } from './utils/Chart';
-import { isEmpty } from 'lodash';
 
 const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
   // Extents
@@ -35,11 +34,11 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
     }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
     if (d3.event.sourceEvent) {
-        console.log('zoom sourceEvent.type: ', d3.event.sourceEvent.type);
+      console.log('zoom sourceEvent.type: ', d3.event.sourceEvent.type);
     }
     const t = d3.event.transform;
     const move = xScale.range().map(t.invertX, t);
-      console.log('params in Focus: ', move);
+    console.log('params in Focus: ', move);
     zoomF({
       params: move,
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
@@ -112,14 +111,17 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
     if (zoomDomain[0] >= 0 && zoomDomain[1] >= 0) {
       const svg = d3.select(svgRef.current);
       const focusZoom = svg.selectAll('.zoom');
-        console.log('zoomDomain in focus: ', zoomDomain);
-        console.log('width in focus: ', width);
+      console.log('zoomDomain in focus: ', zoomDomain);
+      console.log('width in focus: ', width);
       focusZoom.call(
         zoom.transform,
         d3.zoomIdentity
-          .scale((width - margin.left - margin.right)/ (zoomDomain[1] - zoomDomain[0]))
+          .scale(
+            (width - margin.left - margin.right) /
+              (zoomDomain[1] - zoomDomain[0]),
+          )
           .translate(-zoomDomain[0] + margin.left, 0),
-          // .translate(-zoomDomain[0], 0),
+        // .translate(-zoomDomain[0], 0),
       );
     }
   }, [zoomDomain]);
