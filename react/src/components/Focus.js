@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import moment from 'moment';
 import * as d3 from 'd3';
 import {
   getXScale,
@@ -13,8 +14,23 @@ import {
   updateHighLine,
   updateLowLine,
 } from './utils/Chart';
+import {
+  AnnotationXYThreshold,
+  AnnotationCalloutCircle,
+} from 'react-annotation';
+import { isEmpty } from 'lodash';
 
-const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
+const Focus = ({
+  width,
+  height,
+  margin,
+  ps,
+  config,
+  zoomF,
+  zoomDomain,
+  events,
+  resolution,
+}) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.close);
@@ -23,10 +39,72 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
   const xScale = getXScale({ xExtent, width, margin });
   const yScale = getYScale({ yExtent, height, margin });
 
+  const [hover, setHover] = useState(null);
+
+  // Annotations
+  // console.log(ps[0]);
+  const rawAnnotations = events.map(e => {
+    const interval = resolution === 'daily' ? 'day' : 'hour';
+    const fmt = resolution === 'daily' ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:MM:SS';
+    // console.log('Add: ', e.eventTime.clone().add(1, interval).toDate());
+    // console.log('Subtract: ', e.eventTime.clone().subtract(1, interval).toDate());
+    // console.log('Event time: ', e.eventTime.format(fmt));
+    const priceMatch = ps.filter(p =>
+      moment(p.priceTime).isBetween(
+        e.eventTime.clone().subtract(1, interval),
+        e.eventTime.clone().add(1, interval),
+      ),
+    );
+    const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
+    return {
+      note: { title: e.title, label: e.title },
+      type: AnnotationCalloutCircle,
+      x: xScale(e.eventTime.toDate()),
+      y: yScale(p),
+    };
+  });
+  console.log(rawAnnotations);
+  const annotations = rawAnnotations.map((a, i) => {
+    const Annotation = a.type;
+    const { note, x, y } = a;
+    const radius = 5;
+    note.wrap = 30;
+    note.lineType = null;
+    note.align = 'middle';
+    const thisY =
+      rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
+        ? y + radius + 1
+        : y;
+    console.log(thisY);
+    return (
+      <g>
+        <AnnotationCalloutCircle
+          x={x}
+          y={thisY}
+          dx={20}
+          dy={20}
+          note={note}
+          subject={{ radius }}
+          className={hover === i ? '' : 'hidden'}
+          key={i}
+        />
+        <circle
+          fill='#9610ff'
+          r={radius}
+          cx={x}
+          cy={thisY}
+          onMouseOver={() => setHover(i)}
+          onMouseOut={() => setHover(null)}
+        />
+      </g>
+    );
+  });
+  // console.log(annotations);
+
   // Zoom
   function zoomed() {
     if (!d3.event.sourceEvent) {
-      console.log('No zoom sourceEvent');
+      // console.log('No zoom sourceEvent');
       // console.log('no zoom sourceEvent arguments: ', arguments);
       // zoomF({params: xScale.range(), eventType: null});
       // return;
@@ -34,11 +112,11 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
     }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
     if (d3.event.sourceEvent) {
-      console.log('zoom sourceEvent.type: ', d3.event.sourceEvent.type);
+      // console.log('zoom sourceEvent.type: ', d3.event.sourceEvent.type);
     }
     const t = d3.event.transform;
     const move = xScale.range().map(t.invertX, t);
-    console.log('params in Focus: ', move);
+    // console.log('params in Focus: ', move);
     zoomF({
       params: move,
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
@@ -51,6 +129,7 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
   const svgRef = useRef(null);
   const { timeZone } = config;
 
+  // Prices
   useEffect(() => {
     const svg = d3.select(svgRef.current);
     const focus = d3.select(focusRef.current);
@@ -111,8 +190,8 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
     if (zoomDomain[0] >= 0 && zoomDomain[1] >= 0) {
       const svg = d3.select(svgRef.current);
       const focusZoom = svg.selectAll('.zoom');
-      console.log('zoomDomain in focus: ', zoomDomain);
-      console.log('width in focus: ', width);
+      // console.log('zoomDomain in focus: ', zoomDomain);
+      // console.log('width in focus: ', width);
       focusZoom.call(
         zoom.transform,
         d3.zoomIdentity
@@ -143,6 +222,7 @@ const Focus = ({ width, height, margin, ps, config, zoomF, zoomDomain }) => {
         height={height ? height : 0}
         transform={`translate(${margin.left},${margin.top})`}
       />
+      <g className='annotation-group'>{annotations}</g>
     </svg>
   );
 };

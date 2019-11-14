@@ -39,6 +39,7 @@
     "moment-timezone": "^0.5.26",
     "node-fetch": "^2.6.0",
     "react": ">=16.10.1",
+    "react-annotation": "^2.2.1",
     "react-dom": "^16.10.1",
     "react-router-dom": "^5.1.1",
     "yup": "^0.27.0"

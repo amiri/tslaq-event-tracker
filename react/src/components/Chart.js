@@ -134,6 +134,7 @@ const Chart = () => {
             config={config}
             zoomF={onZoom}
             zoomDomain={zoomDomain}
+            resolution={resolution}
           />
           <Context
             width={width}

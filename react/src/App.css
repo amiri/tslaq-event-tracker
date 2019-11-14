@@ -21,3 +21,7 @@ div#chart {
   fill: none;
   pointer-events: all;
 }
+
+.hidden {
+  display: none;
+}
