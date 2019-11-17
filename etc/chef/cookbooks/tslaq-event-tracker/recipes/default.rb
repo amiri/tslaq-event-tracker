@@ -36,7 +36,7 @@ directory '/var/local/tslaq-event-tracker/bin' do
 end
 
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
-  source 'file:///tmp/deployments/tslaq-event-tracker/.stack-work/install/x86_64-linux/lts-13.6/8.6.3/bin/tslaq-event-tracker-exe'
+    source 'file://#{api_executable.filepath}'
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
