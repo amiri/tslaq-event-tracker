@@ -57,20 +57,22 @@ end
 systemd_unit 'tslaq-event-tracker-api.service' do
   content <<-EOM.gsub(/^\s+/, '')
   [Unit]
-  Description=Runs the backend WAIT server
+  Description=Backend servant/WAI server
   After=network.target
 
   [Service]
   User=tslaq
   WorkingDirectory=/var/local/tslaq-event-tracker
   ExecStart=/var/local/tslaq-event-tracker/bin/tslaq-event-tracker
+  StandardOutput=syslog
+  StandardError=syslog
+  SyslogIdentifier=tslaq-event-tracker-api
   Restart=always
-  Type=forking
 
   [Install]
   WantedBy=multi-user.target
   EOM
 
-  action [:create, :enable]
+  action [:create, :enable, :reload_or_try_restart]
 
 end
