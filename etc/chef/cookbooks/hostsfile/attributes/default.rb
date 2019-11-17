@@ -1,8 +1,10 @@
 #
-# Cookbook:: cron
-# Recipe:: default
+# Author:: Seth Vargo <sethvargo@gmail.com>
+# Cookbook:: hostsfile
+# Attribute:: default
 #
-# Copyright:: 2010-2018, Chef Software, Inc.
+# Copyright:: 2012-2013, Seth Vargo
+# Copyright:: 2012, CustomInk, LCC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,9 +19,4 @@
 # limitations under the License.
 #
 
-package node['cron']['package_name']
-
-service 'cron' do
-  service_name node['cron']['service_name']
-  action [:enable, :start]
-end
+default['hostsfile']['path'] = nil

@@ -52,3 +52,22 @@ execute 'chown-react-code' do
   command 'chown -Rf tslaq:tslaq /var/local/tslaq-event-tracker/react && chmod -Rf 0755 /var/local/tslaq-event-tracker/react'
   subscribes :run, 'execute[copy-react-code]', :immediately
 end
+
+systemd_unit 'tslaq-event-tracker-api' do
+  content <<-EOM.gsub(/^\s+/, '')
+  [Unit]
+  Description=Runs the backend WAIT server
+  After=network.target
+
+  [Service]
+  User=tslaq
+  WorkingDirectory=/var/local/tslaq-event-tracker
+  ExecStart=/var/local/tslaq-event-tracker/bin/tslaq-event-tracker
+  Restart=always
+
+  [Install]
+  WantedBy=multi-user.target
+  EOU
+
+  action [:create, :enable]
+end
