@@ -36,7 +36,8 @@ directory '/var/local/tslaq-event-tracker/bin' do
 end
 
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
-    source 'file://#{api_executable.filepath}'
+  filePath = `find /tmp/deployments/tslaq-event-tracker/.stack-work/install -name "tslaq-event-tracker-exe"`
+  source "file://#{filePath.chomp()}"
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
@@ -64,6 +65,7 @@ systemd_unit 'tslaq-event-tracker-api.service' do
   WorkingDirectory=/var/local/tslaq-event-tracker
   ExecStart=/var/local/tslaq-event-tracker/bin/tslaq-event-tracker
   Restart=always
+  Type=forking
 
   [Install]
   WantedBy=multi-user.target
