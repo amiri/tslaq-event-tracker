@@ -53,7 +53,7 @@ execute 'chown-react-code' do
   subscribes :run, 'execute[copy-react-code]', :immediately
 end
 
-systemd_unit 'tslaq-event-tracker-api' do
+systemd_unit 'tslaq-event-tracker-api.service' do
   content <<-EOM.gsub(/^\s+/, '')
   [Unit]
   Description=Runs the backend WAIT server
@@ -67,7 +67,8 @@ systemd_unit 'tslaq-event-tracker-api' do
 
   [Install]
   WantedBy=multi-user.target
-  EOU
+  EOM
 
   action [:create, :enable]
+
 end
