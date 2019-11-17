@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import moment from 'moment';
+require('moment-timezone');
 import * as d3 from 'd3';
 import {
   getXScale,
@@ -46,9 +47,6 @@ const Focus = ({
   const rawAnnotations = events.map(e => {
     const interval = resolution === 'daily' ? 'day' : 'hour';
     const fmt = resolution === 'daily' ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:MM:SS';
-    // console.log('Add: ', e.eventTime.clone().add(1, interval).toDate());
-    // console.log('Subtract: ', e.eventTime.clone().subtract(1, interval).toDate());
-    // console.log('Event time: ', e.eventTime.format(fmt));
     const priceMatch = ps.filter(p =>
       moment(p.priceTime).isBetween(
         e.eventTime.clone().subtract(1, interval),
@@ -56,8 +54,9 @@ const Focus = ({
       ),
     );
     const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
+    const title = `${e.eventTime.tz('America/New_York').format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
     return {
-      note: { title: e.title, label: e.title },
+      note: { title, label: e.body},
       type: AnnotationCalloutCircle,
       x: xScale(e.eventTime.toDate()),
       y: yScale(p),
@@ -67,7 +66,7 @@ const Focus = ({
   const annotations = rawAnnotations.map((a, i) => {
     const Annotation = a.type;
     const { note, x, y } = a;
-    const radius = 5;
+    const radius = 2;
     note.wrap = 30;
     note.lineType = null;
     note.align = 'middle';
@@ -77,7 +76,7 @@ const Focus = ({
         : y;
     console.log(thisY);
     return (
-      <g>
+      <g key={i}>
         <AnnotationCalloutCircle
           x={x}
           y={thisY}
@@ -86,7 +85,6 @@ const Focus = ({
           note={note}
           subject={{ radius }}
           className={hover === i ? '' : 'hidden'}
-          key={i}
         />
         <circle
           fill='#9610ff'
@@ -95,11 +93,11 @@ const Focus = ({
           cy={thisY}
           onMouseOver={() => setHover(i)}
           onMouseOut={() => setHover(null)}
+          onClick={() => handleClick(i)}
         />
       </g>
     );
   });
-  // console.log(annotations);
 
   // Zoom
   function zoomed() {

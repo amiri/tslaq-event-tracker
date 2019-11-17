@@ -238,10 +238,3 @@ export const updateLowLine = ({ s, yScale, yExtent, width, margin }) => {
     .attr('stroke-width', '0.25px')
     .attr('stroke', '#8A0707');
 };
-
-export const makeAnnotations = ({ annotations }) =>
-  d3
-    .annotation()
-    .editMode(true)
-    .type(d3.annotationLabel)
-    .annotations(annotations);
