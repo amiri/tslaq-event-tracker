@@ -35,6 +35,23 @@ directory '/var/local/tslaq-event-tracker/bin' do
   action :create
 end
 
+directory '/var/local/tslaq-event-tracker/etc' do
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0755'
+  recursive true
+  action :create
+  notifies :run, 'remote_file[/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem]', :immediately
+end
+
+remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem'
+  source "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0444'
+  subscribes :run, 'directory[/var/local/tslaq-event-tracker/etc]', :immediately
+end
+
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
   filePath = `find /tmp/deployments/tslaq-event-tracker/.stack-work/install -name "tslaq-event-tracker-exe"`
   source "file://#{filePath.chomp()}"
