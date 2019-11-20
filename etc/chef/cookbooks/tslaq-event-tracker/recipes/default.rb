@@ -35,7 +35,7 @@ directory '/var/local/tslaq-event-tracker/bin' do
   action :create
 end
 
-directory '/var/local/tslaq-event-tracker/etc' do
+directory '/var/local/tslaq-event-tracker/etc/certs' do
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
@@ -49,7 +49,7 @@ remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem
   owner 'tslaq'
   group 'tslaq'
   mode '0444'
-  subscribes :create_if_missing, 'directory[/var/local/tslaq-event-tracker/etc]', :immediately
+  subscribes :create_if_missing, 'directory[/var/local/tslaq-event-tracker/etc/certs]', :immediately
 end
 
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
