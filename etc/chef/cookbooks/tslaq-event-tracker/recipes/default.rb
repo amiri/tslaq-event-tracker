@@ -41,15 +41,15 @@ directory '/var/local/tslaq-event-tracker/etc' do
   mode '0755'
   recursive true
   action :create
-  notifies :run, 'remote_file[/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem]', :immediately
+  notifies :create_if_missing, 'remote_file[/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem]', :immediately
 end
 
-remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem'
+remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem' do
   source "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
   owner 'tslaq'
   group 'tslaq'
   mode '0444'
-  subscribes :run, 'directory[/var/local/tslaq-event-tracker/etc]', :immediately
+  subscribes :create_if_missing, 'directory[/var/local/tslaq-event-tracker/etc]', :immediately
 end
 
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
