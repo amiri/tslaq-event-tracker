@@ -321,7 +321,7 @@ envPool Production  = 8
 -- @""@ for 'Development' or @"test"@ for 'Test'.
 connStr :: BS.ByteString -> ConnectionString
 connStr sfx =
-  "host=localhost dbname=perservant"
+  "host=localhost dbname=tslaq_event_db"
     <> sfx
     <> " user=test password=test port=5432"
 
