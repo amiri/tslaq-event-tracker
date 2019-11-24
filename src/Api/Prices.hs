@@ -43,6 +43,6 @@ getPriceUrl _ _ = do
 getLatestPricesFile :: IO Text
 getLatestPricesFile = do
   Stdout l <- command []
-                      "/var/local/tslaq-prices/bin/tslaq-prices-exe"
+                      "/var/local/tslaq-prices/bin/tslaq-prices"
                       ["--latest"]
   pure (pack l)
