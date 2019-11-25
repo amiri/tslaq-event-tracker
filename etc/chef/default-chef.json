@@ -3,5 +3,11 @@
       "recipe[hostname::default]",
       "recipe[tslaq-event-tracker]"
   ],
-  "set_fqdn": "tslaq-event-tracker.org"
+  "set_fqdn": "tslaq-event-tracker.org",
+  "postfix": {
+      "relayhost_port": 587,
+      "main": {
+          "relayhost": "smtp-relay.gmail.com"
+      }
+  }
 }

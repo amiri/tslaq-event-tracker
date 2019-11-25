@@ -6,6 +6,7 @@
 
 apt_package 'libpq-dev'
 apt_package 'libpq5'
+apt_package 'jq'
 
 group 'tslaq' do
   gid    2016
