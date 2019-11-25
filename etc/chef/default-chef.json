@@ -6,9 +6,8 @@
   ],
   "set_fqdn": "tslaq-event-tracker.org",
   "postfix": {
-    "relayhost_port": 587,
     "main": {
-      "relayhost": "smtp-relay.gmail.com"
+      "relayhost": "smtp-relay.gmail.com:587"
     }
   }
 }
