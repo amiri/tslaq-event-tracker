@@ -7,6 +7,9 @@
 apt_package 'libpq-dev'
 apt_package 'libpq5'
 apt_package 'jq'
+apt_package 'software-properties-common'
+apt_package 'certbot'
+apt_package 'python-certbot-nginx'
 
 group 'tslaq' do
   gid    2016
