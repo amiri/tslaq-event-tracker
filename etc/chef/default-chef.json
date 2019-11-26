@@ -11,7 +11,7 @@
       "relayhost": "smtp-relay.gmail.com:587"
     }
   },
-  "nginx": {
+  "nginx_install": {
     "source":"distro",
     "default_site_enabled":false,
     "server_name": "tslaq-event-tracker.org"
