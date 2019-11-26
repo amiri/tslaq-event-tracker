@@ -9,6 +9,7 @@ chef_version '>= 12.0'
 depends 'hostname'
 depends 'systemd_unit'
 depends 'postfix'
+depends 'nginx'
 
 # The `issues_url` points to the location where issues for this cookbook are
 # tracked.  A `View Issues` link will be displayed on this cookbook's page when
