@@ -1,7 +1,7 @@
 {
-  "name": "tslaq-event-tracker",
-  "description": "Installs/Configures tslaq-event-tracker",
-  "long_description": "Installs/Configures tslaq-event-tracker",
+  "name": "nginx_wrapper",
+  "description": "Installs/Configures nginx_wrapper",
+  "long_description": "Installs/Configures nginx_wrapper",
   "maintainer": "The Authors",
   "maintainer_email": "you@example.com",
   "license": "All Rights Reserved",
@@ -9,8 +9,7 @@
 
   },
   "dependencies": {
-    "hostname": ">= 0.0.0",
-    "postfix": ">= 5.3.1"
+    "nginx": ">= 0.0.0"
   },
   "providing": {
 
@@ -27,7 +26,7 @@
   "privacy": false,
   "chef_versions": [
     [
-      ">= 12.0"
+      ">= 13.0"
     ]
   ],
   "ohai_versions": [

@@ -3,18 +3,13 @@
     "recipe[hostname::default]",
     "recipe[postfix::default]",
     "recipe[tslaq-event-tracker]",
-    "recipe[nginx::default]"
+    "recipe[nginx_wrapper::default]"
   ],
   "set_fqdn": "tslaq-event-tracker.org",
   "postfix": {
     "main": {
       "relayhost": "smtp-relay.gmail.com:587"
     }
-  },
-  "nginx_install": {
-    "source":"distro",
-    "default_site_enabled":false,
-    "server_name": "tslaq-event-tracker.org"
   }
 }
 
