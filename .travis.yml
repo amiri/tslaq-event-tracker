@@ -20,7 +20,7 @@ install:
 - stack --no-terminal --install-ghc test --only-dependencies
 script:
 - stack --no-terminal test --haddock --no-haddock-deps
-- cd react
+- ls
 - yarn build
 - cd ..
 before_deploy:
