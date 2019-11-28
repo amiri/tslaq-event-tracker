@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "eslint \"src/**/*.{js,jsx}\" --quiet",
     "format": "prettier \"src/**/*.{js,html,json}\" --write",
-    "dev": "parcel src/index.html --port 7777"
+    "dev": "parcel src/index.html --port 7777",
+    "build": "parcel build src/index.html"
   },
   "private": true,
   "devDependencies": {
@@ -23,7 +24,7 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
-    "parcel-bundler": "^1.12.3",
+    "parcel-bundler": "^1.12.4",
     "prettier": "^1.18.2"
   },
   "dependencies": {
@@ -38,10 +39,12 @@
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",
     "node-fetch": "^2.6.0",
+    "parcel-bundler": "^1.12.4",
     "react": ">=16.10.1",
     "react-annotation": "^2.2.1",
     "react-dom": "^16.10.1",
     "react-router-dom": "^5.1.1",
+    "trim-right": "^1.0.1",
     "yup": "^0.27.0"
   }
 }
