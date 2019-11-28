@@ -6,8 +6,6 @@ cp $binary deploy
 cp react/dist/* deploy/react
 cd deploy
 zip -r $TRAVIS_COMMIT .
-echo "deploy dir contents after zip:"
-ls -lastr
 cd ..
 mv deploy/$TRAVIS_COMMIT.zip .
 mkdir -p upload
