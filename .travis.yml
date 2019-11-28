@@ -18,11 +18,8 @@ before_install:
 - sudo apt-get update && sudo apt-get install --no-install-recommends yarn
 install:
 - stack --no-terminal --install-ghc test --only-dependencies
-script: ./scripts/travis-script.sh
-before_deploy:
-- zip -r $TRAVIS_COMMIT .
-- mkdir -p upload
-- mv $TRAVIS_COMMIT.zip upload/$TRAVIS_COMMIT.zip
+script: ./scripts/travis-compile.sh
+before_deploy: ./scripts/travis-before-deploy.sh
 deploy:
 - provider: s3
   access_key_id: "$ACCESS_KEY_ID"

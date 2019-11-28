@@ -57,8 +57,7 @@ remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem
 end
 
 remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
-  filePath = `find /tmp/deployments/tslaq-event-tracker/.stack-work/install -name "tslaq-event-tracker-exe"`
-  source "file://#{filePath.chomp()}"
+  source 'file:///tmp/deployments/tslaq-event-tracker/tslaq-event-tracker-exe'
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
@@ -66,7 +65,7 @@ remote_file '/var/local/tslaq-event-tracker/bin/tslaq-event-tracker' do
 end
 
 execute 'copy-react-code' do
-  command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react /var/local/tslaq-event-tracker/'
+  command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react/dist/ /var/local/tslaq-event-tracker/react'
   notifies :run, 'execute[chown-react-code]', :immediately
 end
 
