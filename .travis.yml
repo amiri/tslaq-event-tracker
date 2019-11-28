@@ -18,9 +18,7 @@ before_install:
 - sudo apt-get update && sudo apt-get install --no-install-recommends yarn
 install:
 - stack --no-terminal --install-ghc test --only-dependencies
-script:
-- stack --no-terminal test --haddock --no-haddock-deps
-- ls
+script: ./scripts/travis-script.sh
 before_deploy:
 - zip -r $TRAVIS_COMMIT .
 - mkdir -p upload
