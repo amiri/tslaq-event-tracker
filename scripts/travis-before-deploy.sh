@@ -2,9 +2,10 @@
 
 mkdir -p deploy/react
 binary=$(find .stack-work/install/ -name "tslaq-event-tracker-exe")
-cp $binary deploy
+mv $binary deploy
 cp react/dist/* deploy/react
 cp appspec.yml deploy
+cp -r etc deploy
 cd deploy
 zip -r $TRAVIS_COMMIT .
 cd ..
