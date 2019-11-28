@@ -21,8 +21,6 @@ install:
 script:
 - stack --no-terminal test --haddock --no-haddock-deps
 - ls
-- yarn build
-- cd ..
 before_deploy:
 - zip -r $TRAVIS_COMMIT .
 - mkdir -p upload
