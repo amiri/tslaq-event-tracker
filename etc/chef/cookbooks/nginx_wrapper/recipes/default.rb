@@ -15,6 +15,7 @@ end
 
 nginx_site 'default' do
     site_name 'tslaq-event-tracker.org'
+    cookbook 'nginx_wrapper'
     template 'tslaq-event-tracker.org.erb'
     variables(
         backend_api_url: 'http://localhost:8888',
