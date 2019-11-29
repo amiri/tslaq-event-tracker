@@ -9,14 +9,14 @@ server {
 server {
     listen 443;
 
-    server_name <%= @site_name %>;
-    return 301 https://www.<%= @site_name %>$request_uri;
+    server_name tslaq-event-tracker.org;
+    return 301 https://www.tslaq-event-tracker.org$request_uri;
 }
 
 server {
     listen 443;
 
-    server_name www.<%= @site_name %>;
+    server_name www.tslaq-event-tracker.org;
 
     location / {
       root <%= @server_root =%>;
