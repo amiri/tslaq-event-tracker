@@ -6,11 +6,11 @@ import           Api                         (app)
 import           Api.TSLAQ                   (generateJavaScript)
 import           AppContext                  (AppContext (..), Environment (..),
                                               defaultPgConnectInfo,
-                                              getAWSConfig, getAuthConfig,
+                                              getAWSConfig, getAppEnvironment,
+                                              getAuthConfig,
                                               getCloudFrontSigningKey,
-                                              getCookieSettings, getAppEnvironment,
-                                              getJWTSettings, getJwtKey,
-                                              getPgConnectInfo,
+                                              getCookieSettings, getJWTSettings,
+                                              getJwtKey, getPgConnectInfo,
                                               getPgConnectString, makePool,
                                               s3Service, secretsManagerService,
                                               setLogger)
@@ -76,21 +76,22 @@ acquireAppContext = do
                                                   secretsSession
   let cfsk       = fromJust cloudFrontSigningKey
   let authConfig = getAuthConfig j env
-  _ <- generateJavaScript env s3Session
-  pure AppContext
-    { ctxPool                 = pool
-    , ctxEnv                  = env
-    , ctxMetrics              = metr
-    , ctxLogEnv               = logEnv
-    , ctxPort                 = port
-    , ctxEkgServer            = serverThreadId ekgServer
-    , ctxSecretsSession       = secretsSession
-    , ctxS3Session            = s3Session
-    , ctxAuthConfig           = authConfig
-    , ctxJWTSettings          = getJWTSettings j
-    , ctxCookieSettings       = getCookieSettings env
-    , ctxCloudFrontSigningKey = cfsk
-    }
+  _ <- case env of
+    Production -> generateJavaScript env s3Session
+    _          -> pure ()
+  pure AppContext { ctxPool                 = pool
+                  , ctxEnv                  = env
+                  , ctxMetrics              = metr
+                  , ctxLogEnv               = logEnv
+                  , ctxPort                 = port
+                  , ctxEkgServer            = serverThreadId ekgServer
+                  , ctxSecretsSession       = secretsSession
+                  , ctxS3Session            = s3Session
+                  , ctxAuthConfig           = authConfig
+                  , ctxJWTSettings          = getJWTSettings j
+                  , ctxCookieSettings       = getCookieSettings env
+                  , ctxCloudFrontSigningKey = cfsk
+                  }
 
 -- | Takes care of cleaning up 'AppContext' resources
 shutdownApp :: AppContext -> IO ()

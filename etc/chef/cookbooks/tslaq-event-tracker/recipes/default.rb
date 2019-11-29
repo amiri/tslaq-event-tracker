@@ -23,7 +23,7 @@ user 'tslaq' do
   shell '/bin/bash'
 end
 
-directory '/var/local/tslaq-event-tracker/' do
+directory '/var/local/tslaq-event-tracker/react/src' do
   owner 'tslaq'
   group 'tslaq'
   mode '0755'
