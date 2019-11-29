@@ -14,7 +14,7 @@ class Api {
 
 getUsers() {
   return axios({ url: '/users'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -22,7 +22,7 @@ getUsers() {
 
 getUsersById(id) {
   return axios({ url: '/users/' + encodeURIComponent(id) + ''
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -30,7 +30,7 @@ getUsersById(id) {
 
 postUsers(body) {
   return axios({ url: '/users'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'post'
     , data: body
     , responseType: 'json'
@@ -41,7 +41,7 @@ postUsers(body) {
 
 postEvents(body) {
   return axios({ url: '/events'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'post'
     , data: body
     , responseType: 'json'
@@ -52,7 +52,7 @@ postEvents(body) {
 
 getMetrics() {
   return axios({ url: '/metrics'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -60,7 +60,7 @@ getMetrics() {
 
 getLogout() {
   return axios({ url: '/logout'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -68,7 +68,7 @@ getLogout() {
 
 getEvents() {
   return axios({ url: '/events'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -76,7 +76,7 @@ getEvents() {
 
 getEventsById(id) {
   return axios({ url: '/events/' + encodeURIComponent(id) + ''
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -84,7 +84,7 @@ getEventsById(id) {
 
 postLogin(body) {
   return axios({ url: '/login'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'post'
     , data: body
     , responseType: 'json'
@@ -95,7 +95,7 @@ postLogin(body) {
 
 getPrices() {
   return axios({ url: '/prices'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'get'
     , withCredentials: true
   });
@@ -103,7 +103,7 @@ getPrices() {
 
 postRegister(body) {
   return axios({ url: '/register'
-    , baseURL: 'http://localhost:8888/'
+    , baseURL: 'http://localhost:8888'
     , method: 'post'
     , data: body
     , responseType: 'json'

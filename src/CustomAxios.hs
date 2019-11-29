@@ -15,11 +15,12 @@ import           Servant.JS.Axios    (AxiosOptions, withCredentials,
                                       xsrfCookieName, xsrfHeaderName)
 import           Servant.JS.Internal
 import Text.RawString.QQ
+import           AppContext             (Environment(..))
 
 -- | Generate regular javacript functions that use
 --   the axios library, using default values for 'CommonGeneratorOptions'.
-customAxios :: AxiosOptions -> JavaScriptGenerator
-customAxios aopts = customAxiosWith aopts defCommonGeneratorOptions
+customAxios :: Environment -> AxiosOptions -> JavaScriptGenerator
+customAxios e aopts = customAxiosWith e aopts defCommonGeneratorOptions
 
 responseInterceptor :: Text
 responseInterceptor = [r|axios.interceptors.response.use(
@@ -35,19 +36,19 @@ responseInterceptor = [r|axios.interceptors.response.use(
 |]
 
 -- | Generate regular javascript functions that use the axios library.
-customAxiosWith :: AxiosOptions -> CommonGeneratorOptions -> JavaScriptGenerator
-customAxiosWith aopts opts = \reqs ->
+customAxiosWith :: Environment -> AxiosOptions -> CommonGeneratorOptions -> JavaScriptGenerator
+customAxiosWith e aopts opts = \reqs ->
   "import axios from 'axios';\n\n"
     <> responseInterceptor
     <> "class Api {\n"
-    <> (mconcat . map (generateCustomAxiosJSWith aopts opts) $ reqs)
+    <> (mconcat . map (generateCustomAxiosJSWith e aopts opts) $ reqs)
     <> "}\n"
     <> "export { Api as default }"
 
 -- | js codegen using axios library
 generateCustomAxiosJSWith
-  :: AxiosOptions -> CommonGeneratorOptions -> AjaxReq -> Text
-generateCustomAxiosJSWith aopts opts req =
+  :: Environment -> AxiosOptions -> CommonGeneratorOptions -> AjaxReq -> Text
+generateCustomAxiosJSWith e aopts opts req =
   "\n"
     <> fname
     <> "("
@@ -56,7 +57,7 @@ generateCustomAxiosJSWith aopts opts req =
     <> "  return axios({ url: "
     <> url
     <> "\n"
-    <> "    , baseURL: 'http://localhost:8888/'\n"
+    <> baseUrl
     <> "    , method: '"
     <> method
     <> "'\n"
@@ -68,6 +69,7 @@ generateCustomAxiosJSWith aopts opts req =
     <> "  });\n"
     <> "}\n"
  where
+  baseUrl = if e == Production then "    , baseURL: '/api'\n" else "    , baseURL: 'http://localhost:8888'\n"
   argsStr = T.intercalate ", " args
   args =
     captures

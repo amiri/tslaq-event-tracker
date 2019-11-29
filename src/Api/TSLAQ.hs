@@ -86,9 +86,10 @@ publicServer cs jwts =
 -- | Generates JavaScript to query the User API.
 generateJavaScript :: Environment -> S3Session -> IO ()
 generateJavaScript e = withAWS $ do
-  let js = encodeUtf8 $ jsForAPI tslaqApi $ customAxios defAxiosOptions
+  let js = encodeUtf8 $ jsForAPI tslaqApi $ customAxios e defAxiosOptions
         { withCredentials = True
         }
+
   let h             = md5 $ LB.fromStrict js
   let f             = "tslaq-api-" ++ (show h) ++ ".js"
   let f'            = pack f

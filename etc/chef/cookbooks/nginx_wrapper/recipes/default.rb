@@ -12,3 +12,12 @@ nginx_install 'default' do
         nginx_log_dir: '/var/local/tslaq-event-tracker/logs'
     )
 end
+
+nginx_site 'default' do
+    site_name 'tslaq-event-tracker.org'
+    template 'tslaq-event-tracker.org.erb'
+    variables(
+        backend_api_url: 'http://localhost:8888',
+        server_root: '/var/local/tslaq-event-tracker/react'
+    )
+end

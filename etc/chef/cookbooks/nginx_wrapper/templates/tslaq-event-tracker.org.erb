@@ -1,0 +1,33 @@
+server {
+    listen 80 default_server;
+
+    server_name _;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443;
+
+    server_name <%= @site_name %>;
+    return 301 https://www.<%= @site_name %>$request_uri;
+}
+
+server {
+    listen 443;
+
+    server_name www.<%= @site_name %>;
+
+    location / {
+      root <%= @server_root =%>;
+      try_files $uri /index.html;
+    }
+
+    upstream api {
+      server <%= @backend_api_url =%>;
+    }
+
+    location /api {
+      proxy_pass http://api/;
+    }
+}

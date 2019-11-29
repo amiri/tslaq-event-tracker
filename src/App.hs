@@ -33,7 +33,6 @@ import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics,
                                               registerWaiMetrics)
 import           System.Remote.Monitoring    (forkServer, serverMetricStore,
                                               serverThreadId)
-import Debug.Trace
 
 -- | An action that creates a WAI 'Application' together with its resources,
 --   runs it, and tears it down on exit
@@ -57,7 +56,6 @@ acquireAppContext :: IO AppContext
 acquireAppContext = do
   let port = 8888
   env       <- getAppEnvironment
-  traceM ("env: " ++ show env)
   logEnv    <- defaultLogEnv (T.pack $ map toLower $ show env)
   ekgServer <- forkServer "localhost" 8000
   let store = serverMetricStore ekgServer
@@ -69,11 +67,8 @@ acquireAppContext = do
   pgConnectInfo  <- case env of
     Production -> getPgConnectInfo "pgconnectinfo" secretsSession
     _          -> pure Nothing
-  traceM ("pgConnectInfo: " ++ show pgConnectInfo)
   let pgConnectInfo'     = fromMaybe defaultPgConnectInfo pgConnectInfo
-  traceM ("pgConnectInfo': " ++ show pgConnectInfo')
   let pgConnectionString = getPgConnectString pgConnectInfo'
-  traceM ("pgConnectionString: " ++ show pgConnectionString)
   pool   <- makePool env pgConnectionString logEnv
   jwtKey <- getJwtKey "tslaq-jwt-key" secretsSession
   let j = fromJust jwtKey
