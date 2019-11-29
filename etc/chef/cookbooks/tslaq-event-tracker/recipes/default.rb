@@ -84,8 +84,8 @@ systemd_unit 'tslaq-event-tracker-api.service' do
   User=tslaq
   WorkingDirectory=/var/local/tslaq-event-tracker
   ExecStart=/var/local/tslaq-event-tracker/bin/tslaq-event-tracker
-  StandardOutput=syslog
-  StandardError=syslog
+  StandardOutput=/var/local/tslaq-event-tracker/logs/api.log
+  StandardError=/var/local/tslaq-event-tracker/logs/api.log
   SyslogIdentifier=tslaq-event-tracker-api
   Restart=always
 

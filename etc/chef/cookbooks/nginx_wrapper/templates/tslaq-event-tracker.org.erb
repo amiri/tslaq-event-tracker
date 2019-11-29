@@ -18,6 +18,21 @@ server {
 
     server_name www.tslaq-event-tracker.org;
 
+    map $time_iso8601 $year {
+      default '0000';
+      "~^(\d{4})-(\d{2})-(\d{2})" $1;
+    }
+    map $time_iso8601 $month {
+        default '00';
+        "~^(\d{4})-(\d{2})-(\d{2})" $2;
+    }
+    map $time_iso8601 $day {
+        default '00';
+        "~^(\d{4})-(\d{2})-(\d{2})" $3;
+    }
+    access_log  /var/local/tslaq-event-tracker/logs/access-$year-$month-$day.log main;
+    error_log /var/local/tslaq-event-tracker/logs/error-$year-$month-$day.log;
+
     location / {
       root <%= @server_root =%>;
       try_files $uri /index.html;

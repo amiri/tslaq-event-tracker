@@ -17,4 +17,4 @@ extra-deps:
   - amazonka-s3-1.6.1
   - http-client-0.5.14
   - clock-0.7.2
-resolver: nightly-2019-07-05
+resolver: lts-14.14
