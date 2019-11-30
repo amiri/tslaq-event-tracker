@@ -20,7 +20,7 @@ nginx_site 'default' do
     cookbook 'nginx_wrapper'
     template 'tslaq-event-tracker.org.erb'
     variables(
-        backend_api_url: 'http://localhost:8888',
+        backend_api_url: '127.0.0.1:8888',
         server_root: '/var/local/tslaq-event-tracker/react'
     )
 end

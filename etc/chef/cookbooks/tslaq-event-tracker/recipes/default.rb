@@ -47,6 +47,15 @@ directory '/var/local/tslaq-event-tracker/logs' do
   action :create
 end
 
+directory '/var/local/tslaq-event-tracker/etc/passwords' do
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0755'
+  recursive true
+  action :create
+  notifies :create_if_missing, 'remote_file[/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem]', :immediately
+end
+
 directory '/var/local/tslaq-event-tracker/etc/certs' do
   owner 'tslaq'
   group 'tslaq'
@@ -54,6 +63,14 @@ directory '/var/local/tslaq-event-tracker/etc/certs' do
   recursive true
   action :create
   notifies :create_if_missing, 'remote_file[/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem]', :immediately
+end
+
+remote_file '/var/local/tslaq-event-tracker/etc/passwords/basic_auth' do
+  source 'file:///tmp/deployments/tslaq-event-tracker/etc/passwords/basic_auth'
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0644'
+  subscribes :create_if_missing, 'directory[/var/local/tslaq-event-tracker/etc/passwords]', :immediately
 end
 
 remote_file '/var/local/tslaq-event-tracker/etc/certs/rds-combined-ca-bundle.pem' do
