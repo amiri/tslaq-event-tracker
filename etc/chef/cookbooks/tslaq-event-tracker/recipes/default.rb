@@ -29,6 +29,7 @@ directory '/var/local/tslaq-event-tracker/react/src' do
   mode '0755'
   recursive true
   action :create
+  subscribes :run, 'execute[copy-react-code]', :immediately
 end
 
 directory '/var/local/tslaq-event-tracker/bin' do
@@ -92,6 +93,7 @@ end
 execute 'copy-react-code' do
   command 'rsync -ua --delete /tmp/deployments/tslaq-event-tracker/react/ /var/local/tslaq-event-tracker/react'
   notifies :run, 'execute[chown-react-code]', :immediately
+  notifies :run, 'directory[/var/local/tslaq-event-tracker/react/src]', :immediately
 end
 
 execute 'chown-react-code' do

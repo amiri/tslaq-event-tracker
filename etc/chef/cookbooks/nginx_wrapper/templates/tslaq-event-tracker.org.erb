@@ -29,8 +29,8 @@ server {
 
     server_name www.tslaq-event-tracker.org;
 
-    access_log  /var/local/tslaq-event-tracker/logs/access-$year-$month-$day.log main;
-    error_log /var/local/tslaq-event-tracker/logs/error-$year-$month-$day.log;
+    access_log  /var/local/tslaq-event-tracker/logs/access.log main;
+    error_log /var/local/tslaq-event-tracker/logs/error.log;
 
     location / {
       root <%= @server_root =%>;
