@@ -1,3 +1,7 @@
+upstream api {
+    server <%= @backend_api_url =%>;
+}
+
 server {
     listen 80 default_server;
 
@@ -31,10 +35,6 @@ server {
     location / {
       root <%= @server_root =%>;
       try_files $uri /index.html;
-    }
-
-    upstream api {
-      server <%= @backend_api_url =%>;
     }
 
     location /api {
