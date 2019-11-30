@@ -8,7 +8,7 @@ nginx_install 'default' do
     source 'repo'
     default_site_enabled false
     group 'tslaq'
-    cookbook 'nginx_wrapper'
+    conf_cookbook 'nginx_wrapper'
     template 'nginx.conf.erb'
     conf_variables(
         nginx_log_dir: '/var/local/tslaq-event-tracker/logs'

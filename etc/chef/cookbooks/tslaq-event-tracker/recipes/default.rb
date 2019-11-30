@@ -39,6 +39,14 @@ directory '/var/local/tslaq-event-tracker/bin' do
   action :create
 end
 
+directory '/var/local/tslaq-event-tracker/logs' do
+  owner 'tslaq'
+  group 'tslaq'
+  mode '0755'
+  recursive true
+  action :create
+end
+
 directory '/var/local/tslaq-event-tracker/etc/certs' do
   owner 'tslaq'
   group 'tslaq'
