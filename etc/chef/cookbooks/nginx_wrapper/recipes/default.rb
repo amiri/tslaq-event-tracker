@@ -49,7 +49,7 @@ end
 acme_certificate "#{site}" do
   crt     "#{app_dir}/etc/certs/#{site}.crt"
   key     "#{app_dir}/etc/certs/#{site}.key"
-  wwwroot           "#{app_dir}/react/"
+  wwwroot           "#{app_dir}/react"
   notifies :restart, "service[nginx]"
   alt_names sans
 end
