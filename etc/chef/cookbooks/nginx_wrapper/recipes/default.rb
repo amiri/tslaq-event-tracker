@@ -4,6 +4,8 @@
 #
 # Copyright:: 2019, The Authors, All Rights Reserved.
 
+include_recipe 'nginx'
+
 app_dir = "/var/local/tslaq-event-tracker"
 
 nginx_install "default" do
