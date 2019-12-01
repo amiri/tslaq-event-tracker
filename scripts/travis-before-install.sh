@@ -1,11 +1,5 @@
 #!/bin/sh
 
-mkdir -p ~/.aws
-cat > ~/.aws/credentials << EOL
-[default]
-aws_access_key_id = ${TQ_AK}
-aws_secret_access_key = ${TQ_AS}
-EOL
 printenv
 mkdir -p ~/.local/bin
 export PATH=$HOME/.local/bin:$PATH

@@ -27,7 +27,8 @@ import           Control.Monad.Metrics       (Metrics, MonadMetrics, getMetrics)
 import           Control.Monad.Reader        (MonadIO, MonadReader, ReaderT,
                                               asks)
 import           Control.Monad.Trans.AWS     (Credentials (..), Region (..))
-import           Crypto.JOSE.JWK             (JWK, fromRSA, genJWK, KeyMaterialGenParam(..))
+import           Crypto.JOSE.JWK             (JWK, KeyMaterialGenParam (..),
+                                              fromRSA, genJWK)
 import           Data.Aeson                  (FromJSON, ToJSON, decode,
                                               parseJSON, withObject, (.:))
 import qualified Data.ByteString             as BS
@@ -65,9 +66,9 @@ import           Servant.Auth.Server         (CookieSettings (..),
                                               defaultJWTSettings)
 import           System.Directory            (doesFileExist)
 -- import           Network.Wai.Middleware.RequestLogger (logStdout, logStdoutDev)
+import           Errors
+import           System.Environment          (getProgName, lookupEnv)
 import           Types
-import Errors
-import System.Environment (getProgName)
 
 wrapAWSService 's3 "S3Service" "S3Session"
 wrapAWSService 'secretsManager "SMService" "SMSession"
@@ -97,8 +98,9 @@ getCredentials b e = do
     True  -> FromFile "tslaq-user" "/home/amiri/.aws/credentials"
     False -> do
       case e of
-        Test -> FromEnv "TQ_AK" "TQ_AS" Nothing (Just "NorthVirginia")
-        _ -> Discover
+        Test   -> FromEnv "TQ_AK" "TQ_AS" Nothing (Just "NorthVirginia")
+        Travis -> FromEnv "TQ_AK" "TQ_AS" Nothing (Just "NorthVirginia")
+        _      -> Discover
 
 getAWSConfig :: Environment -> IO AWSConfig
 getAWSConfig e = do
@@ -214,44 +216,45 @@ data PGConnectInfo = PGConnectInfo {
 
 instance ToJSON PGConnectInfo
 instance FromJSON PGConnectInfo where
-  parseJSON =
-    withObject "PGConnectInfo" $ \obj -> do
-      pgUsername <- obj .: "username"
-      pgPassword <- obj .: "password"
-      pgHost <- obj .: "host"
-      pgPort <- obj .: "port"
-      pgDbInstanceIdentifier <- obj .: "dbInstanceIdentifier"
-      pgSslmode <- obj .: "sslmode"
-      pgSslrootcert <- obj .: "sslrootcert"
-      pure PGConnectInfo {..}
+  parseJSON = withObject "PGConnectInfo" $ \obj -> do
+    pgUsername             <- obj .: "username"
+    pgPassword             <- obj .: "password"
+    pgHost                 <- obj .: "host"
+    pgPort                 <- obj .: "port"
+    pgDbInstanceIdentifier <- obj .: "dbInstanceIdentifier"
+    pgSslmode              <- obj .: "sslmode"
+    pgSslrootcert          <- obj .: "sslrootcert"
+    pure PGConnectInfo { .. }
 
 instance Monad m => MonadMetrics (AppT m) where
-    getMetrics = asks AppContext.ctxMetrics
+  getMetrics = asks AppContext.ctxMetrics
 
 -- | Katip instance for @AppT m@
 instance MonadIO m => Katip (AppT m) where
-    getLogEnv = asks ctxLogEnv
-    localLogEnv = error "not implemented"
+  getLogEnv   = asks ctxLogEnv
+  localLogEnv = error "not implemented"
 
 -- | MonadLogger instance to use within @AppT m@
 instance MonadIO m => MonadLogger (AppT m) where
-    monadLoggerLog = adapt logMsg
+  monadLoggerLog = adapt logMsg
 
 -- | MonadLogger instance to use in @makePool@
 instance MonadIO m => MonadLogger (KatipT m) where
-    monadLoggerLog = adapt logMsg
+  monadLoggerLog = adapt logMsg
 
 -- | Right now, we're distinguishing between three environments. We could
 -- also add a @Staging@ environment if we needed to.
 data Environment
     = Development
     | Test
+    | Travis
     | Production
     deriving (Eq, Show, Read)
 
 -- | This returns a 'Middleware' based on the environment that we're in.
 setLogger :: Environment -> LogEnv -> Middleware
 setLogger Test        _  = Prelude.id
+setLogger Travis      _  = Prelude.id
 setLogger Development le = katipLogger le
 setLogger Production  le = katipLogger le
 
@@ -268,10 +271,13 @@ getAppEnvironment :: IO Environment
 getAppEnvironment = do
   getHostName >>= \case
     "tslaq-event-tracker" -> pure Production
-    _ -> do
-      getProgName >>= \case
-        "tslaq-event-tracker-test" -> pure Test
-        _ -> pure Development
+    _                     -> do
+      lookupEnv "TRAVIS" >>= \case
+        Just "true" -> pure Travis
+        _           -> do
+          getProgName >>= \case
+            "tslaq-event-tracker-test" -> pure Test
+            _                          -> pure Development
 
 getPgConnectString :: PGConnectInfo -> ConnectionString
 getPgConnectString i = BS.intercalate " " $ zipWith (<>) pgKeys pgVals
@@ -305,7 +311,8 @@ getPgConnectString i = BS.intercalate " " $ zipWith (<>) pgKeys pgVals
 -- information from environment variables that are set by the keter
 -- deployment application.
 makePool :: Environment -> ConnectionString -> LogEnv -> IO ConnectionPool
-makePool Test s le = runKatipT le (createPostgresqlPool s (envPool Test))
+makePool Test   s le = runKatipT le (createPostgresqlPool s (envPool Test))
+makePool Travis s le = runKatipT le (createPostgresqlPool s (envPool Travis))
 makePool Development s le =
   runKatipT le $ createPostgresqlPool s (envPool Development)
 makePool Production s le =
@@ -314,6 +321,7 @@ makePool Production s le =
 -- | The number of pools to use for a given environment.
 envPool :: Environment -> Int
 envPool Test        = 1
+envPool Travis      = 1
 envPool Development = 1
 envPool Production  = 8
 
@@ -328,4 +336,8 @@ connStr sfx =
 userHasRole :: Monad m => AuthorizedUser -> UserRole -> AppT m ()
 userHasRole u r = if (authUserRole u) == r
   then return ()
-  else throwError $ encodeJSONError (JSONError 401 "InsufficientAuthorization" "You have insufficient authorization for this action.")
+  else throwError $ encodeJSONError
+    (JSONError 401
+               "InsufficientAuthorization"
+               "You have insufficient authorization for this action."
+    )
