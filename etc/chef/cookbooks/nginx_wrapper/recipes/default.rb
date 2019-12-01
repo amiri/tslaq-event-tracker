@@ -4,9 +4,6 @@
 #
 # Copyright:: 2019, The Authors, All Rights Reserved.
 
-include_recipe 'nginx::install'
-include_recipe 'nginx::site'
-
 app_dir = "/var/local/tslaq-event-tracker"
 
 nginx_install "default" do
@@ -28,6 +25,12 @@ nginx_site "default" do
         backend_api_url: "127.0.0.1:8888",
         server_root: "#{app_dir}/react/"
     )
+end
+
+service 'nginx' do
+  extend Nginx::Cookbook::Helpers
+  supports restart: true, status: true, reload: true
+  action :nothing
 end
 
 site = "tslaq-event-tracker.org"
