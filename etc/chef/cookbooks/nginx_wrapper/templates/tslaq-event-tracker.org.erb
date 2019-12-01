@@ -6,7 +6,7 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server;
 
-    server_name _;
+    server_name tslaq-event-tracker.org;
 
     location /.well-known/ {
         root <%= @server_root =%>;
@@ -18,8 +18,8 @@ server {
 }
 
 server {
-    listen 443 ssl http2 default_server;
-    listen [::]:443 ssl http2 default_server;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
 
     server_name tslaq-event-tracker.org;
     return 301 https://www.tslaq-event-tracker.org$request_uri;
