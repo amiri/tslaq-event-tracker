@@ -7,8 +7,9 @@ long_description 'Installs/Configures tslaq-event-tracker'
 version '0.1.0'
 chef_version '>= 12.0'
 depends 'hostname'
-depends 'systemd_unit'
 depends 'postfix'
+depends 'acme'
+
 
 # The `issues_url` points to the location where issues for this cookbook are
 # tracked.  A `View Issues` link will be displayed on this cookbook's page when

@@ -3,13 +3,18 @@
     "recipe[hostname::default]",
     "recipe[postfix::default]",
     "recipe[tslaq-event-tracker]",
-    "recipe[nginx_wrapper::default]"
+    "recipe[nginx_wrapper::default]",
+    "recipe[acme]"
   ],
   "set_fqdn": "tslaq-event-tracker.org",
   "postfix": {
     "main": {
       "relayhost": "smtp-relay.gmail.com:587"
     }
+  },
+  "acme": {
+    "contact":["mailto:tslaq@tslaq-event-tracker.org"],
+    "endpoint":"https://acme-v02.api.letsencrypt.org/directory"
   }
 }
 
