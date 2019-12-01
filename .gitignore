@@ -9,3 +9,4 @@ chef-cache
 *.out
 local-mode-cache
 react-orig/
+react/dist

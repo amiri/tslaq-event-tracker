@@ -69,7 +69,7 @@ generateCustomAxiosJSWith e aopts opts req =
     <> "  });\n"
     <> "}\n"
  where
-  baseUrl = if e == Production then "    , baseURL: '/api'\n" else "    , baseURL: 'http://localhost:8888'\n"
+  baseUrl = if e == Travis then "    , baseURL: '/api'\n" else "    , baseURL: 'http://localhost:8888'\n"
   argsStr = T.intercalate ", " args
   args =
     captures
