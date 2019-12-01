@@ -15,18 +15,6 @@ events {
 }
 
 http {
-  map $time_iso8601 $year {
-    default '0000';
-    "~^(\d{4})-(\d{2})-(\d{2})" $1;
-  }
-  map $time_iso8601 $month {
-      default '00';
-      "~^(\d{4})-(\d{2})-(\d{2})" $2;
-  }
-  map $time_iso8601 $day {
-      default '00';
-      "~^(\d{4})-(\d{2})-(\d{2})" $3;
-  }
   log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                     '$status $body_bytes_sent "$http_referer" '
                     '"$http_user_agent" "$http_x_forwarded_for"';
@@ -38,6 +26,11 @@ http {
   tcp_nodelay         <%= @tcp_nodelay %>;
   keepalive_timeout   <%= @keepalive_timeout %>;
   types_hash_max_size <%= @types_hash_max_size %>;
+  ssl_certificate <%= @app_dir =%>/etc/certs/tslaq-event-tracker.org.crt;
+  ssl_certificate_key <%= @app_dir =%>/etc/certs/tslaq-event-tracker.org.key;
+  ssl_prefer_server_ciphers on;
+  ssl_ciphers EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH;
+  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 
   include       <%= @nginx_dir %>/mime.types;
   default_type  application/octet-stream;

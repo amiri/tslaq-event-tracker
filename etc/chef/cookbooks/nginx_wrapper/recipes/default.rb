@@ -13,7 +13,8 @@ nginx_install "default" do
     conf_cookbook "nginx_wrapper"
     conf_template "nginx.conf.erb"
     conf_variables(
-        nginx_log_dir: "#{app_dir}/logs/"
+        nginx_log_dir: "#{app_dir}/logs/",
+        app_dir: "#{app_dir}",
     )
 end
 
@@ -23,7 +24,7 @@ nginx_site "default" do
     template "tslaq-event-tracker.org.erb"
     variables(
         backend_api_url: "127.0.0.1:8888",
-        server_root: "#{app_dir}/react/"
+        server_root: "#{app_dir}/react/",
     )
 end
 

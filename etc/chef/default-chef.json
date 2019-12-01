@@ -13,8 +13,7 @@
     }
   },
   "acme": {
-    "contact":["mailto:tslaq@tslaq-event-tracker.org"],
-    "endpoint":"https://acme-v02.api.letsencrypt.org/directory"
+    "contact":["mailto:tslaq@tslaq-event-tracker.org"]
   }
 }
 
