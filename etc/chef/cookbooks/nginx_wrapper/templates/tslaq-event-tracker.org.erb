@@ -48,6 +48,7 @@ server {
 
     location /api/ {
       default_type application/json;
-      proxy_pass http://api;
+      rewrite ^/api/(.*)$ /$1 break;
+      proxy_pass http://api/;
     }
 }
