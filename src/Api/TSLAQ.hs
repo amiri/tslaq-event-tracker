@@ -27,6 +27,7 @@ import qualified Data.ByteString.Lazy   as LB (fromStrict)
 import           Data.Digest.Pure.MD5   (md5)
 import           Data.Text              (pack)
 import           Data.Text.Encoding     (encodeUtf8)
+import           Debug.Trace
 import           Errors
 import           Instances
 import           Network.AWS            (send)
@@ -40,7 +41,8 @@ import           Servant.JS             (defAxiosOptions, jsForAPI,
 import           Types                  (AuthorizedUser (..))
 
 -- Servant type representation
-type TSLAQAPI auths = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
+type TSLAQAPI auths
+  = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
 
 type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI
 
@@ -79,21 +81,16 @@ publicServer
   :: MonadIO m => CookieSettings -> JWTSettings -> ServerT PublicAPI (AppT m)
 publicServer cs jwts =
   readEventServer cs jwts
-    :<|> loginServer    cs jwts
-    :<|> pricesServer   cs jwts
+    :<|> loginServer cs jwts
+    :<|> pricesServer cs jwts
     :<|> registerServer cs jwts
 
 -- | Generates JavaScript to query the User API.
-generateJavaScript :: Environment -> S3Session -> IO ()
-generateJavaScript e = withAWS $ do
-  let js = encodeUtf8 $ jsForAPI tslaqApi $ customAxios e defAxiosOptions
-        { withCredentials = True
-        }
-
-  let h             = md5 $ LB.fromStrict js
-  let f             = "tslaq-api-" ++ (show h) ++ ".js"
-  let f'            = pack f
+writeJS :: Environment -> S3Session -> IO ()
+writeJS e = withAWS $ do
+  traceM ("Writing javascript")
+  let js = encodeUtf8 $ jsForAPI tslaqApi $ customAxios
+        e
+        defAxiosOptions { withCredentials = True }
   let localFilename = (localJSFolder e) ++ "Api.js"
   liftIO $ B.writeFile localFilename js
-  let body = toBody js
-  void $ send (putObject jsBucket (ObjectKey f') body)

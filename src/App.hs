@@ -3,7 +3,7 @@
 module App where
 
 import           Api                         (app)
-import           Api.TSLAQ                   (generateJavaScript)
+import           Api.TSLAQ                   (writeJS)
 import           AppContext                  (AppContext (..), Environment (..),
                                               defaultPgConnectInfo,
                                               getAWSConfig, getAppEnvironment,
@@ -39,6 +39,14 @@ import           System.Remote.Monitoring    (forkServer, serverMetricStore,
 runApp :: IO ()
 runApp = bracket acquireAppContext shutdownApp runApp'
   where runApp' ctx = run (ctxPort ctx) =<< initialize ctx
+
+generate :: IO ()
+generate = do
+  env       <- getAppEnvironment
+  c         <- getAWSConfig env
+  s3Session <- connect c s3Service
+  writeJS env s3Session
+
 
 -- | The 'initialize' function accepts the required environment information,
 -- initializes the WAI 'Application' and returns it
@@ -76,9 +84,6 @@ acquireAppContext = do
                                                   secretsSession
   let cfsk       = fromJust cloudFrontSigningKey
   let authConfig = getAuthConfig j env
-  _ <- case env of
-    Production -> generateJavaScript env s3Session
-    _          -> pure ()
   pure AppContext { ctxPool                 = pool
                   , ctxEnv                  = env
                   , ctxMetrics              = metr
