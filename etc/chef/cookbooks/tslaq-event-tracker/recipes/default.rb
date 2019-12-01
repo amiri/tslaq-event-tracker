@@ -113,24 +113,3 @@ systemd_unit "tslaq-event-tracker-api.service" do
   action [:create, :enable, :reload_or_try_restart]
 
 end
-
-site = "tslaq-event-tracker.org"
-sans = ["www.#{site}"]
-
-acme_selfsigned "#{site}" do
-  crt     "#{app_dir}/etc/certs/#{site}.crt"
-  key     "#{app_dir}/etc/certs/#{site}.key"
-  chain    "#{app_dir}/etc/certs/#{site}.pem"
-  owner   "nginx"
-  group   "nginx"
-  notifies :restart, "service[nginx]", :immediate
-end
-
-# Get and auto-renew the certificate from Let"s Encrypt
-acme_certificate "#{site}" do
-  crt     "#{app_dir}/etc/certs/#{site}.crt"
-  key     "#{app_dir}/etc/certs/#{site}.key"
-  wwwroot           "#{app_dir}/react/"
-  notifies :restart, "service[nginx]"
-  alt_names sans
-end

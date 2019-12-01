@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "hostname": ">= 0.0.0",
-    "postfix": ">= 0.0.0",
-    "acme": ">= 0.0.0"
+    "postfix": ">= 0.0.0"
   },
   "providing": {
 
