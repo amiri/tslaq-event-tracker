@@ -88,7 +88,6 @@ publicServer cs jwts =
 -- | Generates JavaScript to query the User API.
 writeJS :: Environment -> S3Session -> IO ()
 writeJS e = withAWS $ do
-  traceM ("Writing javascript")
   let js = encodeUtf8 $ jsForAPI tslaqApi $ customAxios
         e
         defAxiosOptions { withCredentials = True }
