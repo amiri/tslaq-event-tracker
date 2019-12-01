@@ -46,7 +46,7 @@ server {
       try_files $uri /index.html;
     }
 
-    location /api {
+    location /api/ {
       default_type application/json;
       proxy_pass http://api;
     }
