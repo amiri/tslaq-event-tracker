@@ -23,7 +23,7 @@ server {
 
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
 
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com; img-src 'self' https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'; frame-src 'none'; object-src 'none'";
+    add_header Content-Security-Policy "default-src 'self' https://prices.tslaq-event-tracker.org; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com; img-src 'self' https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'; frame-src 'none'; object-src 'none'";
 
     server_name tslaq-event-tracker.org;
 
@@ -36,7 +36,7 @@ server {
 
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
 
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com; img-src 'self' https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'; frame-src 'none'; object-src 'none'";
+    add_header Content-Security-Policy "default-src 'self' https://prices.tslaq-event-tracker.org; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.google-analytics.com; img-src 'self' https://ssl.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self'; frame-src 'none'; object-src 'none'";
 
     satisfy all;
     allow 76.91.154.9;

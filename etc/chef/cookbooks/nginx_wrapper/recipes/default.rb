@@ -28,16 +28,17 @@ nginx_site "default" do
     )
 end
 
-openssl_dhparam "#{app_dir}/etc/certs/dhparam.pem" do
-  owner "nginx"
-  group "nginx"
-  key_length 2048
-end
-
 service 'nginx' do
   extend Nginx::Cookbook::Helpers
   supports restart: true, status: true, reload: true
   action :nothing
+end
+
+openssl_dhparam "#{app_dir}/etc/certs/dhparam.pem" do
+  owner "nginx"
+  group "nginx"
+  key_length 2048
+  notifies :restart, "service[nginx]"
 end
 
 site = "tslaq-event-tracker.org"

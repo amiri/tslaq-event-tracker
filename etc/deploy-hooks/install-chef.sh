@@ -1,5 +1,6 @@
 #!/bin/bash
 
+DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages -o Dpkg::Options::="--force-confold" -o DPkg::Options::="--force-confdef" software-properties-common
 DEBIAN_FRONTEND=noninteractive apt-get -y add-apt-repository universe
 DEBIAN_FRONTEND=noninteractive apt-get -y add-apt-repository ppa:certbot/certbot
 DEBIAN_FRONTEND=noninteractive apt-get -y update
