@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE GADTs #-}
 module Types where
 
 import           Control.Monad.Except  (MonadIO, liftIO)
@@ -14,11 +14,12 @@ import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
 import           Data.Int              (Int64)
 import           Data.Text             (Text)
-import           Data.Text.Encoding    (encodeUtf8)
+import           Data.Text.Encoding    (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock       (UTCTime)
 import           Database.Persist.Sql
 import           GHC.Generics
 import           Servant.Auth.Server   as SAS
+import qualified Web.Hashids           as Hash
 
 data PriceUrl = PriceUrl {
   url :: Text
@@ -33,7 +34,7 @@ instance FromJSON UserRole
 data EventDisplay = EventDisplay {
     body       :: !EventBody
   , createTime :: !UTCTime
-  , id         :: !Int64
+  , id         :: !Text
   , time       :: !UTCTime
   , title      :: !EventTitle
   , updateTime :: !UTCTime
@@ -43,11 +44,11 @@ instance ToJSON EventDisplay
 instance FromJSON EventDisplay
 
 data CategoryDisplay = CategoryDisplay {
-    name       :: CategoryName
-  , id         :: Int64
-  , createTime :: UTCTime
-  , updateTime :: UTCTime
-  , details    :: Maybe CategoryDetails
+    name       :: !CategoryName
+  , id         :: !Text
+  , createTime :: !UTCTime
+  , updateTime :: !UTCTime
+  , details    :: !(Maybe CategoryDetails)
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
@@ -76,9 +77,9 @@ instance ToJSON UserLogin
 instance FromJSON UserLogin
 
 data AuthorizedUser = AuthorizedUser {
-    authUserName :: UserName
-  , authUserId   :: Int64
-  , authUserRole :: UserRole
+    authUserName :: !UserName
+  , authUserId   :: !Text
+  , authUserRole :: !UserRole
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON AuthorizedUser
 instance FromJSON AuthorizedUser
@@ -99,3 +100,15 @@ hashPassword p =
 
 passwordValid :: String -> String -> Bool
 passwordValid p h = validatePassword (pack h) (pack p)
+
+hashSalt :: ByteString
+hashSalt = "firesale"
+
+hashContext :: Hash.HashidsContext
+hashContext = Hash.hashidsMinimum hashSalt 4
+
+hashId :: Int64 -> Text
+hashId = decodeUtf8 . Hash.encode hashContext . fromIntegral
+
+unhashId :: Text -> Int64
+unhashId = fromIntegral . head . Hash.decode hashContext . encodeUtf8

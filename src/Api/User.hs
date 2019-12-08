@@ -12,7 +12,7 @@ import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
 import           Data.Maybe                  (fromJust)
-import           Data.Text                   (pack)
+import           Data.Text                   (Text, pack)
 import           Data.Text.Encoding          (decodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
@@ -22,12 +22,12 @@ import           Models                      (Key, User (User), runDb)
 import           Servant
 import           Types                       (AuthorizedUser (..), BCrypt (..),
                                               NewUser (..), UserRole (..),
-                                              hashPassword)
+                                              hashPassword, unhashId)
 import Errors
 
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
-    :<|> "users" :> Capture "id" Int64 :> Get '[JSON] (Entity User)
+    :<|> "users" :> Capture "id" Text :> Get '[JSON] (Entity User)
     :<|> "users" :> ReqBody '[JSON] NewUser :> Post '[JSON] Int64
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] EventUpdate :> Put '[JSON] (Entity User)
 
@@ -48,7 +48,7 @@ listUsers u = do
   runDb (selectList [] [])
 
 -- | Returns a user by id or throws a 404 error.
-getUser :: MonadIO m => AuthorizedUser -> Int64 -> AppT m (Entity User)
+getUser :: MonadIO m => AuthorizedUser -> Text -> AppT m (Entity User)
 getUser au i = if (authUserId au) /= i
   then throwError $ encodeJSONError (JSONError 401 "NotUser" "You are requesting another user's information.")
   else do
@@ -57,7 +57,7 @@ getUser au i = if (authUserId au) /= i
     logDebugNS
       "web"
       ((pack $ show $ authUserId au) <> " get user " <> (pack $ show i))
-    maybeUser <- runDb (getEntity (toSqlKey i :: Key User))
+    maybeUser <- runDb (getEntity (toSqlKey (unhashId i) :: Key User))
     case maybeUser of
       Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchUser" "There is no such user.")
       Just u  -> pure u

@@ -44,7 +44,7 @@ eventsAndCategoriesToDisplay = map toDisplay
   toDisplay (e, cs) = EventDisplay
     { body       = (eventBody $ entityVal e)
     , createTime = (eventCreateTime $ entityVal e)
-    , id         = fromSqlKey (entityKey e)
+    , id         = hashId $ fromSqlKey (entityKey e)
     , time       = (eventTime $ entityVal e)
     , title      = (eventTitle $ entityVal e)
     , updateTime = (eventUpdateTime $ entityVal e)
@@ -57,7 +57,7 @@ flattenCategories cs =
         ( \c -> CategoryDisplay
           { name       = (categoryName $ entityVal c)
           , createTime = (categoryCreateTime $ entityVal c)
-          , id         = fromSqlKey (entityKey c)
+          , id         = hashId $ fromSqlKey (entityKey c)
           , details    = Just (categoryDetails $ entityVal c)
           , updateTime = (categoryUpdateTime $ entityVal c)
           }

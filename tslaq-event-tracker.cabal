@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fb19c45b8847441349377a8415e61e0db2f60d0481b9f4becf86807cc1d0e824
+-- hash: 1cfc8408a318e882480e5a397218f74efae28588d296535d95af1c675d072f8d
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -68,6 +68,7 @@ library
     , esqueleto
     , fast-logger
     , foreign-store
+    , hashids
     , hostname
     , hslogger
     , hspec >=2.7.1
@@ -135,6 +136,7 @@ executable tslaq-event-tracker-exe
     , esqueleto
     , fast-logger
     , foreign-store
+    , hashids
     , hostname
     , hslogger
     , hspec >=2.7.1
@@ -205,6 +207,7 @@ test-suite tslaq-event-tracker-test
     , esqueleto
     , fast-logger
     , foreign-store
+    , hashids
     , hostname
     , hslogger
     , hspec >=2.7.1

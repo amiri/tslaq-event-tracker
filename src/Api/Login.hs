@@ -21,7 +21,7 @@ import           Servant.Auth.Server         as SAS
 import           Types                       (AuthorizedUser (..), BCrypt (..),
                                               UserEmail, UserLogin (..),
                                               UserName (..), UserRole (..),
-                                              passwordValid)
+                                              passwordValid, hashId)
 import Errors
 
 type LoginAPI = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
@@ -87,7 +87,7 @@ validateLogin e p = do
           ( Just
             ( AuthorizedUser
               { authUserName = uName
-              , authUserId   = uId
+              , authUserId   = hashId uId
               , authUserRole = getUserRole (userName v)
               }
             )
