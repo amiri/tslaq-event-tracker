@@ -25,3 +25,11 @@ div#chart {
 .hidden {
   display: none;
 }
+
+rect.annotation-note-bg {
+    fill-opacity: 100;
+}
+
+.annotation-note-title, .annotation-note-label {
+    font-size: 12px;
+}

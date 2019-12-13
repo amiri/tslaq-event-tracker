@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
+import {schemeBlues,schemeSpectral,schemePaired} from 'd3-scale-chromatic';
 import {
   getXScale,
   getYScale,
@@ -16,11 +17,15 @@ import {
   updateLowLine,
 } from './utils/Chart';
 import {
+  Annotation,
+  AnnotationCallout,
   AnnotationXYThreshold,
   AnnotationCalloutCircle,
 } from 'react-annotation';
-import { isEmpty } from 'lodash';
+import { flatten, isEmpty, sortedUniq } from 'lodash';
+import {Typography} from 'antd';
 
+const {Text} = Typography;
 const Focus = ({
   width,
   height,
@@ -39,11 +44,11 @@ const Focus = ({
   // Scales
   const xScale = getXScale({ xExtent, width, margin });
   const yScale = getYScale({ yExtent, height, margin });
-
+  const categories = sortedUniq(flatten(events.map(e => e.categories.map(c => c.name))).sort());
+  const colors = d3.scaleOrdinal().range(d3.schemeSpectral[categories.length < 10 ? 10 : categories.length]).domain(categories);
   const [hover, setHover] = useState(null);
 
   // Annotations
-  // console.log(ps[0]);
   const rawAnnotations = events.map(e => {
     const interval = resolution === 'daily' ? 'day' : 'hour';
     const fmt = resolution === 'daily' ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:MM:SS';
@@ -57,37 +62,36 @@ const Focus = ({
     const title = `${e.eventTime.tz('America/New_York').format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
     return {
       note: { title, label: e.body},
-      type: AnnotationCalloutCircle,
       x: xScale(e.eventTime.toDate()),
       y: yScale(p),
+      category: e.categories[0].name,
     };
   });
-  console.log(rawAnnotations);
   const annotations = rawAnnotations.map((a, i) => {
-    const Annotation = a.type;
-    const { note, x, y } = a;
-    const radius = 2;
-    note.wrap = 30;
+    const { note, x, y, category } = a;
+    const radius = 5;
+    note.wrap = 200;
+    note.orientation = null;
+    note.align = 'dynamic';
     note.lineType = null;
-    note.align = 'middle';
+    note.bgPadding = 10;
     const thisY =
       rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
-        ? y + radius + 1
+        ? y + radius + 5
         : y;
-    console.log(thisY);
     return (
       <g key={i}>
-        <AnnotationCalloutCircle
+        <AnnotationCallout
           x={x}
           y={thisY}
           dx={20}
+          color={'#444444'}
           dy={20}
           note={note}
-          subject={{ radius }}
           className={hover === i ? '' : 'hidden'}
         />
         <circle
-          fill='#9610ff'
+          fill={colors(category)}
           r={radius}
           cx={x}
           cy={thisY}
