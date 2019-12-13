@@ -8,7 +8,7 @@
 
 ## Display multiple events in a modal with a query parameter
 
-1. Add hashids to events and all displayed db objects
+✓ 1. Add hashids to events and all displayed db objects
 
 ## Event Category Selector
 
