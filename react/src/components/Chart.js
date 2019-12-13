@@ -9,10 +9,18 @@ import { calculateDimensions } from './utils/Chart';
 import { isEmpty } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
+import { Route, useLocation, useParams, useHistory } from 'react-router-dom';
+import * as QueryString from "query-string"
+
+const Print = () => {
+    const location = useLocation();
+    const params = QueryString.parse(location.search);
+    console.log('Show modal with query string: ', location, params);
+    return null;
+};
 
 const Chart = () => {
   const { events } = useContext(EventsContext);
-  console.log(events);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
 
@@ -147,6 +155,10 @@ const Chart = () => {
           />
         </div>
       )}
+        <Route
+          path='/event'
+          component={Print}
+        />
     </div>
   );
 };

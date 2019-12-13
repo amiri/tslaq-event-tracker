@@ -9,6 +9,7 @@ import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import './App.css';
 import { Layout } from 'antd';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 const { Header, Content } = Layout;
 
@@ -16,24 +17,26 @@ window.api = new Api();
 
 const App = () => {
   return (
-    // <React.StrictMode>
+  <React.StrictMode>
     <AuthContextProvider>
       <PricesContextProvider>
         <EventsContextProvider>
           <ChartContextProvider>
             <Layout style={{ height: '100%', width: '100%' }}>
-              <Header>
+              <Header style={{backgroundColor: '#f0f2f5'}}>
                 <NavBar />
               </Header>
               <Content style={{ height: '100%', width: '100%' }}>
-                <Chart />
+                <Router>
+                   <Route path='/' component={Chart} />
+                </Router>
               </Content>
             </Layout>
           </ChartContextProvider>
         </EventsContextProvider>
       </PricesContextProvider>
     </AuthContextProvider>
-    // </React.StrictMode>
+  </React.StrictMode>
   );
 };
 

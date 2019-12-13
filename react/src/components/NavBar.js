@@ -2,13 +2,14 @@ import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { ChartContext } from '../contexts/ChartContext';
 import LoginForm from './LoginForm';
-import { Row, Col, Button } from 'antd';
+import { Row, Col, Button, Typography } from 'antd';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { DatePicker } from 'antd';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 
 const { RangePicker } = DatePicker;
+const {Text} = Typography;
 
 const logout = async dispatch => {
   localStorage.removeItem('user');
@@ -32,12 +33,11 @@ const NavBar = () => {
     );
     setConfig({ ...config, dateRange: estDates });
   };
-  // console.log('DateRange in navbar: ', config.dateRange);
   return (
     <Router>
       <div>
         <Row type='flex' justify='start'>
-          <Col style={colStyle}>Event Tracker</Col>
+          <Col style={colStyle}><Text strong={true}>$TSLAQ Event Tracker</Text></Col>
           <Col style={colStyle}>
             {user ? (
               <Button type='link' onClick={() => logout(dispatch)}>
@@ -48,7 +48,6 @@ const NavBar = () => {
             )}
           </Col>
           <Col style={colStyle}>
-            Chart daterange:{' '}
             <RangePicker
               allowClear={true}
               onChange={dates => updateRange(dates)}
