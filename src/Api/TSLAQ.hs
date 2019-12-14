@@ -13,6 +13,7 @@ import           Api.Login
 import           Api.Logout
 import           Api.Metrics
 import           Api.Prices
+import           Api.ReadCategory
 import           Api.ReadEvent
 import           Api.Register
 import           Api.User
@@ -46,7 +47,8 @@ type TSLAQAPI auths
 
 type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI
 
-type PublicAPI = ReadEventAPI :<|> LoginAPI :<|> PricesAPI :<|> RegisterAPI
+type PublicAPI
+  = ReadEventAPI :<|> LoginAPI :<|> PricesAPI :<|> RegisterAPI :<|> ReadCategoryAPI
 
 -- Servant API
 tslaqApi :: Proxy (TSLAQAPI '[JWT, Cookie])
@@ -84,6 +86,7 @@ publicServer cs jwts =
     :<|> loginServer cs jwts
     :<|> pricesServer cs jwts
     :<|> registerServer cs jwts
+    :<|> readCategoryServer cs jwts
 
 -- | Generates JavaScript to query the User API.
 writeJS :: Environment -> S3Session -> IO ()

@@ -2,7 +2,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module Api (app, appToServer) where
+module Api
+  ( app
+  , appToServer
+  )
+where
 
 import           Control.Monad.Reader        (runReaderT)
 import           Servant                     (Proxy (..), Server,

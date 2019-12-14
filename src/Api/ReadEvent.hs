@@ -1,31 +1,32 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE KindSignatures    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DuplicateRecordFields      #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeOperators         #-}
 
 module Api.ReadEvent where
 
-import           AppContext                  (AppT (..), AppContext)
+import           AppContext                  (AppContext, AppT (..))
 import           Control.Monad.Except        (MonadIO)
-import           Control.Monad.Reader (MonadReader)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
-import           Data.Int                    (Int64)
+import           Control.Monad.Reader        (MonadReader)
+-- import           Data.Int                    (Int64)
 import qualified Data.Map.Strict             as Map
 import           Data.Maybe                  (catMaybes)
+import           Data.Text                   (Text)
 import           Database.Esqueleto
 import           Database.Persist.Postgresql (Entity (..), toSqlKey)
+import           Errors
 import           Models
 import           Servant
 import           Servant.Auth.Server         as SAS
-import Types
-import Errors
+import           Types
 
 type ReadEventAPI = "events" :> Get '[JSON] [EventDisplay]
-    :<|> "events" :> Capture "id" Int64 :> Get '[JSON] EventDisplay
+    :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
 
 readEventApi :: Proxy ReadEventAPI
 readEventApi = Proxy
@@ -38,10 +39,12 @@ readEventServer _ _ = listEvents :<|> getEvent
 keyValuesToMap :: (Ord k) => [(k, a)] -> Map.Map k [a]
 keyValuesToMap = Map.fromListWith (++) . map (\(k, v) -> (k, [v]))
 
-eventsAndCategoriesToDisplay :: [(Entity Event, [Maybe (Entity Category)])] -> [EventDisplay]
-eventsAndCategoriesToDisplay = map toDisplay
- where
-  toDisplay (e, cs) = EventDisplay
+eventsAndCategoriesToDisplay
+  :: [(Entity Event, [Maybe (Entity Category)])] -> [EventDisplay]
+eventsAndCategoriesToDisplay = map toEventDisplay
+
+toEventDisplay :: (Entity Event, [Maybe (Entity Category)]) -> EventDisplay
+toEventDisplay (e, cs) = EventDisplay
     { body       = (eventBody $ entityVal e)
     , createTime = (eventCreateTime $ entityVal e)
     , id         = hashId $ fromSqlKey (entityKey e)
@@ -51,30 +54,30 @@ eventsAndCategoriesToDisplay = map toDisplay
     , categories = (flattenCategories (catMaybes cs))
     }
 
+toCategoryDisplay :: Entity Category -> CategoryDisplay
+toCategoryDisplay c = CategoryDisplay
+  { name       = (categoryName $ entityVal c)
+  , createTime = (categoryCreateTime $ entityVal c)
+  , id         = hashId $ fromSqlKey (entityKey c)
+  , details    = Just (categoryDetails $ entityVal c)
+  , updateTime = (categoryUpdateTime $ entityVal c)
+  }
+
 flattenCategories :: [Entity Category] -> Maybe [CategoryDisplay]
 flattenCategories cs =
-  let tcs = map
-        ( \c -> CategoryDisplay
-          { name       = (categoryName $ entityVal c)
-          , createTime = (categoryCreateTime $ entityVal c)
-          , id         = hashId $ fromSqlKey (entityKey c)
-          , details    = Just (categoryDetails $ entityVal c)
-          , updateTime = (categoryUpdateTime $ entityVal c)
-          }
-        )
-        cs
+  let tcs = map ( \c -> toCategoryDisplay c ) cs
   in  if length tcs > 0 then Just (tcs) else Nothing
 
 transformEventsAndCategories
   :: [(Entity Event, Maybe (Entity Category))] -> [EventDisplay]
 transformEventsAndCategories = eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap
 
-getEvents :: (MonadReader AppContext m, MonadIO m) => Maybe Int64 -> m [(Entity Event, Maybe (Entity Category))]
+getEvents :: (MonadReader AppContext m, MonadIO m) => Maybe Text -> m [(Entity Event, Maybe (Entity Category))]
 getEvents (Just i) = do
   runDb $ select $ from $ \(e `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
     on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId
     on $ just (e ^. EventId) ==. ec ?. EventCategoryEventId
-    where_ (e ^. EventId ==. val (toSqlKey i))
+    where_ (e ^. EventId ==. val (toSqlKey $ unhashId i))
     orderBy [asc (e ^. EventTime)]
     pure (e,c)
 getEvents Nothing = do
@@ -91,10 +94,10 @@ listEvents = do
   logDebugNS "web" "listEvents"
   ecs <- getEvents Nothing
   let tes = transformEventsAndCategories ecs
-  return tes
+  pure tes
 
 -- | Returns a event by id or throws a 404 error.
-getEvent :: MonadIO m => Int64 -> AppT m EventDisplay
+getEvent :: MonadIO m => Text -> AppT m EventDisplay
 getEvent i = do
   increment "getEvent"
   logDebugNS "web" "getEvent"
@@ -102,4 +105,5 @@ getEvent i = do
   let te = transformEventsAndCategories ecs
   if length te > 0
     then pure (head te)
-    else throwError $ encodeJSONError (JSONError 404 "EventNotFound" ("Event " ++ (show i) ++ " not found"))
+    else throwError $ encodeJSONError
+      (JSONError 404 "EventNotFound" ("Event " ++ (show i) ++ " not found"))
