@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
-import { schemeBlues, schemeSpectral, schemePaired } from 'd3-scale-chromatic';
+// import { schemeSpectral } from 'd3-scale-chromatic';
 import {
   getXScale,
   getYScale,
@@ -17,14 +17,10 @@ import {
   updateLowLine,
 } from './utils/Chart';
 import {
-  Annotation,
   AnnotationCallout,
-  AnnotationXYThreshold,
-  AnnotationCalloutCircle,
 } from 'react-annotation';
 import { flatten, isEmpty, sortedUniq } from 'lodash';
-import { Typography } from 'antd';
-import { Redirect, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 const handleClick = ({ id, history }) => {
   console.log(id);
@@ -34,7 +30,6 @@ const handleClick = ({ id, history }) => {
     state: { visible: true },
   });
 };
-const { Text } = Typography;
 const Focus = ({
   width,
   height,
@@ -68,7 +63,6 @@ const Focus = ({
   // Annotations
   const rawAnnotations = events.map(e => {
     const interval = resolution === 'daily' ? 'day' : 'hour';
-    const fmt = resolution === 'daily' ? 'YYYY-MM-DD' : 'YYYY-MM-DD HH:MM:SS';
     const priceMatch = ps.filter(p =>
       moment(p.priceTime).isBetween(
         e.eventTime.clone().subtract(1, interval),
@@ -116,7 +110,9 @@ const Focus = ({
           cx={x}
           cy={thisY}
           onMouseOver={() => setHover(i)}
+          onFocus={() => setHover(i)}
           onMouseOut={() => setHover(null)}
+          onBlur={() => setHover(null)}
           onClick={() => handleClick({ id: a.id, history })}
         />
       </g>

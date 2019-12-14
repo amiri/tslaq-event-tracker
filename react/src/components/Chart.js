@@ -7,10 +7,10 @@ import moment from 'moment';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
 import { calculateDimensions } from './utils/Chart';
-import { isEmpty, includes, filter } from 'lodash';
+import { isEmpty, includes } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
-import { Route, useLocation, useParams, useHistory } from 'react-router-dom';
+import { Route, useLocation } from 'react-router-dom';
 import * as QueryString from 'query-string';
 import { Modal } from 'antd';
 
