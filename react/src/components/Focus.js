@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
-import {schemeBlues,schemeSpectral,schemePaired} from 'd3-scale-chromatic';
+import { schemeBlues, schemeSpectral, schemePaired } from 'd3-scale-chromatic';
 import {
   getXScale,
   getYScale,
@@ -23,9 +23,18 @@ import {
   AnnotationCalloutCircle,
 } from 'react-annotation';
 import { flatten, isEmpty, sortedUniq } from 'lodash';
-import {Typography} from 'antd';
+import { Typography } from 'antd';
+import { Redirect, useHistory } from 'react-router-dom';
 
-const {Text} = Typography;
+const handleClick = ({ id, history }) => {
+  console.log(id);
+  history.push({
+    pathname: '/event/',
+    search: `?id=${id}`,
+    state: { visible: true },
+  });
+};
+const { Text } = Typography;
 const Focus = ({
   width,
   height,
@@ -37,6 +46,9 @@ const Focus = ({
   events,
   resolution,
 }) => {
+  // History
+  const history = useHistory();
+  console.log('History in focus: ', history);
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.close);
@@ -44,8 +56,13 @@ const Focus = ({
   // Scales
   const xScale = getXScale({ xExtent, width, margin });
   const yScale = getYScale({ yExtent, height, margin });
-  const categories = sortedUniq(flatten(events.map(e => e.categories.map(c => c.name))).sort());
-  const colors = d3.scaleOrdinal().range(d3.schemeSpectral[categories.length < 10 ? 10 : categories.length]).domain(categories);
+  const categories = sortedUniq(
+    flatten(events.map(e => e.categories.map(c => c.name))).sort(),
+  );
+  const colors = d3
+    .scaleOrdinal()
+    .range(d3.schemeSpectral[categories.length < 10 ? 10 : categories.length])
+    .domain(categories);
   const [hover, setHover] = useState(null);
 
   // Annotations
@@ -59,12 +76,15 @@ const Focus = ({
       ),
     );
     const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
-    const title = `${e.eventTime.tz('America/New_York').format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
+    const title = `${e.eventTime
+      .tz('America/New_York')
+      .format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
     return {
-      note: { title, label: e.body},
+      note: { title, label: e.body },
       x: xScale(e.eventTime.toDate()),
       y: yScale(p),
       category: e.categories[0].name,
+      id: e.id,
     };
   });
   const annotations = rawAnnotations.map((a, i) => {
@@ -97,7 +117,7 @@ const Focus = ({
           cy={thisY}
           onMouseOver={() => setHover(i)}
           onMouseOut={() => setHover(null)}
-          onClick={() => handleClick(i)}
+          onClick={() => handleClick({ id: a.id, history })}
         />
       </g>
     );

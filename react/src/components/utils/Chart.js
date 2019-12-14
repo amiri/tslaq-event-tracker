@@ -127,15 +127,24 @@ export const getTickVals = ({ xExtent, timeZone }) => {
 export const getBrush = ({ width, height, brushed }) =>
   d3
     .brushX()
-    .extent([[0, 0], [width, height]])
+    .extent([
+      [0, 0],
+      [width, height],
+    ])
     .on('brush end', brushed);
 
 export const getZoom = ({ width, height, zoomed }) =>
   d3
     .zoom()
     .scaleExtent([1, Infinity])
-    .translateExtent([[0, 0], [width, height]])
-    .extent([[0, 0], [width, height]])
+    .translateExtent([
+      [0, 0],
+      [width, height],
+    ])
+    .extent([
+      [0, 0],
+      [width, height],
+    ])
     .on('zoom', zoomed);
 
 export const updateContextBrush = ({ brush, s, xScale }) => {

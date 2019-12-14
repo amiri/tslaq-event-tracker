@@ -9,7 +9,7 @@ import moment from 'moment';
 import { isEmpty } from 'lodash';
 
 const { RangePicker } = DatePicker;
-const {Text} = Typography;
+const { Text } = Typography;
 
 const logout = async dispatch => {
   localStorage.removeItem('user');
@@ -37,7 +37,9 @@ const NavBar = () => {
     <Router>
       <div>
         <Row type='flex' justify='start'>
-          <Col style={colStyle}><Text strong={true}>$TSLAQ Event Tracker</Text></Col>
+          <Col style={colStyle}>
+            <Text strong={true}>$TSLAQ Event Tracker</Text>
+          </Col>
           <Col style={colStyle}>
             {user ? (
               <Button type='link' onClick={() => logout(dispatch)}>

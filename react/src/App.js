@@ -5,6 +5,7 @@ import PricesContextProvider from './contexts/PricesContext';
 import EventsContextProvider from './contexts/EventsContext';
 import AuthContextProvider from './contexts/AuthContext';
 import ChartContextProvider from './contexts/ChartContext';
+import ModalContextProvider from './contexts/ModalContext';
 import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import './App.css';
@@ -17,26 +18,28 @@ window.api = new Api();
 
 const App = () => {
   return (
-  <React.StrictMode>
-    <AuthContextProvider>
-      <PricesContextProvider>
-        <EventsContextProvider>
-          <ChartContextProvider>
-            <Layout style={{ height: '100%', width: '100%' }}>
-              <Header style={{backgroundColor: '#f0f2f5'}}>
-                <NavBar />
-              </Header>
-              <Content style={{ height: '100%', width: '100%' }}>
-                <Router>
-                   <Route path='/' component={Chart} />
-                </Router>
-              </Content>
-            </Layout>
-          </ChartContextProvider>
-        </EventsContextProvider>
-      </PricesContextProvider>
-    </AuthContextProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+      <AuthContextProvider>
+        <PricesContextProvider>
+          <EventsContextProvider>
+            <ChartContextProvider>
+              <ModalContextProvider>
+                <Layout style={{ height: '100%', width: '100%' }}>
+                  <Header style={{ backgroundColor: '#f0f2f5' }}>
+                    <NavBar />
+                  </Header>
+                  <Content style={{ height: '100%', width: '100%' }}>
+                    <Router>
+                      <Route path='/' component={Chart} />
+                    </Router>
+                  </Content>
+                </Layout>
+              </ModalContextProvider>
+            </ChartContextProvider>
+          </EventsContextProvider>
+        </PricesContextProvider>
+      </AuthContextProvider>
+    </React.StrictMode>
   );
 };
 
