@@ -18,7 +18,7 @@ window.api = new Api();
 
 const App = () => {
   return (
-    <React.StrictMode>
+    // <React.StrictMode>
       <AuthContextProvider>
         <PricesContextProvider>
           <EventsContextProvider>
@@ -39,7 +39,7 @@ const App = () => {
           </EventsContextProvider>
         </PricesContextProvider>
       </AuthContextProvider>
-    </React.StrictMode>
+    // </React.StrictMode>
   );
 };
 
