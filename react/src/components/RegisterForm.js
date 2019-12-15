@@ -6,36 +6,46 @@ import { AuthContext } from '../contexts/AuthContext';
 import * as alerts from '../alerts';
 import { Link } from 'react-router-dom';
 
-const SignupSchema = Yup.object().shape({
+const RegisterSchema = Yup.object().shape({
   email: Yup.string()
     .email('Your email address is invalid')
     .required('You must enter your email address'),
   password: Yup.string().required('You must enter your password'),
+  name: Yup.string().required('You must enter your username'),
 });
 
 const transformApiError = ({ statusText, data }) => {
+  console.log(statusText);
+  console.log(data);
   return {
-    email: 'Please check your email.',
-    password: 'Please check your password.',
+    email:
+      statusText === 'Conflict'
+        ? 'This email may already be registered'
+        : 'Please check your email.',
+    name:
+      statusText === 'Conflict'
+        ? 'This name may already be registered'
+        : 'Please check your name.',
   };
 };
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const { dispatch } = react.useContext(AuthContext);
   return (
     <Formik
-      initialValues={{ email: '', password: '' }}
+      initialValues={{ email: '', password: '', name: '' }}
       onSubmit={async (values, actions) => {
-        const loginData = {
+        const registerData = {
           emailAddress: values.email,
           password: values.password,
+          name: values.name,
         };
         await window.api
-          .postLogin(loginData)
+          .postRegister(registerData)
           .then(res => res.data)
           .then(u => {
             dispatch({
-              type: 'LOGIN_SUCCESS',
+              type: 'REGISTER_SUCCESS',
               payload: u,
             });
             actions.setSubmitting(false);
@@ -43,9 +53,9 @@ const LoginForm = () => {
           })
           .catch(apiError => {
             localStorage.removeItem('user');
-            // console.log(apiError);
+            console.log(apiError);
             dispatch({
-              type: 'LOGIN_FAILURE',
+              type: 'REGISTER_FAILURE',
               payload: apiError,
             });
             actions.setSubmitting(false);
@@ -56,7 +66,7 @@ const LoginForm = () => {
       }}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={SignupSchema}
+      validationSchema={RegisterSchema}
       render={({
         values,
         errors,
@@ -81,6 +91,20 @@ const LoginForm = () => {
             />
           </Form.Item>
           <Form.Item
+            validateStatus={errors && errors.name ? 'error' : ''}
+            help={errors && errors.name ? errors.name : ''}
+          >
+            <Input
+              prefix={<Icon type='user' style={{ color: 'rgba(0,0,0,.25)' }} />}
+              type='text'
+              placeholder='joegreen'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.name}
+              name='name'
+            />
+          </Form.Item>
+          <Form.Item
             validateStatus={errors && errors.password ? 'error' : ''}
             help={errors && errors.password ? errors.password : ''}
           >
@@ -96,11 +120,11 @@ const LoginForm = () => {
           </Form.Item>
           <Form.Item>
             <Button type='primary' htmlType='submit'>
-              Log in
+              Register
             </Button>
           </Form.Item>
           <Form.Item>
-            <Link to={{ pathname: '/register' }}>Register</Link>
+            <Link to={{ pathname: '/' }}>Cancel</Link>
           </Form.Item>
           {isSubmitting && (
             <Form.Item>
@@ -113,4 +137,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

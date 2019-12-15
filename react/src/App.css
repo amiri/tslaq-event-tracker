@@ -13,7 +13,7 @@ div#chart {
     fill: none;
     stroke: #555;
     stroke-width: 1;
-    /* clip-path: url(#clip); */
+    clip-path: url(#clip);
 }
 
 .zoom {

@@ -19,26 +19,26 @@ window.api = new Api();
 const App = () => {
   return (
     // <React.StrictMode>
-      <AuthContextProvider>
-        <PricesContextProvider>
-          <EventsContextProvider>
-            <ChartContextProvider>
-              <ModalContextProvider>
-                <Layout style={{ height: '100%', width: '100%' }}>
-                  <Header style={{ backgroundColor: '#f0f2f5' }}>
-                    <NavBar />
-                  </Header>
-                  <Content style={{ height: '100%', width: '100%' }}>
-                    <Router>
-                      <Route path='/' component={Chart} />
-                    </Router>
-                  </Content>
-                </Layout>
-              </ModalContextProvider>
-            </ChartContextProvider>
-          </EventsContextProvider>
-        </PricesContextProvider>
-      </AuthContextProvider>
+    <AuthContextProvider>
+      <PricesContextProvider>
+        <EventsContextProvider>
+          <ChartContextProvider>
+            <ModalContextProvider>
+              <Layout style={{ height: '100%', width: '100%' }}>
+                <Header style={{ backgroundColor: '#f0f2f5' }}>
+                  <NavBar />
+                </Header>
+                <Content style={{ height: '100%', width: '100%' }}>
+                  <Router>
+                    <Route path='/' component={Chart} />
+                  </Router>
+                </Content>
+              </Layout>
+            </ModalContextProvider>
+          </ChartContextProvider>
+        </EventsContextProvider>
+      </PricesContextProvider>
+    </AuthContextProvider>
     // </React.StrictMode>
   );
 };
