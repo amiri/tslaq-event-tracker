@@ -34,12 +34,12 @@ readCategoryServer
   => CookieSettings
   -> JWTSettings
   -> ServerT ReadCategoryAPI (AppT m)
-readCategoryServer _ _ = listCategories :<|> getCategory
+readCategoryServer _ _ = getCategories :<|> getCategory
 
-listCategories :: MonadIO m => AppT m [CategoryDisplay]
-listCategories = do
-  increment "listCategories"
-  logDebugNS "web" "listCategories"
+getCategories :: MonadIO m => AppT m [CategoryDisplay]
+getCategories = do
+  increment "getCategories"
+  logDebugNS "web" "getCategories"
   cs <- runDb (selectList [] [])
   pure $ map toCategoryDisplay cs
 
