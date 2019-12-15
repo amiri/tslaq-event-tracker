@@ -1,13 +1,15 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE KindSignatures    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeOperators         #-}
 
 module Api.Register where
 
+import           Api.Login                   (setLoginCookies, validateLogin)
 import           AppContext                  (AppT (..))
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
@@ -17,15 +19,17 @@ import           Data.Text                   (pack)
 import           Data.Text.Encoding          (decodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), getBy, insertEntity)
+import           Errors
 import           Models                      (Unique (..), User (User), runDb)
 import           Servant
 import           Servant.Auth.Server         as SAS
-import           Types                       (BCrypt (..), UserEmail (..),
+import           Types                       (AuthorizedUser (..), BCrypt (..),
+                                              UserEmail (..),
                                               UserRegistration (..),
                                               hashPassword)
-import Errors
 
-type RegisterAPI = "register" :> ReqBody '[JSON] UserRegistration :> Post '[JSON] (Entity User)
+type RegisterAPI
+  = "register" :> ReqBody '[JSON] UserRegistration :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
 
 registerApi :: Proxy RegisterAPI
 registerApi = Proxy
@@ -35,7 +39,14 @@ registerServer
   => CookieSettings
   -> JWTSettings
   -> UserRegistration
-  -> AppT m (Entity User)
+  -> AppT
+       m
+       ( Headers
+           '[Header "Set-Cookie" SetCookie, Header
+             "Set-Cookie"
+             SetCookie]
+           AuthorizedUser
+       )
 registerServer cs jwts u = register cs jwts u
 
 register
@@ -43,20 +54,27 @@ register
   => CookieSettings
   -> JWTSettings
   -> UserRegistration
-  -> AppT m (Entity User)
-register _ _ (UserRegistration e n p) = do
+  -> AppT
+       m
+       ( Headers
+           '[Header "Set-Cookie" SetCookie, Header
+             "Set-Cookie"
+             SetCookie]
+           AuthorizedUser
+       )
+register cs jwts (UserRegistration e n p) = do
   increment "register"
   logDebugNS "web" ("register " <> (pack $ show n) <> ": " <> (pack $ show e))
   u <- existingUser e
   case u of
-    Just (Entity _ _) ->
-      throwError $ encodeJSONError (JSONError 409 "RegistrationConflict" "Conflicting registration.")
+    Just (Entity _ _) -> throwError $ encodeJSONError
+      (JSONError 409 "RegistrationConflict" "Conflicting registration.")
     Nothing -> do
       currentTime <- liftIO $ getCurrentTime
       pw          <- liftIO $ hashPassword p
       let pw' = fromJust pw
       newUser <- runDb
-        ( insertEntity
+        (insertEntity
           (User currentTime currentTime e n (BCrypt . decodeUtf8 $ pw'))
         )
       let k = entityKey newUser
@@ -69,9 +87,10 @@ register _ _ (UserRegistration e n p) = do
         <> " "
         <> (pack $ show e)
         )
-      pure newUser
+      maybeUser <- validateLogin e p
+      setLoginCookies maybeUser cs jwts
 
 existingUser :: MonadIO m => UserEmail -> AppT m (Maybe (Entity User))
 existingUser e = do
   maybeUser <- runDb (getBy $ UniqueEmailAddress e)
-  return maybeUser
+  pure maybeUser
