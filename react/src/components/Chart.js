@@ -1,53 +1,21 @@
-import React, { useEffect, useState, useContext, useRef, useMemo } from 'react';
+import React, { useState, useContext, useRef, useMemo } from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
-import { ModalContext } from '../contexts/ModalContext';
 import moment from 'moment';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
 import { calculateDimensions } from './utils/Chart';
-import { isEmpty, includes } from 'lodash';
+import { isEmpty } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
-import { Route, useLocation } from 'react-router-dom';
-import * as QueryString from 'query-string';
-import { Modal } from 'antd';
-
-const Print = props => {
-  const { history, location, events } = props;
-  const { visible, setVisible } = useContext(ModalContext);
-  const params = QueryString.parse(location.search);
-  console.log('Show modal with query string: ', props);
-  console.log('Show modal with query string: ', params);
-  console.log('Show modal with query string: ', history);
-  console.log('Show modal with query string: ', location);
-  useEffect(() => {
-    setVisible(location.state.visible);
-  }, [location]);
-  const handleClose = () => {
-    setVisible(false);
-    history.goBack();
-  };
-  const eventsToDisplay = events.filter(e => includes([params.id], e.id));
-  return (
-    <Modal
-      title='Events'
-      visible={visible}
-      onOk={handleClose}
-      onCancel={handleClose}
-    >
-      <p>Here is event {JSON.stringify(eventsToDisplay)}.</p>
-    </Modal>
-  );
-};
+import { Route } from 'react-router-dom';
+import EventsDetail from './EventsDetail';
 
 const Chart = () => {
   const { events } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
-  const location = useLocation();
-  console.log('Location in chart: ', location);
 
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
@@ -62,13 +30,15 @@ const Chart = () => {
     prices && resolution === 'daily' ? prices.daily : prices.hourly;
   const timeField = resolution === 'daily' ? 'partialTime' : 'priceTime';
 
-  const es = useMemo(() =>
-    events
-      ? events.map(e => {
-          const et = moment.utc(e.time).tz('America/New_York');
-          return Object.assign(e, { eventTime: et });
-        })
-      : null[events],
+  const es = useMemo(
+    () =>
+      events
+        ? events.map(e => {
+            const et = moment.utc(e.time).tz('America/New_York');
+            return Object.assign(e, { eventTime: et });
+          })
+        : null,
+    [events],
   );
 
   const esFiltered = useMemo(
@@ -182,7 +152,7 @@ const Chart = () => {
       )}
       <Route
         path='/event'
-        render={props => <Print {...props} events={esFiltered} />}
+        render={props => <EventsDetail {...props} events={esFiltered} />}
       />
     </div>
   );
