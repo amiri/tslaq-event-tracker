@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
-// import { schemeSpectral } from 'd3-scale-chromatic';
 import {
   getXScale,
   getYScale,
@@ -16,9 +15,7 @@ import {
   updateHighLine,
   updateLowLine,
 } from './utils/Chart';
-import {
-  AnnotationCallout,
-} from 'react-annotation';
+import { AnnotationCallout } from 'react-annotation';
 import { flatten, isEmpty, sortedUniq } from 'lodash';
 import { useHistory } from 'react-router-dom';
 
@@ -43,7 +40,7 @@ const Focus = ({
 }) => {
   // History
   const history = useHistory();
-  console.log('History in focus: ', history);
+
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.close);
@@ -61,63 +58,77 @@ const Focus = ({
   const [hover, setHover] = useState(null);
 
   // Annotations
-  const rawAnnotations = events.map(e => {
-    const interval = resolution === 'daily' ? 'day' : 'hour';
-    const priceMatch = ps.filter(p =>
-      moment(p.priceTime).isBetween(
-        e.eventTime.clone().subtract(1, interval),
-        e.eventTime.clone().add(1, interval),
-      ),
-    );
-    const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
-    const title = `${e.eventTime
-      .tz('America/New_York')
-      .format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
-    return {
-      note: { title, label: e.body },
-      x: xScale(e.eventTime.toDate()),
-      y: yScale(p),
-      category: e.categories[0].name,
-      id: e.id,
-    };
-  });
-  const annotations = rawAnnotations.map((a, i) => {
-    const { note, x, y, category } = a;
-    const radius = 5;
-    note.wrap = 200;
-    note.orientation = null;
-    note.align = 'dynamic';
-    note.lineType = null;
-    note.bgPadding = 10;
-    const thisY =
-      rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
-        ? y + radius + 5
-        : y;
-    return (
-      <g key={i}>
-        <AnnotationCallout
-          x={x}
-          y={thisY}
-          dx={20}
-          color={'#444444'}
-          dy={20}
-          note={note}
-          className={hover === i ? '' : 'hidden'}
-        />
-        <circle
-          fill={colors(category)}
-          r={radius}
-          cx={x}
-          cy={thisY}
-          onMouseOver={() => setHover(i)}
-          onFocus={() => setHover(i)}
-          onMouseOut={() => setHover(null)}
-          onBlur={() => setHover(null)}
-          onClick={() => handleClick({ id: a.id, history })}
-        />
-      </g>
-    );
-  });
+  const rawAnnotations = useMemo(
+    () =>
+      events
+        ? events.map(e => {
+            const interval = resolution === 'daily' ? 'day' : 'hour';
+            const priceMatch = ps.filter(p =>
+              moment(p.priceTime).isBetween(
+                e.eventTime.clone().subtract(1, interval),
+                e.eventTime.clone().add(1, interval),
+              ),
+            );
+            const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
+            const title = `${e.eventTime
+              .tz('America/New_York')
+              .format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
+            return {
+              note: { title, label: e.body },
+              x: xScale(e.eventTime.toDate()),
+              y: yScale(p),
+              categories: e.categories,
+              id: e.id,
+            };
+          })
+        : null,
+    [events],
+  );
+  const annotations = useMemo(
+    () =>
+      rawAnnotations
+        ? rawAnnotations.map((a, i) => {
+            const { note, x, y, categories } = a;
+            const radius = 5;
+            note.wrap = 200;
+            note.orientation = null;
+            note.align = 'dynamic';
+            note.lineType = null;
+            note.bgPadding = 10;
+            const thisY =
+              rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
+                ? y + radius + 5
+                : y;
+            return (
+              <g key={i}>
+                <AnnotationCallout
+                  x={x}
+                  y={thisY}
+                  dx={20}
+                  color={'#444444'}
+                  dy={20}
+                  note={note}
+                  className={hover === i ? '' : 'hidden'}
+                />
+                <circle
+                  fill={colors(categories[0].name)}
+                  r={radius}
+                  cx={x}
+                  cy={thisY}
+                  id={a.id}
+                  className={categories.map(c => c.id).join(' ')}
+                  onMouseOver={() => setHover(i)}
+                  onFocus={() => setHover(i)}
+                  onMouseOut={() => setHover(null)}
+                  onBlur={() => setHover(null)}
+                  onClick={() => handleClick({ id: a.id, history })}
+                />
+              </g>
+            );
+          })
+        : null,
+    [rawAnnotations],
+  );
 
   // Zoom
   function zoomed() {
