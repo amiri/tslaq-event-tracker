@@ -8,4 +8,3 @@ export const categoriesReducer = (state, action) => {
     }
   }
 };
-

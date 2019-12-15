@@ -17,10 +17,11 @@ const ChartContextProvider = props => {
   const [categoryOptions, dispatch] = useReducer(categoriesReducer, []);
 
   async function getCategories() {
-    await window.api.getCategories().then(res => dispatch({
+    await window.api.getCategories().then(res =>
+      dispatch({
         type: 'GET_CATEGORIES',
         payload: res.data,
-    }),
+      }),
     );
   }
 
@@ -35,8 +36,10 @@ const ChartContextProvider = props => {
     }, 3600000);
     return () => clearTimeout(timer);
   });
-    return (
-    <ChartContext.Provider value={{ config, setConfig, categoryOptions, dispatch }}>
+  return (
+    <ChartContext.Provider
+      value={{ config, setConfig, categoryOptions, dispatch }}
+    >
       {props.children}
     </ChartContext.Provider>
   );

@@ -13,7 +13,7 @@ const SignupSchema = Yup.object().shape({
   password: Yup.string().required('You must enter your password'),
 });
 
-const transformApiError = ({ statusText, data }) => {
+const transformApiError = () => {
   return {
     email: 'Please check your email.',
     password: 'Please check your password.',

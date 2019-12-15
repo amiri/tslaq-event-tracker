@@ -24,7 +24,7 @@ const Chart = () => {
     height,
     width,
   });
-  const { timeZone, resolution, dateRange } = config;
+  const { timeZone, resolution, dateRange, categories } = config;
 
   const priceList =
     prices && resolution === 'daily' ? prices.daily : prices.hourly;
@@ -40,6 +40,7 @@ const Chart = () => {
         : null,
     [events],
   );
+  console.log('Categories in chart', categories);
 
   const esFiltered = useMemo(
     () =>
@@ -51,7 +52,7 @@ const Chart = () => {
                 e.eventTime.isSameOrBefore(dateRange[1]),
           )
         : null,
-    [es, dateRange],
+    [es, dateRange, categories],
   );
 
   const ps = useMemo(

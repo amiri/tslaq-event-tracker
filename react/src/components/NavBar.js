@@ -28,11 +28,13 @@ const colStyle = {
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
   const { config, setConfig, categoryOptions } = useContext(ChartContext);
-    const  {Option} = Select;
-    const options = categoryOptions.map(o => <Option key={o.id}>{o.name}</Option>);
-    console.log(options);
+  const { Option } = Select;
+  const options = categoryOptions.map(o => (
+    <Option key={o.id}>{o.name}</Option>
+  ));
+  console.log(options);
   const updateCategories = categories => {
-    setConfig({...config, categories});
+    setConfig({ ...config, categories });
   };
   const updateRange = dates => {
     const estDates = dates.map(d =>
@@ -62,13 +64,21 @@ const NavBar = () => {
               </Switch>
             )}
           </Col>
-          <Col style={{ ...colStyle, marginLeft: 'auto', order: 2 }}>
+          <Col span={6} style={{ ...colStyle, marginLeft: 'auto', order: 2 }}>
             <Text strong={true} style={{ marginRight: '1em' }}>
               Categories:
             </Text>
-            <Select style={{width: '100%'}}allowClear={true} mode='multiple' placeholder='Safety, Model 3' onChange={values => updateCategories(values)} >{options}</Select>
+            <Select
+              style={{ width: '100%', marginRight: '1em' }}
+              allowClear={true}
+              mode='multiple'
+              placeholder='Safety, Model 3'
+              onChange={values => updateCategories(values)}
+            >
+              {options}
+            </Select>
           </Col>
-          <Col style={{ ...colStyle, marginLeft: 'auto', order: 3 }}>
+          <Col style={{ ...colStyle, order: 3 }}>
             <Text strong={true} style={{ marginRight: '1em' }}>
               Date Range:
             </Text>
