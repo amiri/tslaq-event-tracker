@@ -8,6 +8,7 @@ const s = {
   resolution: 'daily',
   dateRange: [],
   categories: [],
+  searchCondition: 'and',
   // brushDomain: [],
   // zoomDomain: [],
 };

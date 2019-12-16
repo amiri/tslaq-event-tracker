@@ -88,6 +88,7 @@ const RegisterForm = () => {
               onBlur={handleBlur}
               value={values.email}
               name='email'
+              size='small'
             />
           </Form.Item>
           <Form.Item
@@ -102,6 +103,7 @@ const RegisterForm = () => {
               onBlur={handleBlur}
               value={values.name}
               name='name'
+              size='small'
             />
           </Form.Item>
           <Form.Item
@@ -116,10 +118,11 @@ const RegisterForm = () => {
               onBlur={handleBlur}
               value={values.password}
               name='password'
+              size='small'
             />
           </Form.Item>
           <Form.Item>
-            <Button type='primary' htmlType='submit'>
+            <Button size='small' type='primary' htmlType='submit'>
               Register
             </Button>
           </Form.Item>

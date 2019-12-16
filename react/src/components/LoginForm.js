@@ -78,6 +78,7 @@ const LoginForm = () => {
               onBlur={handleBlur}
               value={values.email}
               name='email'
+              size='small'
             />
           </Form.Item>
           <Form.Item
@@ -92,10 +93,11 @@ const LoginForm = () => {
               onBlur={handleBlur}
               value={values.password}
               name='password'
+              size='small'
             />
           </Form.Item>
           <Form.Item>
-            <Button type='primary' htmlType='submit'>
+            <Button size='small' type='primary' htmlType='submit'>
               Log in
             </Button>
           </Form.Item>

@@ -5,7 +5,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { Row, Col, Button, Typography } from 'antd';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { DatePicker, Select } from 'antd';
+import { DatePicker, Select, Radio } from 'antd';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 
@@ -25,6 +25,11 @@ const colStyle = {
   alignItems: 'center',
 };
 
+    const radioStyle = {
+      display: 'block',
+    };
+
+
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
   const { config, setConfig, categoryOptions } = useContext(ChartContext);
@@ -42,14 +47,16 @@ const NavBar = () => {
     );
     setConfig({ ...config, dateRange: estDates });
   };
+
+  const updateSearchCondition = e => {
+    setConfig({...config, searchCondition: e.target.value});
+  };
   return (
     <Router>
       <div>
         <Row type='flex' justify='start'>
           <Col style={colStyle}>
-            <Text strong={true} style={{ marginRight: '1em' }}>
-              $TSLAQ Event Tracker
-            </Text>
+            <div className='logo'></div>
           </Col>
           <Col style={colStyle}>
             {user ? (
@@ -64,7 +71,7 @@ const NavBar = () => {
               </Switch>
             )}
           </Col>
-          <Col span={6} style={{ ...colStyle, marginLeft: 'auto', order: 2 }}>
+          <Col span={4} style={{ ...colStyle, marginLeft: 'auto', order: 2 }}>
             <Text strong={true} style={{ marginRight: '1em' }}>
               Categories:
             </Text>
@@ -78,11 +85,18 @@ const NavBar = () => {
               {options}
             </Select>
           </Col>
-          <Col style={{ ...colStyle, order: 3 }}>
+          <Col style={{...colStyle, order: 3}}>
+           <Radio.Group size='small' onChange={updateSearchCondition} value={config.searchCondition}>
+                <Radio size='small' style={radioStyle} value='and'>and</Radio>
+                <Radio size='small' style={radioStyle} value='or'>or</Radio>
+
+            </Radio.Group>
+          </Col>
+          <Col style={{ ...colStyle, order: 4 }}>
             <Text strong={true} style={{ marginRight: '1em' }}>
               Date Range:
             </Text>
-            <RangePicker
+            <RangePicker size='small'
               allowClear={true}
               onChange={dates => updateRange(dates)}
               value={!isEmpty(config.dateRange) ? config.dateRange : null}
