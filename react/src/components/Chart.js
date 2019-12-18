@@ -6,7 +6,7 @@ import moment from 'moment';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
 import { calculateDimensions } from './utils/Chart';
-import { isEmpty, includes, every, isNil } from 'lodash';
+import { isEmpty, includes, isNil } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
 import { Route } from 'react-router-dom';
@@ -24,7 +24,13 @@ const Chart = () => {
     height,
     width,
   });
-  const { timeZone, resolution, dateRange, categories, searchCondition } = config;
+  const {
+    timeZone,
+    resolution,
+    dateRange,
+    categories,
+    searchCondition,
+  } = config;
 
   const priceList =
     prices && resolution === 'daily' ? prices.daily : prices.hourly;
@@ -40,39 +46,44 @@ const Chart = () => {
         : null,
     [events],
   );
-  console.log('Categories in chart', categories);
-  const eventsByCategory = useMemo(() => es ? es.reduce((obj, e) => {
-     e.categories.map(c => obj[c.id] ? obj[c.id].add(e.id) : obj[c.id] = new Set([e.id]));
-     return obj;
-   }, {}) : null,
-      [es, categories]);
-    console.log(eventsByCategory);
-
-    const searchMethodName = searchCondition === 'and' ? 'every' : 'some';
+  const eventsByCategory = useMemo(
+    () =>
+      es
+        ? es.reduce((obj, e) => {
+            e.categories.map(c =>
+              obj[c.id] ? obj[c.id].add(e.id) : (obj[c.id] = new Set([e.id])),
+            );
+            return obj;
+          }, {})
+        : null,
+    [es, categories],
+  );
 
   const esFiltered = useMemo(
     () =>
       es
-        ? es.filter(e =>
-            isEmpty(dateRange)
-              ? true
-              : e.eventTime.isSameOrAfter(dateRange[0]) &&
-                e.eventTime.isSameOrBefore(dateRange[1]),
-          ).filter(e =>
+        ? es
+            .filter(e =>
+              isEmpty(dateRange)
+                ? true
+                : e.eventTime.isSameOrAfter(dateRange[0]) &&
+                  e.eventTime.isSameOrBefore(dateRange[1]),
+            )
+            .filter(e =>
               isEmpty(categories)
                 ? true
                 : searchCondition === 'and'
-                    ? categories.every(c =>
-                        !isNil(eventsByCategory[c])
-                          ? includes(Array.from(eventsByCategory[c]), e.id)
-                          : false
-                      )
-                    : categories.some(c =>
-                        !isNil(eventsByCategory[c])
-                          ? includes(Array.from(eventsByCategory[c]), e.id)
-                          : false
-                      )
-          )
+                ? categories.every(c =>
+                    !isNil(eventsByCategory[c])
+                      ? includes(Array.from(eventsByCategory[c]), e.id)
+                      : false,
+                  )
+                : categories.some(c =>
+                    !isNil(eventsByCategory[c])
+                      ? includes(Array.from(eventsByCategory[c]), e.id)
+                      : false,
+                  ),
+            )
         : null,
     [es, dateRange, categories, searchCondition],
   );

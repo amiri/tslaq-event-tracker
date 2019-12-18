@@ -14,19 +14,13 @@ import {
   updateZeroLine,
   updateHighLine,
   updateLowLine,
+  isSelected,
+  openModal,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
-import { flatten, isEmpty, sortedUniq } from 'lodash';
+import { flatten, isEmpty, sortedUniq, omitBy, keys, compact } from 'lodash';
 import { useHistory } from 'react-router-dom';
 
-const handleClick = ({ id, history }) => {
-  console.log(id);
-  history.push({
-    pathname: '/event/',
-    search: `?id=${id}`,
-    state: { visible: true },
-  });
-};
 const Focus = ({
   width,
   height,
@@ -40,6 +34,7 @@ const Focus = ({
 }) => {
   // History
   const history = useHistory();
+  const [selectedEvents, setSelectedEvents] = useState({});
 
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
@@ -84,68 +79,62 @@ const Focus = ({
         : null,
     [events],
   );
-  const annotations = useMemo(
-    () =>
-      rawAnnotations
-        ? rawAnnotations.map((a, i) => {
-            const { note, x, y, categories } = a;
-            const radius = 5;
-            note.wrap = 200;
-            note.orientation = null;
-            note.align = 'dynamic';
-            note.lineType = null;
-            note.bgPadding = 10;
-            const thisY =
-              rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
-                ? y + radius + 5
-                : y;
-            return (
-              <g key={i}>
-                <AnnotationCallout
-                  x={x}
-                  y={thisY}
-                  dx={20}
-                  color={'#444444'}
-                  dy={20}
-                  note={note}
-                  className={hover === i ? '' : 'hidden'}
-                />
-                <circle
-                  fill={colors(categories[0].name)}
-                  r={radius}
-                  cx={x}
-                  cy={thisY}
-                  id={a.id}
-                  className={categories.map(c => c.id).join(' ')}
-                  onMouseOver={() => setHover(i)}
-                  onFocus={() => setHover(i)}
-                  onMouseOut={() => setHover(null)}
-                  onBlur={() => setHover(null)}
-                  onClick={() => handleClick({ id: a.id, history })}
-                />
-              </g>
-            );
-          })
-        : null,
-    [rawAnnotations],
-  );
+
+  const annotations = rawAnnotations
+    ? rawAnnotations.map((a, i) => {
+        const { note, x, y, categories } = a;
+        const radius = 5;
+        note.wrap = 200;
+        note.orientation = null;
+        note.align = 'dynamic';
+        note.lineType = null;
+        note.bgPadding = 10;
+        const thisY =
+          rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
+            ? y + radius + 5
+            : y;
+        const circleClasses = compact([
+          'note-circle',
+          ...categories.map(c => c.id),
+          selectedEvents[a.id] === true ? 'selected' : null,
+        ]);
+        console.log(circleClasses);
+        return (
+          <g key={i}>
+            <AnnotationCallout
+              x={x}
+              y={thisY}
+              dx={20}
+              color={'#444444'}
+              dy={20}
+              note={note}
+              className={hover === i ? '' : 'hidden'}
+            />
+            <circle
+              fill={colors(categories[0].name)}
+              r={radius}
+              cx={x}
+              cy={thisY}
+              id={a.id}
+              className={circleClasses.join(' ')}
+              onMouseOver={() => setHover(i)}
+              onFocus={() => setHover(i)}
+              onMouseOut={() => setHover(null)}
+              onBlur={() => setHover(null)}
+              onClick={() =>
+                openModal({ id: keys(omitBy(selectedEvents, false)), history })
+              }
+            />
+          </g>
+        );
+      })
+    : null;
 
   // Zoom
   function zoomed() {
-    if (!d3.event.sourceEvent) {
-      // console.log('No zoom sourceEvent');
-      // console.log('no zoom sourceEvent arguments: ', arguments);
-      // zoomF({params: xScale.range(), eventType: null});
-      // return;
-      // return;
-    }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
-    if (d3.event.sourceEvent) {
-      // console.log('zoom sourceEvent.type: ', d3.event.sourceEvent.type);
-    }
     const t = d3.event.transform;
     const move = xScale.range().map(t.invertX, t);
-    // console.log('params in Focus: ', move);
     zoomF({
       params: move,
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
@@ -157,6 +146,27 @@ const Focus = ({
   const focusRef = useRef(null);
   const svgRef = useRef(null);
   const { timeZone } = config;
+
+  // Select circles
+  function selectCircles() {
+    const extent = d3.event.selection;
+    const selections = {};
+    annotations.map(a => {
+      const { cx, cy, id } = a.props.children[1].props;
+      const selected = isSelected({ coords: extent, cx, cy });
+      selections[id] = selected;
+    });
+    setSelectedEvents(selections);
+  }
+
+  // Select Circle Brush
+  const brush = d3
+    .brush()
+    .extent([
+      [0, 0],
+      [width, height],
+    ])
+    .on('start brush', selectCircles);
 
   // Prices
   useEffect(() => {
@@ -212,6 +222,9 @@ const Focus = ({
 
     const focusZoom = svg.selectAll('.zoom');
     focusZoom.call(zoom);
+
+    const focusBrush = svg.selectAll('.brush');
+    focusBrush.call(brush);
   }, [svgRef, focusRef, height, width, yExtent, xExtent]);
 
   // Zoom
@@ -219,8 +232,6 @@ const Focus = ({
     if (zoomDomain[0] >= 0 && zoomDomain[1] >= 0) {
       const svg = d3.select(svgRef.current);
       const focusZoom = svg.selectAll('.zoom');
-      // console.log('zoomDomain in focus: ', zoomDomain);
-      // console.log('width in focus: ', width);
       focusZoom.call(
         zoom.transform,
         d3.zoomIdentity
@@ -229,7 +240,6 @@ const Focus = ({
               (zoomDomain[1] - zoomDomain[0]),
           )
           .translate(-zoomDomain[0] + margin.left, 0),
-        // .translate(-zoomDomain[0], 0),
       );
     }
   }, [zoomDomain]);
@@ -252,6 +262,7 @@ const Focus = ({
         transform={`translate(${margin.left},${margin.top})`}
       />
       <g className='annotation-group'>{annotations}</g>
+      <g className='brush' />
     </svg>
   );
 };

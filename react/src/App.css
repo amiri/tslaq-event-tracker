@@ -34,6 +34,12 @@ rect.annotation-note-bg {
     font-size: 12px;
 }
 
+.selected {
+  opacity: 1 !important;
+  stroke: black;
+  stroke-width: 1px;
+}
+
 div.logo {
     margin-right: 1em;
     height: 30px;

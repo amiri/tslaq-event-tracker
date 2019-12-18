@@ -247,3 +247,19 @@ export const updateLowLine = ({ s, yScale, yExtent, width, margin }) => {
     .attr('stroke-width', '0.25px')
     .attr('stroke', '#8A0707');
 };
+
+export const isSelected = ({ coords, cx, cy }) => {
+  const x0 = coords[0][0],
+    x1 = coords[1][0],
+    y0 = coords[0][1],
+    y1 = coords[1][1];
+  return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+};
+
+export const openModal = ({ id, history }) => {
+  history.push({
+    pathname: '/event/',
+    search: `?id=${id}`,
+    state: { visible: true },
+  });
+};

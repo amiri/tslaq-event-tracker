@@ -25,10 +25,9 @@ const colStyle = {
   alignItems: 'center',
 };
 
-    const radioStyle = {
-      display: 'block',
-    };
-
+const radioStyle = {
+  display: 'block',
+};
 
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
@@ -37,7 +36,6 @@ const NavBar = () => {
   const options = categoryOptions.map(o => (
     <Option key={o.id}>{o.name}</Option>
   ));
-  console.log(options);
   const updateCategories = categories => {
     setConfig({ ...config, categories });
   };
@@ -49,7 +47,7 @@ const NavBar = () => {
   };
 
   const updateSearchCondition = e => {
-    setConfig({...config, searchCondition: e.target.value});
+    setConfig({ ...config, searchCondition: e.target.value });
   };
   return (
     <Router>
@@ -85,18 +83,26 @@ const NavBar = () => {
               {options}
             </Select>
           </Col>
-          <Col style={{...colStyle, order: 3}}>
-           <Radio.Group size='small' onChange={updateSearchCondition} value={config.searchCondition}>
-                <Radio size='small' style={radioStyle} value='and'>and</Radio>
-                <Radio size='small' style={radioStyle} value='or'>or</Radio>
-
+          <Col style={{ ...colStyle, order: 3 }}>
+            <Radio.Group
+              size='small'
+              onChange={updateSearchCondition}
+              value={config.searchCondition}
+            >
+              <Radio size='small' style={radioStyle} value='and'>
+                and
+              </Radio>
+              <Radio size='small' style={radioStyle} value='or'>
+                or
+              </Radio>
             </Radio.Group>
           </Col>
           <Col style={{ ...colStyle, order: 4 }}>
             <Text strong={true} style={{ marginRight: '1em' }}>
               Date Range:
             </Text>
-            <RangePicker size='small'
+            <RangePicker
+              size='small'
               allowClear={true}
               onChange={dates => updateRange(dates)}
               value={!isEmpty(config.dateRange) ? config.dateRange : null}
