@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
@@ -32,8 +31,8 @@ const Focus = ({
   zoomDomain,
   events,
   resolution,
+  history,
 }) => {
-  const history = useHistory();
   d3.select('.focus-svg')
     .on('touchstart', noZoom)
     .on('touchmove', noZoom);
@@ -65,7 +64,9 @@ const Focus = ({
     console.log(d.pageY);
     if (d.defaultPrevented) return; // zoomed
 
-    openNewEventModal({ eventDate: xScale.invert(d.pageX) });
+    const eventDate = xScale.invert(d.pageX);
+
+    openNewEventModal({ eventDate, history });
   }
   function noZoom() {
     d3.event.preventDefault();

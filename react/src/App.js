@@ -8,6 +8,7 @@ import ChartContextProvider from './contexts/ChartContext';
 import ModalContextProvider from './contexts/ModalContext';
 import NavBar from './components/NavBar';
 import Chart from './components/Chart';
+import NewEventForm from './components/NewEventForm';
 import './App.css';
 import { Layout } from 'antd';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
@@ -31,6 +32,7 @@ const App = () => {
                   </Header>
                   <Content style={{ height: '100%', width: '100%' }}>
                     <Route path='/' component={Chart} />
+                    <Route path='/new' render={props => <NewEventForm {...props} />} />
                   </Content>
                 </Layout>
               </Router>

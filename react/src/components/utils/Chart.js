@@ -269,8 +269,11 @@ export const openViewModal = ({ id, history }) => {
   });
 };
 
-export const openNewEventModal = ({ eventDate }) => {
-  console.log(eventDate);
+export const openNewEventModal = ({ eventDate, history }) => {
+    history.push({
+        pathname: '/new/',
+        state: {visible: true, eventDate}
+    });
 };
 
 export const encryptIds = ({ ids }) =>

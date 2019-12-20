@@ -9,13 +9,14 @@ import { calculateDimensions } from './utils/Chart';
 import { isEmpty, includes, isNil } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
-import { Route } from 'react-router-dom';
+import { Route, useHistory } from 'react-router-dom';
 import EventsDetail from './EventsDetail';
 
 const Chart = () => {
   const { events, setFilteredEvents } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
+  const history = useHistory();
 
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
@@ -173,6 +174,7 @@ const Chart = () => {
             zoomF={onZoom}
             zoomDomain={zoomDomain}
             resolution={resolution}
+            history={history}
           />
           <Context
             width={width}
