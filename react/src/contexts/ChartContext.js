@@ -15,7 +15,7 @@ const s = {
 
 const ChartContextProvider = props => {
   const [config, setConfig] = useState(s);
-  const [categoryOptions, dispatch] = useReducer(categoriesReducer, []);
+  const [allCategories, dispatch] = useReducer(categoriesReducer, []);
 
   async function getCategories() {
     await window.api.getCategories().then(res =>
@@ -38,9 +38,7 @@ const ChartContextProvider = props => {
     return () => clearTimeout(timer);
   });
   return (
-    <ChartContext.Provider
-      value={{ config, setConfig, categoryOptions, dispatch }}
-    >
+    <ChartContext.Provider value={{ config, setConfig, allCategories }}>
       {props.children}
     </ChartContext.Provider>
   );

@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { ChartContext } from '../contexts/ChartContext';
+import { EventsContext } from '../contexts/EventsContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { Row, Col, Button, Typography } from 'antd';
@@ -14,6 +15,7 @@ import { DatePicker, Select, Radio } from 'antd';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 import EventsDetail from './EventsDetail';
+import { encryptIds } from './utils/Chart';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -38,11 +40,10 @@ const radioStyle = {
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
   const history = useHistory();
-  const { config, setConfig, categoryOptions } = useContext(ChartContext);
+  const { config, setConfig, allCategories } = useContext(ChartContext);
+  const { filteredEvents } = useContext(EventsContext);
   const { Option } = Select;
-  const options = categoryOptions.map(o => (
-    <Option key={o.id}>{o.name}</Option>
-  ));
+  const options = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
   const updateCategories = categories => {
     setConfig({ ...config, categories });
   };
@@ -54,9 +55,11 @@ const NavBar = () => {
   };
 
   const viewEvents = () => {
-    console.log('We should view all filtered events');
+    const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
     history.push({
       pathname: '/event/',
+      search: `?id=${id}`,
+      state: { visible: true },
     });
   };
 

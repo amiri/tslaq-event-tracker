@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useReducer } from 'react';
+import React, { createContext, useEffect, useReducer, useState } from 'react';
 import { eventsReducer } from '../reducers/EventsReducer';
 
 export const EventsContext = createContext();
@@ -7,6 +7,7 @@ const s = [];
 
 const EventsContextProvider = props => {
   const [events, dispatch] = useReducer(eventsReducer, s);
+  const [filteredEvents, setFilteredEvents] = useState([]);
 
   async function getEvents() {
     await window.api.getEvents().then(res =>
@@ -30,7 +31,9 @@ const EventsContextProvider = props => {
   });
 
   return (
-    <EventsContext.Provider value={{ events, dispatch }}>
+    <EventsContext.Provider
+      value={{ events, dispatch, filteredEvents, setFilteredEvents }}
+    >
       {props.children}
     </EventsContext.Provider>
   );

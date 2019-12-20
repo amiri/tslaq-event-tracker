@@ -13,7 +13,7 @@ import { Route } from 'react-router-dom';
 import EventsDetail from './EventsDetail';
 
 const Chart = () => {
-  const { events } = useContext(EventsContext);
+  const { events, setFilteredEvents } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
 
@@ -87,6 +87,7 @@ const Chart = () => {
         : null,
     [es, dateRange, categories, searchCondition],
   );
+  setFilteredEvents(esFiltered);
 
   const ps = useMemo(
     () =>
