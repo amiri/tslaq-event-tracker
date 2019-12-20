@@ -4,10 +4,16 @@ import { ChartContext } from '../contexts/ChartContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { Row, Col, Button, Typography } from 'antd';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useHistory,
+} from 'react-router-dom';
 import { DatePicker, Select, Radio } from 'antd';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
+import EventsDetail from './EventsDetail';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -31,6 +37,7 @@ const radioStyle = {
 
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
+  const history = useHistory();
   const { config, setConfig, categoryOptions } = useContext(ChartContext);
   const { Option } = Select;
   const options = categoryOptions.map(o => (
@@ -46,11 +53,19 @@ const NavBar = () => {
     setConfig({ ...config, dateRange: estDates });
   };
 
+  const viewEvents = () => {
+    console.log('We should view all filtered events');
+    history.push({
+      pathname: '/event/',
+    });
+  };
+
   const updateSearchCondition = e => {
     setConfig({ ...config, searchCondition: e.target.value });
   };
   return (
     <Router>
+      <Route path='/event' render={props => <EventsDetail {...props} />} />
       <div>
         <Row type='flex' justify='start'>
           <Col style={colStyle}>
@@ -58,7 +73,7 @@ const NavBar = () => {
           </Col>
           <Col style={colStyle}>
             {user ? (
-              <Button type='link' onClick={() => logout(dispatch)}>
+              <Button size='small' type='link' onClick={() => logout(dispatch)}>
                 Logout
               </Button>
             ) : (
@@ -107,6 +122,15 @@ const NavBar = () => {
               onChange={dates => updateRange(dates)}
               value={!isEmpty(config.dateRange) ? config.dateRange : null}
             />
+          </Col>
+          <Col style={{ ...colStyle, marginLeft: '1em', order: 5 }}>
+            <Button
+              type='primary'
+              size='small'
+              onClick={() => viewEvents({ history })}
+            >
+              View events
+            </Button>
           </Col>
         </Row>
       </div>

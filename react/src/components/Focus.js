@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
+import { useHistory } from 'react-router-dom';
 import moment from 'moment';
 require('moment-timezone');
 import * as d3 from 'd3';
@@ -14,12 +15,12 @@ import {
   updateZeroLine,
   updateHighLine,
   updateLowLine,
-  isSelected,
-  openModal,
+  openViewModal,
+  openNewEventModal,
+  encryptIds,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
-import { flatten, isEmpty, sortedUniq, omitBy, keys, compact } from 'lodash';
-import { useHistory } from 'react-router-dom';
+import { isEmpty, compact } from 'lodash';
 
 const Focus = ({
   width,
@@ -32,9 +33,12 @@ const Focus = ({
   events,
   resolution,
 }) => {
-  // History
   const history = useHistory();
-  const [selectedEvents, setSelectedEvents] = useState({});
+  d3.select('.focus-svg')
+    .on('touchstart', noZoom)
+    .on('touchmove', noZoom);
+  // History
+  // const [selectedEvents, setSelectedEvents] = useState({});
 
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
@@ -43,14 +47,29 @@ const Focus = ({
   // Scales
   const xScale = getXScale({ xExtent, width, margin });
   const yScale = getYScale({ yExtent, height, margin });
-  const categories = sortedUniq(
-    flatten(events.map(e => e.categories.map(c => c.name))).sort(),
-  );
+
   const colors = d3
     .scaleOrdinal()
-    .range(d3.schemeSpectral[categories.length < 10 ? 10 : categories.length])
-    .domain(categories);
+    .range(
+      d3.schemeSpectral[
+        config.categories.length < 10 ? 10 : config.categories.length
+      ],
+    )
+    .domain(config.categories);
+
   const [hover, setHover] = useState(null);
+
+  function clickZoom(d) {
+    console.log(d);
+    console.log(d.pageX);
+    console.log(d.pageY);
+    if (d.defaultPrevented) return; // zoomed
+
+    openNewEventModal({ eventDate: xScale.invert(d.pageX) });
+  }
+  function noZoom() {
+    d3.event.preventDefault();
+  }
 
   // Annotations
   const rawAnnotations = useMemo(
@@ -96,9 +115,8 @@ const Focus = ({
         const circleClasses = compact([
           'note-circle',
           ...categories.map(c => c.id),
-          selectedEvents[a.id] === true ? 'selected' : null,
+          // selectedEvents[a.id] === true ? 'selected' : null,
         ]);
-        console.log(circleClasses);
         return (
           <g key={i}>
             <AnnotationCallout
@@ -122,7 +140,7 @@ const Focus = ({
               onMouseOut={() => setHover(null)}
               onBlur={() => setHover(null)}
               onClick={() =>
-                openModal({ id: keys(omitBy(selectedEvents, false)), history })
+                openViewModal({ id: encryptIds({ ids: [a.id] }), history })
               }
             />
           </g>
@@ -148,25 +166,25 @@ const Focus = ({
   const { timeZone } = config;
 
   // Select circles
-  function selectCircles() {
-    const extent = d3.event.selection;
-    const selections = {};
-    annotations.map(a => {
-      const { cx, cy, id } = a.props.children[1].props;
-      const selected = isSelected({ coords: extent, cx, cy });
-      selections[id] = selected;
-    });
-    setSelectedEvents(selections);
-  }
+  // function selectCircles() {
+  //   const extent = d3.event.selection;
+  //   const selections = {};
+  //   annotations.map(a => {
+  //     const { cx, cy, id } = a.props.children[1].props;
+  //     const selected = isSelected({ coords: extent, cx, cy });
+  //     selections[id] = selected;
+  //   });
+  //   setSelectedEvents(selections);
+  // }
 
   // Select Circle Brush
-  const brush = d3
-    .brush()
-    .extent([
-      [0, 0],
-      [width, height],
-    ])
-    .on('start brush', selectCircles);
+  // const brush = d3
+  //   .brush()
+  //   .extent([
+  //     [0, 0],
+  //     [width, height],
+  //   ])
+  //   .on('brush', selectCircles);
 
   // Prices
   useEffect(() => {
@@ -223,8 +241,7 @@ const Focus = ({
     const focusZoom = svg.selectAll('.zoom');
     focusZoom.call(zoom);
 
-    const focusBrush = svg.selectAll('.brush');
-    focusBrush.call(brush);
+    // svg.call(brush);
   }, [svgRef, focusRef, height, width, yExtent, xExtent]);
 
   // Zoom
@@ -260,9 +277,9 @@ const Focus = ({
         width={width ? width - margin.left - margin.right : 0}
         height={height ? height : 0}
         transform={`translate(${margin.left},${margin.top})`}
+        onClick={clickZoom}
       />
       <g className='annotation-group'>{annotations}</g>
-      <g className='brush' />
     </svg>
   );
 };

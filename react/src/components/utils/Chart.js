@@ -1,5 +1,6 @@
 import moment from 'moment';
 import * as d3 from 'd3';
+import SimpleCrypto from 'simple-crypto-js';
 
 export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
@@ -256,10 +257,24 @@ export const isSelected = ({ coords, cx, cy }) => {
   return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
 };
 
-export const openModal = ({ id, history }) => {
+const encryptionSecret = 'bk';
+
+export const crypto = new SimpleCrypto(encryptionSecret);
+
+export const openViewModal = ({ id, history }) => {
   history.push({
     pathname: '/event/',
     search: `?id=${id}`,
     state: { visible: true },
   });
 };
+
+export const openNewEventModal = ({ eventDate }) => {
+  console.log(eventDate);
+};
+
+export const encryptIds = ({ ids }) =>
+  Buffer.from(crypto.encrypt(JSON.stringify(ids))).toString('base64');
+
+export const decryptIds = ({ ids }) =>
+  JSON.parse(crypto.decrypt(Buffer.from(ids, 'base64').toString()));

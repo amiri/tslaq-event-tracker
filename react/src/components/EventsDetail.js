@@ -1,17 +1,15 @@
 import React, { useEffect, useContext } from 'react';
 import { ModalContext } from '../contexts/ModalContext';
-import { includes } from 'lodash';
+import { includes, isNil } from 'lodash';
 import * as QueryString from 'query-string';
 import { Modal } from 'antd';
+import { decryptIds } from './utils/Chart';
 
 const EventsDetail = props => {
-  const { history, location, events } = props;
+  const { history, location, events = [] } = props;
   const { visible, setVisible } = useContext(ModalContext);
   const params = QueryString.parse(location.search);
-  // console.log('Show modal with query string: ', props);
-  // console.log('Show modal with query string: ', params);
-  // console.log('Show modal with query string: ', history);
-  // console.log('Show modal with query string: ', location);
+  const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];
   useEffect(() => {
     setVisible(location.state.visible);
   }, [location]);
@@ -19,7 +17,11 @@ const EventsDetail = props => {
     setVisible(false);
     history.push('/');
   };
-  const eventsToDisplay = events.filter(e => includes([params.id], e.id));
+  const eventsToDisplay = !isNil(eventIds)
+    ? events.filter(e => includes(eventIds, e.id))
+    : events;
+  const eventDisplays = eventsToDisplay.map(e => JSON.stringify(e));
+
   return (
     <Modal
       title='Events'
@@ -27,7 +29,7 @@ const EventsDetail = props => {
       onOk={handleClose}
       onCancel={handleClose}
     >
-      <p>Here is event {JSON.stringify(eventsToDisplay)}.</p>
+      {eventDisplays}
     </Modal>
   );
 };

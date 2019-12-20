@@ -24,16 +24,16 @@ const App = () => {
         <EventsContextProvider>
           <ChartContextProvider>
             <ModalContextProvider>
-              <Layout style={{ height: '100%', width: '100%' }}>
-                <Header style={{ backgroundColor: '#f0f2f5' }}>
-                  <NavBar />
-                </Header>
-                <Content style={{ height: '100%', width: '100%' }}>
-                  <Router>
+              <Router>
+                <Layout style={{ height: '100%', width: '100%' }}>
+                  <Header style={{ backgroundColor: '#f0f2f5' }}>
+                    <NavBar />
+                  </Header>
+                  <Content style={{ height: '100%', width: '100%' }}>
                     <Route path='/' component={Chart} />
-                  </Router>
-                </Content>
-              </Layout>
+                  </Content>
+                </Layout>
+              </Router>
             </ModalContextProvider>
           </ChartContextProvider>
         </EventsContextProvider>
