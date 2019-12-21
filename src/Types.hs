@@ -53,6 +53,15 @@ data CategoryDisplay = CategoryDisplay {
 instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
 
+data NewEvent = NewEvent {
+    body :: !EventBody
+  , time :: !UTCTime
+  , title :: !EventTitle
+  , categories :: ![Text]
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON NewEvent
+instance FromJSON NewEvent
+
 data UserRegistration = UserRegistration {
     emailAddress :: UserEmail
   , name         :: UserName

@@ -39,6 +39,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     time UTCTime sql=event_time sqltype=timestamptz default=CURRENT_TIMESTAMP
     title EventTitle sql=event_title sqltype=text
     body EventBody sql=event_body sqltype=text
+    authorId UserId
     UniqueTitle title
     deriving Eq Show Read
   Category json sql=category

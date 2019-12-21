@@ -13,13 +13,12 @@ import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
 import           Data.Text                   (pack)
 import           Data.Time.Clock             (getCurrentTime)
-import           Database.Persist.Postgresql (fromSqlKey, insert)
-import           Models                      (Event (Event), eventBody,
-                                              eventTime, eventTitle, runDb)
+import           Database.Persist.Postgresql (toSqlKey, fromSqlKey, insert)
+import           Models                      (Key, User, Event(..), runDb)
 import           Servant
-import           Types                       (AuthorizedUser (..), UserRole(..))
+import           Types                       (NewEvent (..), unhashId, AuthorizedUser (..), UserRole(..))
 
-type EventAPI = "events" :> ReqBody '[JSON] Event :> Post '[JSON] Int64
+type EventAPI = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] Int64
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
 
 eventApi :: Proxy EventAPI
@@ -33,7 +32,7 @@ eventServer u = createEvent u
     -- :<|> updateEvent
 
 -- | Creates a event in the database.
-createEvent :: MonadIO m => AuthorizedUser -> Event -> AppT m Int64
+createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m Int64
 createEvent u p = do
   userHasRole u Admin
   increment "createEvent"
@@ -43,9 +42,10 @@ createEvent u p = do
     ( insert
       ( Event currentTime
               currentTime
-              (eventTime p)
-              (eventTitle p)
-              (eventBody p)
+              (time p)
+              (title p)
+              (body p)
+              (toSqlKey (unhashId $ authUserId u) :: Key User)
       )
     )
   pure $ fromSqlKey newEvent
