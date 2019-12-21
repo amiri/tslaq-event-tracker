@@ -1,12 +1,10 @@
 import * as Yup from 'yup';
 import moment from 'moment';
 import { EventsContext } from '../contexts/EventsContext';
-import { ChartContext } from '../contexts/ChartContext';
-import { AuthContext } from '../contexts/AuthContext';
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
+import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -15,15 +13,20 @@ const EventSchema = Yup.object().shape({
   categories: Yup.array().of(Yup.string().min(1)),
 });
 
-const {TextArea} = Input;
-const NewEventForm = ({event, categoryOptions }) => {
+const { TextArea } = Input;
+const NewEventForm = ({ event, categoryOptions }) => {
   const { dispatch } = useContext(EventsContext);
-    const { user } = useContext(AuthContext);
   return (
     <Formik
-      initialValues={{ body: '', time: '', title: '', categories: [], ...event }}
+      initialValues={{
+        body: '',
+        time: '',
+        title: '',
+        categories: [],
+        ...event,
+      }}
       onSubmit={async (values, actions) => {
-          console.log(values);
+        console.log(values);
         const eventData = {
           body: values.body,
           time: values.time,
@@ -34,13 +37,13 @@ const NewEventForm = ({event, categoryOptions }) => {
           .postEvents(eventData)
           .then(res => res.data)
           .then(data => {
-              console.log(data);
-              dispatch({
-                type: 'POST_EVENTS',
-                payload: data,
-              });
-              actions.setSubmitting(false);
-              alerts.success(`Event ${data.title} created`);
+            console.log(data);
+            dispatch({
+              type: 'POST_EVENTS',
+              payload: data,
+            });
+            actions.setSubmitting(false);
+            alerts.success(`Event ${data.title} created`);
           })
           .catch(apiError => {
             console.log(apiError);
@@ -63,7 +66,11 @@ const NewEventForm = ({event, categoryOptions }) => {
             validateStatus={errors && errors.time ? 'error' : ''}
             help={errors && errors.time ? errors.time : ''}
           >
-            <DatePicker size='small' showTime defaultValue={moment(values.time)} />
+            <DatePicker
+              size='small'
+              showTime
+              defaultValue={moment(values.time)}
+            />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.title ? 'error' : ''}
@@ -100,15 +107,16 @@ const NewEventForm = ({event, categoryOptions }) => {
           >
             <Select
               combobox
-              mode="tags"
+              mode='tags'
               placeholder='Safety, Model 3'
               onChange={e => {
-                setFieldValue("categories", e);
+                setFieldValue('categories', e);
               }}
               onBlur={handleBlur}
               name='categories'
               size='small'
-            >{categoryOptions}
+            >
+              {categoryOptions}
             </Select>
           </Form.Item>
           <Form.Item>

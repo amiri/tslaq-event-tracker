@@ -9,7 +9,9 @@ const { Option } = Select;
 const NewEvent = props => {
   const { visible, setVisible } = useContext(ModalContext);
   const { allCategories } = useContext(ChartContext);
-  const categoryOptions = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
+  const categoryOptions = allCategories.map(o => (
+    <Option key={o.id}>{o.name}</Option>
+  ));
   const { history, location } = props;
   const eventDate = location.state.eventDate;
 
@@ -29,7 +31,10 @@ const NewEvent = props => {
       onOk={handleClose}
       onCancel={handleClose}
     >
-      <NewEventForm categoryOptions={categoryOptions} event={{time: eventDate }} />
+      <NewEventForm
+        categoryOptions={categoryOptions}
+        event={{ time: eventDate }}
+      />
     </Modal>
   );
 };

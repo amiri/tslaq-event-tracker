@@ -37,7 +37,7 @@ const radioStyle = {
   display: 'block',
 };
 
-  const { Option } = Select;
+const { Option } = Select;
 
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);

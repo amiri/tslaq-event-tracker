@@ -5,7 +5,8 @@ export const eventsReducer = (state, action) => {
     }
     case 'POST_EVENTS': {
       console.log(state);
-        console.log(action.payload);
+      console.log(action.payload);
+      return state;
     }
     default: {
       return state;
