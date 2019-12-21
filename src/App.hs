@@ -1,38 +1,59 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+
 
 module App where
 
-import           Api                         (app)
-import           Api.TSLAQ                   (writeJS)
-import           AppContext                  (AppContext (..), Environment (..),
-                                              defaultPgConnectInfo,
-                                              getAWSConfig, getAppEnvironment,
-                                              getAuthConfig,
-                                              getCloudFrontSigningKey,
-                                              getCookieSettings, getJWTSettings,
-                                              getJwtKey, getPgConnectInfo,
-                                              getPgConnectString, makePool,
-                                              s3Service, secretsManagerService,
-                                              setLogger)
-import           Control.Concurrent          (killThread)
-import           Control.Exception           (bracket)
-import           Control.Lens                ((^.))
-import qualified Control.Monad.Metrics       as M
-import           Data.Char                   (toLower)
-import           Data.Maybe                  (fromJust, fromMaybe)
-import qualified Data.Pool                   as Pool
-import qualified Data.Text                   as T
-import           Database.Persist.Postgresql (runSqlPool)
+import           Api                                   (app)
+import           Api.TSLAQ                             (writeJS)
+import           AppContext                            (AppContext (..),
+                                                        Environment (..),
+                                                        defaultPgConnectInfo,
+                                                        getAWSConfig,
+                                                        getAppEnvironment,
+                                                        getAuthConfig,
+                                                        getCloudFrontSigningKey,
+                                                        getCookieSettings,
+                                                        getJWTSettings,
+                                                        getJwtKey,
+                                                        getPgConnectInfo,
+                                                        getPgConnectString,
+                                                        makePool, s3Service,
+                                                        secretsManagerService,
+                                                        setLogger)
+import           Control.Concurrent                    (killThread)
+import           Control.Exception                     (bracket)
+import           Control.Lens                          ((^.))
+import qualified Control.Monad.Metrics                 as M
+import           Data.Char                             (toLower)
+import           Data.Maybe                            (fromJust, fromMaybe)
+import qualified Data.Pool                             as Pool
+import qualified Data.Text                             as T
+import           Database.Persist.Postgresql           (runSqlPool)
 import qualified Katip
-import           Logger                      (defaultLogEnv)
-import           Models                      (doMigrations)
-import           Network.AWS.Easy            (connect)
-import           Network.Wai                 (Application)
-import           Network.Wai.Handler.Warp    (run)
-import           Network.Wai.Metrics         (metrics, registerNamedWaiMetrics,
-                                              registerWaiMetrics)
-import           System.Remote.Monitoring    (forkServer, serverMetricStore,
-                                              serverThreadId)
+import           Logger                                (defaultLogEnv)
+import           Models                                (doMigrations)
+import           Network.AWS.Easy                      (connect)
+import           Network.Wai                           (Application)
+import           Network.Wai.Handler.Warp              (run)
+import           Network.Wai.Metrics                   (metrics,
+                                                        registerNamedWaiMetrics,
+                                                        registerWaiMetrics)
+import           Network.Wai.Middleware.Cors           (cors, corsOrigins,
+                                                        corsRequestHeaders,
+                                                        simpleCorsResourcePolicy)
+import           Network.Wai.Middleware.Servant.Errors (errorMw)
+import           Servant                               (JSON)
+import           System.Remote.Monitoring              (forkServer,
+                                                        serverMetricStore,
+                                                        serverThreadId)
 
 -- | An action that creates a WAI 'Application' together with its resources,
 --   runs it, and tears it down on exit
@@ -57,7 +78,18 @@ initialize ctx = do
   let logger = setLogger (ctxEnv ctx) (ctxLogEnv ctx)
   runSqlPool doMigrations (ctxPool ctx)
   -- wrap app in middleware
-  (pure . logger . metrics waiMetrics . app) ctx
+  ( pure
+    . cors (const . Just $ corsPolicy)
+    . errorMw @JSON @'["detail", "statusCode"]
+    . logger
+    . metrics waiMetrics
+    . app
+    )
+    ctx where
+  corsPolicy = simpleCorsResourcePolicy
+    { corsOrigins        = Just (["http://localhost:7777"], True)
+    , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
+    }
 
 -- | Allocates resources for 'AppContext'
 acquireAppContext :: IO AppContext

@@ -8,17 +8,16 @@ module Api
   )
 where
 
-import           Control.Monad.Reader        (runReaderT)
-import           Servant                     (Proxy (..), Server,
-                                              serveWithContext)
-import           Servant.Auth.Server         as SAS
+import           Control.Monad.Reader (runReaderT)
+import           Servant              (Proxy (..), Server, serveWithContext)
+import           Servant.Auth.Server  as SAS
 import           Servant.Server
 
-import           Api.TSLAQ                   (TSLAQAPI, tslaqApi, tslaqServer)
-import           AppContext                  (AppContext (..), AppT (..))
-import           Network.Wai.Middleware.Cors (cors, corsOrigins,
-                                              corsRequestHeaders,
-                                              simpleCorsResourcePolicy)
+import           Api.TSLAQ            (TSLAQAPI, tslaqApi, tslaqServer)
+import           AppContext           (AppContext (..), AppT (..))
+-- import           Network.Wai.Middleware.Cors (cors, corsOrigins,
+--                                               corsRequestHeaders,
+--                                               simpleCorsResourcePolicy)
 
 
 -- | This functions tells Servant how to run the 'App' monad with our
@@ -38,10 +37,4 @@ convertApp ctx appt = Handler $ runReaderT (runApp appt) ctx
 
 -- | Finally, this function takes a configuration and runs our 'TSLAQAPI'
 app :: AppContext -> Application
-app ctx = cors (const . Just $ corsPolicy)
-  $ serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
- where
-  corsPolicy = simpleCorsResourcePolicy
-    { corsOrigins        = Just (["http://localhost:7777"], True)
-    , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
-    }
+app ctx = serveWithContext tslaqApi (ctxAuthConfig ctx) (appToServer ctx)
