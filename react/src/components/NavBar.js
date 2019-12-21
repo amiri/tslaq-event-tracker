@@ -37,12 +37,13 @@ const radioStyle = {
   display: 'block',
 };
 
+  const { Option } = Select;
+
 const NavBar = () => {
   const { user, dispatch } = useContext(AuthContext);
   const history = useHistory();
   const { config, setConfig, allCategories } = useContext(ChartContext);
   const { filteredEvents } = useContext(EventsContext);
-  const { Option } = Select;
   const options = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
   const updateCategories = categories => {
     setConfig({ ...config, categories });

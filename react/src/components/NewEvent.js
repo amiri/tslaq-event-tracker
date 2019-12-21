@@ -1,11 +1,17 @@
 import React, { useEffect, useContext } from 'react';
 import { ModalContext } from '../contexts/ModalContext';
-import { Modal } from 'antd';
+import { ChartContext } from '../contexts/ChartContext';
+import NewEventForm from './NewEventForm';
+import { Modal, Select } from 'antd';
 
-const NewEventForm = props => {
-    console.log('Props: ', props);
-    const { visible, setVisible } = useContext(ModalContext);
-    const { history, location } = props;
+const { Option } = Select;
+
+const NewEvent = props => {
+  const { visible, setVisible } = useContext(ModalContext);
+  const { allCategories } = useContext(ChartContext);
+  const categoryOptions = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
+  const { history, location } = props;
+  const eventDate = location.state.eventDate;
 
   useEffect(() => {
     setVisible(location.state.visible);
@@ -23,8 +29,9 @@ const NewEventForm = props => {
       onOk={handleClose}
       onCancel={handleClose}
     >
+      <NewEventForm categoryOptions={categoryOptions} event={{time: eventDate }} />
     </Modal>
   );
 };
 
-export default NewEventForm;
+export default NewEvent;
