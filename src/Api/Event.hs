@@ -37,6 +37,7 @@ createEvent u p = do
   userHasRole u Admin
   increment "createEvent"
   logDebugNS "web" ((pack $ show $ authUserId u) <> " creating an event")
+  logDebugNS "web" ("new event: " <> (pack $ show $ p))
   currentTime <- liftIO $ getCurrentTime
   newEvent    <- runDb
     ( insert

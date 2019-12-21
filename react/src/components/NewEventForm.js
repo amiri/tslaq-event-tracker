@@ -105,9 +105,6 @@ const NewEventForm = ({event, categoryOptions }) => {
               onChange={e => {
                 setFieldValue("categories", e);
               }}
-              // onChange={e => setFieldValue("categories", [].slice
-              //     .call(e.target.selectedOptions)
-              //     .map(o => o.value))}
               onBlur={handleBlur}
               name='categories'
               size='small'

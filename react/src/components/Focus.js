@@ -19,7 +19,7 @@ import {
   encryptIds,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
-import { isEmpty, compact } from 'lodash';
+import { isNil, isEmpty, compact } from 'lodash';
 
 const Focus = ({
   width,
@@ -103,6 +103,8 @@ const Focus = ({
   const annotations = rawAnnotations
     ? rawAnnotations.map((a, i) => {
         const { note, x, y, categories } = a;
+        const cs = isNil(categories) ? [] : categories;
+        console.log(categories);
         const radius = 5;
         note.wrap = 200;
         note.orientation = null;
@@ -115,7 +117,7 @@ const Focus = ({
             : y;
         const circleClasses = compact([
           'note-circle',
-          ...categories.map(c => c.id),
+          ...cs.map(c => c.id),
           // selectedEvents[a.id] === true ? 'selected' : null,
         ]);
         return (
@@ -130,7 +132,7 @@ const Focus = ({
               className={hover === i ? '' : 'hidden'}
             />
             <circle
-              fill={colors(categories[0].name)}
+              fill={isEmpty(cs) ? 'black' : colors(cs[0].name)}
               r={radius}
               cx={x}
               cy={thisY}

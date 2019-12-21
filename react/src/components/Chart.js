@@ -51,9 +51,11 @@ const Chart = () => {
     () =>
       es
         ? es.reduce((obj, e) => {
-            e.categories.map(c =>
-              obj[c.id] ? obj[c.id].add(e.id) : (obj[c.id] = new Set([e.id])),
-            );
+            !isEmpty(e.categories) ?
+                e.categories.map(c =>
+                  obj[c.id] ? obj[c.id].add(e.id) : (obj[c.id] = new Set([e.id])),
+                )
+            : null
             return obj;
           }, {})
         : null,

@@ -13,6 +13,7 @@ import           Data.Aeson
 import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
 import           Data.Int              (Int64)
+import           Data.List.NonEmpty    (NonEmpty)
 import           Data.Text             (Text)
 import           Data.Text.Encoding    (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock       (UTCTime)
@@ -27,7 +28,7 @@ data PriceUrl = PriceUrl {
 instance ToJSON PriceUrl
 instance FromJSON PriceUrl
 
-data UserRole = Normal | Admin deriving (Show, Eq, Generic, Read)
+data UserRole = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read)
 instance ToJSON UserRole
 instance FromJSON UserRole
 
@@ -57,7 +58,7 @@ data NewEvent = NewEvent {
     body :: !EventBody
   , time :: !UTCTime
   , title :: !EventTitle
-  , categories :: ![Text]
+  , categories :: !(NonEmpty Text)
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON NewEvent
 instance FromJSON NewEvent
