@@ -26,6 +26,9 @@ const transformApiError = ({ data }) => {
   if (data.title === 'EventConflict') {
     return { title: data.detail };
   }
+  if (data.title === 'CategoryConflict') {
+    return { categories: data.detail };
+  }
 };
 
 const { TextArea } = Input;
