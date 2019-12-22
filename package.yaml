@@ -40,6 +40,7 @@ dependencies:
   - jose
   - katip
   - lens
+  - lens-regex-pcre >= 1.1.0.0
   - microlens
   - monad-control
   - monad-logger

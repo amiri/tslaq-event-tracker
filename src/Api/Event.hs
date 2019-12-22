@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TypeOperators         #-}
 
 module Api.Event where
@@ -11,7 +12,9 @@ module Api.Event where
 import           Api.ReadEvent               (getEvent)
 import           AppContext                  (AppContext, AppT (..),
                                               userHasRole)
-import           Control.Monad.Except        (MonadIO, liftIO)
+import           Control.Lens
+import           Control.Lens.Regex.Text
+import           Control.Monad.Except        (MonadError, MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
 import           Control.Monad.Reader        (MonadReader)
@@ -47,24 +50,52 @@ eventServer u = createEvent u
     -- :<|> getEvent
     -- :<|> updateEvent
 
-getIdFromCategory :: (MonadIO m, MonadReader AppContext m) => Text -> m Int64
+getIdFromCategory
+  :: (MonadIO m, MonadReader AppContext m, MonadError ServerError m)
+  => Text
+  -> m Int64
 getIdFromCategory c = do
-  let cids = unhash c
-  traceM $ ("Unhashed cids: " ++ show cids)
-  case cids of
-    [] -> do
-      traceM $ ("I am in empty branch")
-      currentTime <- liftIO $ getCurrentTime
-      traceM $ ("Category creation: " ++ (show $ CategoryName c))
-      newCategory <- runDb
-        (insert (Category currentTime currentTime (CategoryName c) Nothing))
-      pure $ fromSqlKey newCategory
-    (cid : _) -> do
-      traceM $ ("CID in non-empty branch: " ++ show cid)
-      pure $ fromIntegral cid
+  case has [regex|newcat-|] c of
+    True -> do
+      let matches = c ^.. [regex|newcat-(.*)|] . groups . ix 0
+      case matches of
+        [] -> throwError $ encodeJSONError
+          (JSONError 400 "NoCategoryName" "You provided no category name.")
+        (m : _) -> do
+          traceM $ ("Making a new category " ++ (show m))
+          let name = CategoryName m
+          c' <- existingCategory name
+          case c' of
+            Just (Entity _ _) -> throwError $ encodeJSONError
+              (JSONError 409
+                         "CategoryConflict"
+                         "There is already a category with that name."
+              )
+            Nothing -> do
+              currentTime <- liftIO $ getCurrentTime
+              traceM $ ("Category creation: " ++ (show $ CategoryName m))
+              newCategory <-
+                runDb
+                  (insert
+                    (Category currentTime currentTime (CategoryName m) Nothing)
+                  )
+              pure $ fromSqlKey newCategory
+    False -> do
+      let cids = unhash c
+      case cids of
+        [] -> throwError $ encodeJSONError
+          (JSONError 400
+                     "InvalidCategoryId"
+                     "You provided an invalid category id."
+          )
+        (cid : _) -> do
+          traceM $ ("CID in non-empty branch: " ++ show cid)
+          pure $ fromIntegral cid
 
 findOrCreateCategories
-  :: (MonadIO m, MonadReader AppContext m) => [Text] -> m [Int64]
+  :: (MonadIO m, MonadReader AppContext m, MonadError ServerError m)
+  => [Text]
+  -> m [Int64]
 findOrCreateCategories cs = mapM getIdFromCategory cs
 
 -- | Creates a event in the database.
@@ -107,6 +138,14 @@ existingEvent :: MonadIO m => EventTitle -> AppT m (Maybe (Entity Event))
 existingEvent t = do
   maybeEvent <- runDb (getBy $ UniqueTitle t)
   pure maybeEvent
+
+existingCategory
+  :: (MonadReader AppContext m, MonadIO m)
+  => CategoryName
+  -> m (Maybe (Entity Category))
+existingCategory n = do
+  maybeCategory <- runDb (getBy $ UniqueName n)
+  pure maybeCategory
 
 -- -- | Returns a event by id or throws a 404 error.
 -- updateEvent :: MonadIO m => Int64 -> EventUpdate -> AppT m (Entity Event)
