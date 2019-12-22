@@ -45,32 +45,33 @@ eventsAndCategoriesToDisplay = map toEventDisplay
 
 toEventDisplay :: (Entity Event, [Maybe (Entity Category)]) -> EventDisplay
 toEventDisplay (e, cs) = EventDisplay
-    { body       = (eventBody $ entityVal e)
-    , createTime = (eventCreateTime $ entityVal e)
-    , id         = hashId $ fromSqlKey (entityKey e)
-    , time       = (eventTime $ entityVal e)
-    , title      = (eventTitle $ entityVal e)
-    , updateTime = (eventUpdateTime $ entityVal e)
-    , categories = (flattenCategories (catMaybes cs))
-    }
+  { body       = (eventBody $ entityVal e)
+  , createTime = (eventCreateTime $ entityVal e)
+  , id         = hashId $ fromSqlKey (entityKey e)
+  , time       = (eventTime $ entityVal e)
+  , title      = (eventTitle $ entityVal e)
+  , updateTime = (eventUpdateTime $ entityVal e)
+  , categories = (flattenCategories (catMaybes cs))
+  }
 
 toCategoryDisplay :: Entity Category -> CategoryDisplay
 toCategoryDisplay c = CategoryDisplay
   { name       = (categoryName $ entityVal c)
   , createTime = (categoryCreateTime $ entityVal c)
   , id         = hashId $ fromSqlKey (entityKey c)
-  , details    = Just (categoryDetails $ entityVal c)
+  , details    = categoryDetails $ entityVal c
   , updateTime = (categoryUpdateTime $ entityVal c)
   }
 
 flattenCategories :: [Entity Category] -> Maybe [CategoryDisplay]
 flattenCategories cs =
-  let tcs = map ( \c -> toCategoryDisplay c ) cs
+  let tcs = map (\c -> toCategoryDisplay c) cs
   in  if length tcs > 0 then Just (tcs) else Nothing
 
 transformEventsAndCategories
   :: [(Entity Event, Maybe (Entity Category))] -> [EventDisplay]
-transformEventsAndCategories = eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap
+transformEventsAndCategories =
+  eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap
 
 getEvents :: (MonadReader AppContext m, MonadIO m) => Maybe Text -> m [(Entity Event, Maybe (Entity Category))]
 getEvents (Just i) = do

@@ -117,8 +117,17 @@ hashSalt = "firesale"
 hashContext :: Hash.HashidsContext
 hashContext = Hash.hashidsMinimum hashSalt 4
 
+hashEncode' :: Int -> ByteString
+hashEncode' = Hash.encode hashContext
+
+hashDecode' :: ByteString -> [Int]
+hashDecode' = Hash.decode hashContext
+
 hashId :: Int64 -> Text
-hashId = decodeUtf8 . Hash.encode hashContext . fromIntegral
+hashId = decodeUtf8 . hashEncode' . fromIntegral
+
+unhash :: Text -> [Int]
+unhash = hashDecode' . encodeUtf8
 
 unhashId :: Text -> Int64
-unhashId = fromIntegral . head . Hash.decode hashContext . encodeUtf8
+unhashId = fromIntegral . head . hashDecode' . encodeUtf8

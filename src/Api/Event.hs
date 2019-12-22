@@ -1,24 +1,40 @@
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE DeriveGeneric     #-}
-{-# LANGUAGE KindSignatures    #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE KindSignatures        #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeOperators         #-}
 
 module Api.Event where
 
-import           AppContext                  (userHasRole, AppT (..))
+import           Api.ReadEvent               (getEvent)
+import           AppContext                  (AppContext, AppT (..),
+                                              userHasRole)
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
+import           Control.Monad.Reader        (MonadReader)
 import           Data.Int                    (Int64)
-import           Data.Text                   (pack)
+import           Data.List.NonEmpty          (toList)
+import           Data.Text                   (Text, pack)
 import           Data.Time.Clock             (getCurrentTime)
-import           Database.Persist.Postgresql (toSqlKey, fromSqlKey, insert)
-import           Models                      (Key, User, Event(..), runDb)
+import           Database.Persist.Postgresql (Entity (..), fromSqlKey, getBy,
+                                              insert, insertEntity, toSqlKey)
+import           Debug.Trace
+import           Errors
+import           Models                      (Category (..), Event (..),
+                                              EventCategory (..), Key,
+                                              Unique (..), User, runDb)
 import           Servant
-import           Types                       (NewEvent (..), unhashId, AuthorizedUser (..), UserRole(..))
+import           Types                       (AuthorizedUser (..),
+                                              CategoryName (..), EventDisplay,
+                                              EventTitle, NewEvent (..),
+                                              UserRole (..), hashId, unhash,
+                                              unhashId)
 
-type EventAPI = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] Int64
+type EventAPI
+  = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] EventDisplay
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
 
 eventApi :: Proxy EventAPI
@@ -31,25 +47,66 @@ eventServer u = createEvent u
     -- :<|> getEvent
     -- :<|> updateEvent
 
+getIdFromCategory :: (MonadIO m, MonadReader AppContext m) => Text -> m Int64
+getIdFromCategory c = do
+  let cids = unhash c
+  traceM $ ("Unhashed cids: " ++ show cids)
+  case cids of
+    [] -> do
+      traceM $ ("I am in empty branch")
+      currentTime <- liftIO $ getCurrentTime
+      traceM $ ("Category creation: " ++ (show $ CategoryName c))
+      newCategory <- runDb
+        (insert (Category currentTime currentTime (CategoryName c) Nothing))
+      pure $ fromSqlKey newCategory
+    (cid : _) -> do
+      traceM $ ("CID in non-empty branch: " ++ show cid)
+      pure $ fromIntegral cid
+
+findOrCreateCategories
+  :: (MonadIO m, MonadReader AppContext m) => [Text] -> m [Int64]
+findOrCreateCategories cs = mapM getIdFromCategory cs
+
 -- | Creates a event in the database.
-createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m Int64
-createEvent u p = do
+createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m EventDisplay
+createEvent u (NewEvent b tm t cs) = do
   userHasRole u Admin
   increment "createEvent"
   logDebugNS "web" ((pack $ show $ authUserId u) <> " creating an event")
-  logDebugNS "web" ("new event: " <> (pack $ show $ p))
-  currentTime <- liftIO $ getCurrentTime
-  newEvent    <- runDb
-    ( insert
-      ( Event currentTime
-              currentTime
-              (time p)
-              (title p)
-              (body p)
-              (toSqlKey (unhashId $ authUserId u) :: Key User)
+  e <- existingEvent t
+  case e of
+    Just (Entity _ _) -> throwError $ encodeJSONError
+      (JSONError 409
+                 "EventConflict"
+                 "There is already an event with that title."
       )
-    )
-  pure $ fromSqlKey newEvent
+    Nothing -> do
+      currentTime <- liftIO $ getCurrentTime
+      newEvent    <- runDb
+        (insertEntity
+          (Event currentTime
+                 currentTime
+                 tm
+                 t
+                 b
+                 (toSqlKey (unhashId $ authUserId u) :: Key User)
+          )
+        )
+      let eventId = fromSqlKey . entityKey $ newEvent :: Int64
+      traceM $ ("EventId: " ++ show eventId)
+      cats <- findOrCreateCategories (toList cs)
+      traceM $ ("Categories: " ++ show cats)
+      let hashedId = hashId $ fromIntegral eventId
+      traceM $ ("HashedId: " ++ show hashedId)
+      mapM_
+        (\c' -> runDb $ insert $ EventCategory (toSqlKey eventId) (toSqlKey c'))
+        cats
+      getEvent hashedId
+
+existingEvent :: MonadIO m => EventTitle -> AppT m (Maybe (Entity Event))
+existingEvent t = do
+  maybeEvent <- runDb (getBy $ UniqueTitle t)
+  pure maybeEvent
 
 -- -- | Returns a event by id or throws a 404 error.
 -- updateEvent :: MonadIO m => Int64 -> EventUpdate -> AppT m (Entity Event)
