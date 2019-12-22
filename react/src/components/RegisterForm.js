@@ -52,7 +52,7 @@ const RegisterForm = () => {
             alerts.success(`Welcome, ${u.authUserName}.`);
           })
           .catch(apiError => {
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
             console.log(apiError);
             dispatch({
               type: 'REGISTER_FAILURE',

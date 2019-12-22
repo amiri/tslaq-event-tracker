@@ -4,7 +4,7 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { difference, includes } from 'lodash';
+import { difference, includes, isNil } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 
 const EventSchema = Yup.object().shape({
@@ -16,7 +16,7 @@ const EventSchema = Yup.object().shape({
     .of(Yup.string().min(1)),
 });
 
-const transformApiError = ({ statusText, data }) => {
+const transformApiError = ({ data }) => {
   if (
     data.detail ===
     'Error in $.categories: parsing NonEmpty failed, unexpected empty list'
@@ -28,16 +28,28 @@ const transformApiError = ({ statusText, data }) => {
   }
 };
 
-const markNewCategories = ({ values, options }) => {
-  const newCategories = difference(values, options);
-  const updated = values.filter(v => !includes(newCategories, v));
-  const newMarked = newCategories.map(c => `newcat-${c}`);
-  return [...updated, ...newMarked];
-};
-
 const { TextArea } = Input;
-const NewEventForm = ({ event, categoryOptions }) => {
+const NewEventForm = ({ event, categoryOptions: children }) => {
   const { dispatch } = useContext(EventsContext);
+  const valuePerOptionName = children.reduce((obj, o) => {
+    obj[o.props.label.toLowerCase()] = o.props.value;
+    return obj;
+  }, {});
+  const extractProperValue = ({ newOptions }) => {
+    const newValues = newOptions.map(o =>
+      !isNil(valuePerOptionName[o.toLowerCase()])
+        ? valuePerOptionName[o.toLowerCase()]
+        : o,
+    );
+    return newValues;
+  };
+  const markNewCategories = ({ values, options }) => {
+    const newCategories = difference(values, options);
+    const updated = values.filter(v => !includes(newCategories, v));
+    const newMarked = newCategories.map(c => `newcat-${c}`);
+    return [...updated, ...newMarked];
+  };
+
   return (
     <Formik
       initialValues={{
@@ -54,7 +66,7 @@ const NewEventForm = ({ event, categoryOptions }) => {
           title: values.title,
           categories: markNewCategories({
             values: values.categories,
-            options: categoryOptions.map(o => o.key),
+            options: children.map(o => o.key),
           }),
         };
         await window.api
@@ -134,14 +146,20 @@ const NewEventForm = ({ event, categoryOptions }) => {
               combobox
               mode='tags'
               placeholder='Safety, Model 3'
+              value={values.categories}
+              filterOption={true}
+              optionFilterProp='label'
               onChange={e => {
-                setFieldValue('categories', e);
+                setFieldValue(
+                  'categories',
+                  extractProperValue({ newOptions: e }),
+                );
               }}
               onBlur={handleBlur}
               name='categories'
               size='small'
             >
-              {categoryOptions}
+              {children}
             </Select>
           </Form.Item>
           <Form.Item>

@@ -3,7 +3,7 @@ import { authReducer } from '../reducers/AuthReducer';
 
 export const AuthContext = createContext();
 
-const user = JSON.parse(localStorage.getItem('user'));
+const user = JSON.parse(sessionStorage.getItem('user'));
 const s = user ? { user } : {};
 
 const AuthContextProvider = props => {

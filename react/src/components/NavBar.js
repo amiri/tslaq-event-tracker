@@ -21,7 +21,7 @@ const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
 const logout = async dispatch => {
-  localStorage.removeItem('user');
+  sessionStorage.removeItem('user');
   await window.api
     .getLogout()
     .then(d => dispatch({ type: 'LOGOUT', payload: d }));

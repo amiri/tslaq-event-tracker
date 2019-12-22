@@ -59,9 +59,6 @@ const Focus = ({
   const [hover, setHover] = useState(null);
 
   function clickZoom(d) {
-    console.log(d);
-    console.log(d.pageX);
-    console.log(d.pageY);
     if (d.defaultPrevented) return; // zoomed
 
     const eventDate = xScale.invert(d.pageX);
@@ -104,7 +101,6 @@ const Focus = ({
     ? rawAnnotations.map((a, i) => {
         const { note, x, y, categories } = a;
         const cs = isNil(categories) ? [] : categories;
-        console.log(categories);
         const radius = 5;
         note.wrap = 200;
         note.orientation = null;

@@ -10,7 +10,9 @@ const NewEvent = props => {
   const { visible, setVisible } = useContext(ModalContext);
   const { allCategories } = useContext(ChartContext);
   const categoryOptions = allCategories.map(o => (
-    <Option key={o.id}>{o.name}</Option>
+    <Option key={o.id} value={o.id} label={o.name}>
+      {o.name}
+    </Option>
   ));
   const { history, location } = props;
   const eventDate = location.state.eventDate;

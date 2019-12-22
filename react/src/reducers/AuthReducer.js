@@ -2,7 +2,7 @@ export const authReducer = (state, action) => {
   console.log(state);
   switch (action.type) {
     case 'LOGIN_SUCCESS': {
-      localStorage.setItem('user', JSON.stringify(action.payload));
+      sessionStorage.setItem('user', JSON.stringify(action.payload));
       // eslint-disable-next-line no-unused-vars
       const { apiError, ...noApiError } = state;
       return {
@@ -24,7 +24,7 @@ export const authReducer = (state, action) => {
       };
     }
     case 'REGISTER_SUCCESS': {
-      localStorage.setItem('user', JSON.stringify(action.payload));
+      sessionStorage.setItem('user', JSON.stringify(action.payload));
       return {
         ...state,
         user: action.payload,
