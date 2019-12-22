@@ -4,14 +4,36 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
+import { difference, includes } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
   time: Yup.date().required('You must enter the event date and time.'),
   title: Yup.string().required('You must enter the title of the event.'),
-  categories: Yup.array().of(Yup.string().min(1)),
+  categories: Yup.array()
+    .required('You must choose at least one category.')
+    .of(Yup.string().min(1)),
 });
+
+const transformApiError = ({ statusText, data }) => {
+  if (
+    data.detail ===
+    'Error in $.categories: parsing NonEmpty failed, unexpected empty list'
+  ) {
+    return { categories: 'You must choose at least one category.' };
+  }
+  if (data.title === 'EventConflict') {
+    return { title: data.detail };
+  }
+};
+
+const markNewCategories = ({ values, options }) => {
+  const newCategories = difference(values, options);
+  const updated = values.filter(v => !includes(newCategories, v));
+  const newMarked = newCategories.map(c => `newcat-${c}`);
+  return [...updated, ...newMarked];
+};
 
 const { TextArea } = Input;
 const NewEventForm = ({ event, categoryOptions }) => {
@@ -26,27 +48,30 @@ const NewEventForm = ({ event, categoryOptions }) => {
         ...event,
       }}
       onSubmit={async (values, actions) => {
-        console.log(values);
         const eventData = {
           body: values.body,
           time: values.time,
           title: values.title,
-          categories: values.categories,
+          categories: markNewCategories({
+            values: values.categories,
+            options: categoryOptions.map(o => o.key),
+          }),
         };
         await window.api
           .postEvents(eventData)
           .then(res => res.data)
           .then(data => {
-            console.log(data);
             dispatch({
-              type: 'POST_EVENTS',
+              type: 'POST_EVENT',
               payload: data,
             });
             actions.setSubmitting(false);
             alerts.success(`Event ${data.title} created`);
           })
           .catch(apiError => {
-            console.log(apiError);
+            actions.setSubmitting(false);
+            const transformedError = transformApiError(apiError);
+            actions.setErrors(transformedError);
           });
       }}
       validateOnBlur={false}
