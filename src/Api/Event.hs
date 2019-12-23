@@ -10,14 +10,13 @@
 module Api.Event where
 
 import           Api.ReadEvent               (getEvent)
-import           AppContext                  (AppContext, AppT (..),
+import           AppContext                  (AppT (..),
                                               userHasRole)
 import           Control.Lens
 import           Control.Lens.Regex.Text
-import           Control.Monad.Except        (MonadError, MonadIO, liftIO)
+import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
-import           Control.Monad.Reader        (MonadReader)
 import           Data.Int                    (Int64)
 import           Data.List.NonEmpty          (toList)
 import           Data.Text                   (Text, pack)
@@ -51,9 +50,9 @@ eventServer u = createEvent u
     -- :<|> updateEvent
 
 getIdFromCategory
-  :: (MonadIO m, MonadReader AppContext m, MonadError ServerError m)
+  :: MonadIO m
   => Text
-  -> m Int64
+  -> AppT m Int64
 getIdFromCategory c = do
   case has [regex|newcat-|] c of
     True -> do
@@ -93,9 +92,9 @@ getIdFromCategory c = do
           pure $ fromIntegral cid
 
 findOrCreateCategories
-  :: (MonadIO m, MonadReader AppContext m, MonadError ServerError m)
+  :: MonadIO m
   => [Text]
-  -> m [Int64]
+  -> AppT m [Int64]
 findOrCreateCategories cs = mapM getIdFromCategory cs
 
 -- | Creates a event in the database.
@@ -140,9 +139,9 @@ existingEvent t = do
   pure maybeEvent
 
 existingCategory
-  :: (MonadReader AppContext m, MonadIO m)
+  :: MonadIO m
   => CategoryName
-  -> m (Maybe (Entity Category))
+  -> AppT m (Maybe (Entity Category))
 existingCategory n = do
   maybeCategory <- runDb (getBy $ UniqueName n)
   pure maybeCategory

@@ -32,6 +32,19 @@ data UserRole = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read)
 instance ToJSON UserRole
 instance FromJSON UserRole
 
+data ImageUpload = ImageUpload {
+    name :: !ImageName
+  , contentType :: !Text
+} deriving (Show, Eq, Generic, Read)
+instance ToJSON ImageUpload
+instance FromJSON ImageUpload
+
+data PresignedUrl = PresignedUrl {
+    url :: !Text
+} deriving (Show, Eq, Generic, Read)
+instance ToJSON PresignedUrl
+instance FromJSON PresignedUrl
+
 data EventDisplay = EventDisplay {
     body       :: !EventBody
   , createTime :: !UTCTime
@@ -103,6 +116,7 @@ newtype EventTitle = EventTitle Text deriving (Eq, PersistField, PersistFieldSql
 newtype CategoryName = CategoryName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype CategoryDetails = CategoryDetails Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventBody = EventBody Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
+newtype ImageName = ImageName Text deriving (Eq, FromJSON, ToJSON, Show, Read)
 
 hashPassword :: MonadIO m => Text -> m (Maybe ByteString)
 hashPassword p =

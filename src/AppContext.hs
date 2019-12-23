@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -12,6 +13,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE UndecidableInstances       #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module AppContext where
@@ -88,6 +90,12 @@ localJSFolder e = (appDir e) <> "react/src/"
 
 jsBucket :: BucketName
 jsBucket = "tslaq-api-js"
+
+imageDomain :: String
+imageDomain = "https://images.tslaq-event-tracker.org/"
+
+imageBucket :: BucketName
+imageBucket = "tslaq-images"
 
 awsRegion :: Region
 awsRegion = NorthVirginia
@@ -179,8 +187,7 @@ newtype AppT m a
     = AppT
     { runApp :: ReaderT AppContext (ExceptT ServerError m) a
     } deriving
-    ( Functor, Applicative, Monad, MonadReader AppContext, MonadError ServerError
-    , MonadIO
+    ( Functor, Applicative, Monad, MonadReader AppContext, MonadIO, MonadError ServerError
     )
 
 type App = AppT IO

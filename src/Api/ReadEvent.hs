@@ -8,11 +8,10 @@
 
 module Api.ReadEvent where
 
-import           AppContext                  (AppContext, AppT (..))
+import           AppContext                  (AppT (..))
 import           Control.Monad.Except        (MonadIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
-import           Control.Monad.Reader        (MonadReader)
 -- import           Data.Int                    (Int64)
 import qualified Data.Map.Strict             as Map
 import           Data.Maybe                  (catMaybes)
@@ -25,8 +24,8 @@ import           Servant
 import           Servant.Auth.Server         as SAS
 import           Types
 
-type ReadEventAPI = "events" :> Get '[JSON] [EventDisplay]
-    :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
+type ReadEventAPI
+  = "events" :> Get '[JSON] [EventDisplay] :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
 
 readEventApi :: Proxy ReadEventAPI
 readEventApi = Proxy
@@ -73,7 +72,7 @@ transformEventsAndCategories
 transformEventsAndCategories =
   eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap
 
-getEvents :: (MonadReader AppContext m, MonadIO m) => Maybe Text -> m [(Entity Event, Maybe (Entity Category))]
+getEvents :: MonadIO m => Maybe Text -> AppT m [(Entity Event, Maybe (Entity Category))]
 getEvents (Just i) = do
   runDb $ select $ from $ \(e `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
     on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId

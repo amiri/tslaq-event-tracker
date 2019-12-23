@@ -13,8 +13,8 @@
 
 module Models where
 
-import           AppContext           (AppContext, ctxPool)
-import           Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
+import           AppContext           (AppT (..), ctxPool)
+import           Control.Monad.Reader (MonadIO, asks, liftIO)
 import           Data.Ord             (comparing)
 import           Data.Time.Clock      (UTCTime)
 import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
@@ -60,7 +60,7 @@ instance Ord Event where
 doMigrations :: SqlPersistT IO ()
 doMigrations = runMigration migrateAll
 
-runDb :: (MonadReader AppContext m, MonadIO m) => SqlPersistT IO b -> m b
+runDb :: MonadIO m => SqlPersistT IO b -> AppT m b
 runDb query = do
   pool <- asks ctxPool
   liftIO $ runSqlPool query pool
