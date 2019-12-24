@@ -47,6 +47,8 @@
     "react-dom": "^16.10.1",
     "react-router-dom": "^5.1.1",
     "simple-crypto-js": "^2.2.0",
+    "slate": "^0.57.1",
+    "slate-react": "^0.57.1",
     "trim-right": "^1.0.1",
     "yup": "^0.27.0"
   }

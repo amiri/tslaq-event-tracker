@@ -71,6 +71,18 @@ class Api {
     });
   }
 
+  postSign(body) {
+    return axios({
+      url: '/sign',
+      baseURL: 'http://localhost:8888',
+      method: 'post',
+      data: body,
+      responseType: 'json',
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    });
+  }
+
   getEvents() {
     return axios({
       url: '/events',
