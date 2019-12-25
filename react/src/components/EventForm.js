@@ -6,6 +6,7 @@ import * as alerts from '../alerts';
 import { Formik } from 'formik';
 import { difference, includes, isNil } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
+import Qeditor from './Qeditor';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -31,8 +32,7 @@ const transformApiError = ({ data }) => {
   }
 };
 
-const { TextArea } = Input;
-const NewEventForm = ({ event, categoryOptions: children }) => {
+const EventForm = ({ event, categoryOptions: children }) => {
   const { dispatch } = useContext(EventsContext);
   const valuePerOptionName = children.reduce((obj, o) => {
     obj[o.props.label.toLowerCase()] = o.props.value;
@@ -56,7 +56,12 @@ const NewEventForm = ({ event, categoryOptions: children }) => {
   return (
     <Formik
       initialValues={{
-        body: '',
+        body: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'Start here.' }],
+          },
+        ],
         time: '',
         title: '',
         categories: [],
@@ -130,16 +135,7 @@ const NewEventForm = ({ event, categoryOptions: children }) => {
             validateStatus={errors && errors.body ? 'error' : ''}
             help={errors && errors.body ? errors.body : ''}
           >
-            <TextArea
-              rows={10}
-              type='text'
-              placeholder=''
-              onChange={handleChange}
-              onBlur={handleBlur}
-              value={values.body}
-              name='body'
-              size='small'
-            />
+            <Qeditor changeFx={handleChange} body={values.body} />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.categories ? 'error' : ''}
@@ -181,4 +177,4 @@ const NewEventForm = ({ event, categoryOptions: children }) => {
   );
 };
 
-export default NewEventForm;
+export default EventForm;

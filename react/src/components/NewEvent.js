@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from 'react';
 import { ModalContext } from '../contexts/ModalContext';
 import { ChartContext } from '../contexts/ChartContext';
-import NewEventForm from './NewEventForm';
+import EventForm from './EventForm';
 import { Modal, Select } from 'antd';
 
 const { Option } = Select;
@@ -33,7 +33,7 @@ const NewEvent = props => {
       onOk={handleClose}
       onCancel={handleClose}
     >
-      <NewEventForm
+      <EventForm
         categoryOptions={categoryOptions}
         event={{ time: eventDate }}
       />
