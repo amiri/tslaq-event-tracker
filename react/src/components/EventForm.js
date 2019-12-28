@@ -135,7 +135,11 @@ const EventForm = ({ event, categoryOptions: children }) => {
             validateStatus={errors && errors.body ? 'error' : ''}
             help={errors && errors.body ? errors.body : ''}
           >
-            <Qeditor changeFx={handleChange} body={values.body} />
+            <Qeditor
+              onChange={change => setFieldValue('body', change)}
+              onBlur={handleBlur}
+              body={values.body}
+            />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.categories ? 'error' : ''}
