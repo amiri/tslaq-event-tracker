@@ -1,17 +1,22 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
-import { Formik } from 'formik';
+import axios from 'axios';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
+import { Formik, isEmptyChildren } from 'formik';
 import { Transforms } from 'slate';
 import { Modal, Form, Icon, Input, Button, Spin, Upload } from 'antd';
 import { isUrl } from './Utils';
 import imageExtensions from 'image-extensions';
 import * as Yup from 'yup';
+import { isNil, compact, isEmpty } from 'lodash';
 
 const ImageUploadSchema = Yup.object().shape({
   url: Yup.string()
-    .url()
     .nullable()
-    .notRequired(),
+    .notRequired()
+    .test('isImageUrl', 'This does not appear to be an image URL', v => {
+      return isNil(v) || isImageUrl(v);
+    }),
 });
 
 export const withImages = editor => {
@@ -51,19 +56,60 @@ export const withImages = editor => {
 
 const { Dragger } = Upload;
 
-const ImageUploadForm = ({ handleSubmit, changeFx, insertImage, editor }) => {
+const ImageUploadForm = ({ editor, setVisible }) => {
+  const { user } = useContext(AuthContext);
+
   return (
     <Formik
-      initialValues={{ url: '', upload: [] }}
-      onSubmit={async (values, actions) => {
-        console.log(values);
-        console.log(actions);
-        handleSubmit(values);
-      }}
+      initialValues={{ url: null, upload: [] }}
       validateOnBlur={true}
-      validateOnChange={false}
+      validateOnChange={true}
       validationSchema={ImageUploadSchema}
-      render={({ values, errors, handleBlur, handleChange, isSubmitting }) => (
+      onSubmit={async (values, actions) => {
+        const urls = await Promise.all(
+          values.upload.map(async f => {
+            const date = Date.now();
+            const fileName = `${user.authUserName}-${date}-${f.name}`;
+            const fileInfo = {
+              name: fileName,
+              contentType: f.type,
+            };
+            return await window.api
+              .postSign(fileInfo)
+              .then(res => res.data)
+              .then(async data => {
+                return await axios({
+                  url: data.url,
+                  method: 'put',
+                  data: f,
+                  headers: { 'Content-Type': f.type },
+                  withCredentials: true,
+                })
+                  .then(res => {
+                    return 'https://images.tslaq-event-tracker.org/' + fileName;
+                  })
+                  .catch(err => {
+                    console.log('Put s3 error: ', err);
+                  });
+              })
+              .catch(apiError => {
+                console.log('Sign upload error: ', apiError);
+              });
+          }),
+        );
+        const allUrls = compact([values.url, ...urls]);
+        await Promise.all(allUrls.map(async u => insertImage(editor, u)));
+        setVisible(false);
+      }}
+      render={({
+        values,
+        errors,
+        handleBlur,
+        handleChange,
+        handleSubmit,
+        setFieldValue,
+        isSubmitting,
+      }) => (
         <Form layout='vertical' onSubmit={handleSubmit}>
           <Form.Item
             label='Write or paste an image URL'
@@ -90,10 +136,20 @@ const ImageUploadForm = ({ handleSubmit, changeFx, insertImage, editor }) => {
                 <Icon type='image-file' style={{ color: 'rgba(0,0,0,.25)' }} />
               }
               type='file'
-              onChange={changeFx}
+              accept='image/*'
+              onChange={handleChange}
               onBlur={handleBlur}
               fileList={values.upload}
-              beforeUpload={false}
+              onRemove={file => {
+                const i = values.upload.indexOf(file);
+                const n = values.upload.slice();
+                n.splice(i, 1);
+                setFieldValue('upload', n);
+              }}
+              beforeUpload={(_, files) => {
+                setFieldValue('upload', [...values.upload, ...files]);
+                return false;
+              }}
               name='upload'
               size='small'
               multiple={true}
@@ -117,25 +173,15 @@ const ImageUploadForm = ({ handleSubmit, changeFx, insertImage, editor }) => {
 
 export const ImageButton = ({ editor }) => {
   const [visible, setVisible] = useState(false);
+  const [urls, setUrls] = useState([]);
 
   const handleOK = e => {
-    console.log('handleOK e: ', e);
     setVisible(false);
   };
   const handleCancel = e => {
-    console.log('handleCancel e: ', e);
     setVisible(false);
   };
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    console.log('In submit e: ', e);
-  };
-
-  const handleChange = e => {
-    // e.preventDefault();
-    console.log('In change e: ', e);
-  };
   return (
     <>
       <Button
@@ -144,23 +190,16 @@ export const ImageButton = ({ editor }) => {
         onMouseDown={e => {
           e.preventDefault();
           setVisible(true);
-          // const url = window.prompt('Enter the URL of the image:')
-          // if (!url) return
-          // insertImage(editor, url)
         }}
       />
       <Modal
         title='Image Upload'
+        destroyOnClose={true}
         visible={visible}
         onOk={handleOK}
         onCancel={handleCancel}
       >
-        <ImageUploadForm
-          handleSubmit={handleSubmit}
-          changeFx={handleChange}
-          insertImage={insertImage}
-          editor={editor}
-        />
+        <ImageUploadForm setVisible={setVisible} editor={editor} />
       </Modal>
     </>
   );

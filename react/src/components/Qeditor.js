@@ -11,7 +11,14 @@ import {
 import { withHistory } from 'slate-history';
 import Toolbar from './Qeditor/Toolbar';
 import { withImages } from './Qeditor/Image';
+import { withLinks } from './Qeditor/Link';
 import { css } from 'emotion';
+import {
+  TwitterTimelineEmbed,
+  TwitterTweetEmbed,
+  TwitterMomentShare,
+  TwitterVideoEmbed,
+} from 'react-twitter-embed';
 
 const Leaf = props => {
   return (
@@ -61,6 +68,29 @@ const ImageElement = props => {
   );
 };
 
+const TwitterElement = props => {
+  switch (props.element.subtype) {
+    case 'tweet':
+      return <TwitterTweetEmbed tweetId={props.element.id} />;
+    case 'timeline':
+      return (
+        <TwitterTimelineEmbed
+          sourceType={props.element.sourceType}
+          screenName={props.element.screenName}
+          url={props.element.url}
+          options={props.element.options}
+          id={props.element.id}
+        />
+      );
+    case 'video':
+      return <TwitterVideoEmbed id={props.element.id} />;
+    case 'moment':
+      return <TwitterMomentShare momentId={props.element.id} />;
+    default:
+      return '';
+  }
+};
+
 const LinkElement = props => {
   return (
     <a {...props.attributes} href={props.element.url}>
@@ -91,6 +121,8 @@ const Qeditor = ({ body, onChange, onBlur }) => {
         return <LinkElement {...props} />;
       case 'image':
         return <ImageElement {...props} />;
+      case 'twitter':
+        return <TwitterElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }

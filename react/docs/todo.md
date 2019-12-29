@@ -30,7 +30,7 @@ One idea to fix margins is to use padding around the two main svgs, so that the 
 
 Get errors returning from backend for type errors and DB errors. Evaluate https://hackage.haskell.org/package/servant-errors.
 
-# Modify createEvent to populate event_category as well.
+✓ # Modify createEvent to populate event_category as well.
 
-1. Check whether the category is a hashId or a new category. If new, create and then make the relation.
-2. Make relations. See https://github.com/yesodweb/yesod/wiki/Multi-select-field-populated-from-database-(using-esqueleto)
+✓ 1. Check whether the category is a hashId or a new category. If new, create and then make the relation.
+✓ 2. Make relations. See https://github.com/yesodweb/yesod/wiki/Multi-select-field-populated-from-database-(using-esqueleto)

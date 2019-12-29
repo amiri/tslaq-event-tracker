@@ -69,7 +69,7 @@ const EventForm = ({ event, categoryOptions: children }) => {
       }}
       onSubmit={async (values, actions) => {
         const eventData = {
-          body: values.body,
+          body: JSON.stringify(values.body),
           time: values.time,
           title: values.title,
           categories: markNewCategories({
