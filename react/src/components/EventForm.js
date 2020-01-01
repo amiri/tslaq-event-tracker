@@ -32,7 +32,7 @@ const transformApiError = ({ data }) => {
   }
 };
 
-const EventForm = ({ event, categoryOptions: children }) => {
+const EventForm = ({ setVisible, event, categoryOptions: children }) => {
   const { dispatch } = useContext(EventsContext);
   const valuePerOptionName = children.reduce((obj, o) => {
     obj[o.props.label.toLowerCase()] = o.props.value;
@@ -93,6 +93,7 @@ const EventForm = ({ event, categoryOptions: children }) => {
             const transformedError = transformApiError(apiError);
             actions.setErrors(transformedError);
           });
+        setVisible(false);
       }}
       validateOnBlur={false}
       validateOnChange={false}

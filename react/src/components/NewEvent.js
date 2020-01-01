@@ -29,14 +29,15 @@ const NewEvent = props => {
   return (
     <Modal
       title='New Event'
+      destroyOnClose={true}
       visible={visible}
-      onOk={handleClose}
       onCancel={handleClose}
       footer={false}
     >
       <EventForm
         categoryOptions={categoryOptions}
         event={{ time: eventDate }}
+        setVisible={setVisible}
       />
     </Modal>
   );

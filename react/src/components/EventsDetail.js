@@ -1,10 +1,14 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useMemo, useEffect, useContext } from 'react';
 import { ModalContext } from '../contexts/ModalContext';
 import { includes, isNil, isEmpty } from 'lodash';
 import * as QueryString from 'query-string';
-import { Modal } from 'antd';
+import { Modal, Divider, Typography } from 'antd';
 import { decryptIds } from './utils/Chart';
+import { createEditor } from 'slate';
+import { Slate, Editable, withReact } from 'slate-react';
+import { renderLeaf, renderElement } from './Qeditor/Render';
 
+const {Text, Title} = Typography;
 const EventsDetail = props => {
   const { visible, setVisible } = useContext(ModalContext);
   const { history, location, events = [] } = props;
@@ -20,7 +24,26 @@ const EventsDetail = props => {
   const eventsToDisplay = !isEmpty(eventIds)
     ? events.filter(e => includes(eventIds, e.id))
     : events;
-  const eventDisplays = eventsToDisplay.map(e => JSON.stringify(e));
+
+  const editor = useMemo(() => withReact(createEditor()), []);
+
+  const eventDisplays = eventsToDisplay.map(e => {
+    return (
+      <div key={e.id}>
+      <Text strong>{e.title}</Text><br />
+      <Text>{e.time}</Text><br />
+      <p class='byline'><em>{e.author_id}, {e.createTime}</em></p><br />
+      <Slate editor={editor} value={JSON.parse(e.body)}>
+        <Editable
+          readOnly
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+        />
+      </Slate>
+      <Divider />
+      </div>
+    );
+  });
 
   return (
     <Modal
