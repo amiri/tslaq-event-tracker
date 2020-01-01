@@ -1,11 +1,8 @@
 import React from 'react';
-import * as Yup from 'yup';
 import { Editor, Range, Transforms } from 'slate';
 import classnames from 'classnames';
 import { Button } from 'antd';
 import { isUrl } from './Utils';
-
-const validUrl = Yup.string().url();
 
 const isLink = editor => {
   const [match] = Editor.nodes(editor, {
@@ -87,9 +84,7 @@ export const LinkButton = ({ editor }) => {
           unwrapLink(editor);
         } else {
           const url = prompt('Enter the URL');
-          const isValid = await validUrl
-            .validate(url)
-            .catch(err => window.alert(`${err.name}: ${err.message}`));
+          const isValid = isUrl(url);
           if (!url || !isValid) {
             return;
           }

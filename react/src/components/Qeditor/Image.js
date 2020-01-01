@@ -1,14 +1,13 @@
-/* eslint-disable no-unused-vars */
 import axios from 'axios';
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
-import { Formik, isEmptyChildren } from 'formik';
+import { Formik } from 'formik';
 import { Transforms } from 'slate';
 import { Modal, Form, Icon, Input, Button, Spin, Upload } from 'antd';
 import { isUrl } from './Utils';
 import imageExtensions from 'image-extensions';
 import * as Yup from 'yup';
-import { isNil, compact, isEmpty } from 'lodash';
+import { isNil, compact } from 'lodash';
 
 const ImageUploadSchema = Yup.object().shape({
   url: Yup.string()
@@ -20,11 +19,7 @@ const ImageUploadSchema = Yup.object().shape({
 });
 
 export const withImages = editor => {
-  const { insertData, isVoid } = editor;
-
-  editor.isVoid = element => {
-    return element.type === 'image' ? true : isVoid(element);
-  };
+  const { insertData } = editor;
 
   editor.insertData = data => {
     const text = data.getData('text/plain');
@@ -65,6 +60,7 @@ const ImageUploadForm = ({ editor, setVisible }) => {
       validateOnBlur={true}
       validateOnChange={true}
       validationSchema={ImageUploadSchema}
+      /* eslint-disable-next-line no-unused-vars */
       onSubmit={async (values, actions) => {
         const urls = await Promise.all(
           values.upload.map(async f => {
@@ -85,7 +81,7 @@ const ImageUploadForm = ({ editor, setVisible }) => {
                   headers: { 'Content-Type': f.type },
                   withCredentials: true,
                 })
-                  .then(res => {
+                  .then(() => {
                     return 'https://images.tslaq-event-tracker.org/' + fileName;
                   })
                   .catch(err => {
@@ -173,12 +169,13 @@ const ImageUploadForm = ({ editor, setVisible }) => {
 
 export const ImageButton = ({ editor }) => {
   const [visible, setVisible] = useState(false);
-  const [urls, setUrls] = useState([]);
 
   const handleOK = e => {
+    e.preventDefault();
     setVisible(false);
   };
   const handleCancel = e => {
+    e.preventDefault();
     setVisible(false);
   };
 
@@ -198,6 +195,7 @@ export const ImageButton = ({ editor }) => {
         visible={visible}
         onOk={handleOK}
         onCancel={handleCancel}
+        footer={false}
       >
         <ImageUploadForm setVisible={setVisible} editor={editor} />
       </Modal>
@@ -209,6 +207,7 @@ const insertImage = (editor, url) => {
   const text = { text: '' };
   const image = { type: 'image', url, children: [text] };
   Transforms.insertNodes(editor, image);
+  Transforms.insertNodes(editor, { type: 'paragraph', children: [text] });
 };
 
 const isImageUrl = url => {

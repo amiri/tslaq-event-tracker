@@ -11,13 +11,13 @@ import {
 import { withHistory } from 'slate-history';
 import Toolbar from './Qeditor/Toolbar';
 import { withImages } from './Qeditor/Image';
+import { withTwitter } from './Qeditor/Twitter';
 import { withLinks } from './Qeditor/Link';
 import { css } from 'emotion';
 import {
   TwitterTimelineEmbed,
   TwitterTweetEmbed,
   TwitterMomentShare,
-  TwitterVideoEmbed,
 } from 'react-twitter-embed';
 
 const Leaf = props => {
@@ -50,19 +50,17 @@ const ImageElement = props => {
   const selected = useSelected();
   const focused = useFocused();
   return (
-    <div {...props.attributes}>
-      <div contentEditable={false}>
-        <img
-          alt=''
-          src={props.element.url}
-          className={css`
-            display: block;
-            max-width: 100%;
-            max-height: 20em;
-            box-shadow: ${selected && focused ? '0 0 0 3px #B4D5FF' : 'none'};
-          `}
-        />
-      </div>
+    <div {...props.attributes} contentEditable={false}>
+      <img
+        alt=''
+        src={props.element.url}
+        className={css`
+          display: block;
+          max-width: 100%;
+          max-height: 20em;
+          box-shadow: ${selected && focused ? '0 0 0 3px #B4D5FF' : 'none'};
+        `}
+      />
       {props.children}
     </div>
   );
@@ -70,24 +68,47 @@ const ImageElement = props => {
 
 const TwitterElement = props => {
   switch (props.element.subtype) {
-    case 'tweet':
-      return <TwitterTweetEmbed tweetId={props.element.id} />;
-    case 'timeline':
+    case 'status':
       return (
-        <TwitterTimelineEmbed
-          sourceType={props.element.sourceType}
-          screenName={props.element.screenName}
-          url={props.element.url}
-          options={props.element.options}
-          id={props.element.id}
-        />
+        <>
+          <TwitterTweetEmbed tweetId={props.element.id} />
+          {props.children}
+        </>
       );
-    case 'video':
-      return <TwitterVideoEmbed id={props.element.id} />;
-    case 'moment':
-      return <TwitterMomentShare momentId={props.element.id} />;
+    case 'timelines':
+      return (
+        <div {...props.attributes} contentEditable={false}>
+          <TwitterTimelineEmbed
+            sourceType='collection'
+            screenName={props.element.screenName}
+            url={props.element.url}
+            id={props.element.id}
+          />
+          {props.children}
+        </div>
+      );
+    case 'lists':
+      return (
+        <div {...props.attributes} contentEditable={false}>
+          <TwitterTimelineEmbed
+            sourceType='list'
+            ownerScreenName={props.element.screenName}
+            url={props.element.url}
+            options={props.element.options}
+            slug={props.element.id}
+          />
+          {props.children}
+        </div>
+      );
+    case 'moments':
+      return (
+        <div {...props.attributes} contentEditable={false}>
+          <TwitterMomentShare momentId={props.element.id} />
+          {props.children}
+        </div>
+      );
     default:
-      return '';
+      return <div {...props.attributes} contentEditable={false} />;
   }
 };
 
@@ -108,7 +129,11 @@ const QuoteElement = props => {
 
 const Qeditor = ({ body, onChange, onBlur }) => {
   const editor = useMemo(
-    () => withImages(withHistory(withReact(createEditor()))),
+    // () => withImages(withLinks(withHistory(withReact(createEditor())))),
+    () =>
+      withTwitter(
+        withImages(withLinks(withHistory(withReact(createEditor())))),
+      ),
     [],
   );
   const [value, setValue] = useState(body);

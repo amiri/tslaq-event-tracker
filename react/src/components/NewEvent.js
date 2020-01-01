@@ -32,6 +32,7 @@ const NewEvent = props => {
       visible={visible}
       onOk={handleClose}
       onCancel={handleClose}
+      footer={false}
     >
       <EventForm
         categoryOptions={categoryOptions}
