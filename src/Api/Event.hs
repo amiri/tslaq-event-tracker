@@ -76,7 +76,7 @@ getIdFromCategory c = do
               newCategory <-
                 runDb
                   (insert
-                    (Category currentTime currentTime (CategoryName m) Nothing)
+                    (Category currentTime currentTime (CategoryName m) Nothing Nothing)
                   )
               pure $ fromSqlKey newCategory
     False -> do
