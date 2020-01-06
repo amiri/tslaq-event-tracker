@@ -22,7 +22,7 @@ import           Errors
 import           Models
 import           Servant
 import           Servant.Auth.Server         as SAS
-import           Types
+import           Types hiding (CategoryId)
 
 type ReadEventAPI
   = "events" :> Get '[JSON] [EventDisplay] :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
@@ -39,17 +39,18 @@ keyValuesToMap :: (Ord k) => [(k, a)] -> Map.Map k [a]
 keyValuesToMap = Map.fromListWith (++) . map (\(k, v) -> (k, [v]))
 
 eventsAndCategoriesToDisplay
-  :: [(Entity Event, [Maybe (Entity Category)])] -> [EventDisplay]
+  :: [(EventProcess, [Maybe (Entity Category)])] -> [EventDisplay]
 eventsAndCategoriesToDisplay = map toEventDisplay
 
-toEventDisplay :: (Entity Event, [Maybe (Entity Category)]) -> EventDisplay
-toEventDisplay (e, cs) = EventDisplay
-  { body       = (eventBody $ entityVal e)
-  , createTime = (eventCreateTime $ entityVal e)
-  , id         = hashId $ fromSqlKey (entityKey e)
-  , time       = (eventTime $ entityVal e)
-  , title      = (eventTitle $ entityVal e)
-  , updateTime = (eventUpdateTime $ entityVal e)
+toEventDisplay :: (EventProcess, [Maybe (Entity Category)]) -> EventDisplay
+toEventDisplay ((EventProcess b ct i t tt ut a), cs) = EventDisplay
+  { body       = b
+  , createTime = ct
+  , id         = i
+  , time       = t
+  , title      = tt
+  , updateTime = ut
+  , author     = a
   , categories = (flattenCategories (catMaybes cs))
   }
 
@@ -67,25 +68,53 @@ flattenCategories cs =
   let tcs = map (\c -> toCategoryDisplay c) cs
   in  if length tcs > 0 then Just (tcs) else Nothing
 
-transformEventsAndCategories
-  :: [(Entity Event, Maybe (Entity Category))] -> [EventDisplay]
-transformEventsAndCategories =
-  eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap
+toEventProcess
+  :: [(Entity Event, Entity User, Maybe (Entity Category))]
+  -> [(EventProcess, Maybe (Entity Category))]
+toEventProcess = map
+  (\(e, u, cs) ->
+    ( EventProcess { body       = (eventBody $ entityVal e)
+                   , createTime = (eventCreateTime $ entityVal e)
+                   , id         = hashId $ fromSqlKey (entityKey e)
+                   , time       = (eventTime $ entityVal e)
+                   , title      = (eventTitle $ entityVal e)
+                   , updateTime = (eventUpdateTime $ entityVal e)
+                   , author     = (userName $ entityVal u)
+                   }
+    , cs
+    )
+  )
 
-getEvents :: MonadIO m => Maybe Text -> AppT m [(Entity Event, Maybe (Entity Category))]
+transformEventsAndCategories
+  :: [(Entity Event, Entity User, Maybe (Entity Category))] -> [EventDisplay]
+transformEventsAndCategories =
+  eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap . toEventProcess
+
+getEvents
+  :: MonadIO m
+  => Maybe Text
+  -> AppT m [(Entity Event, Entity User, Maybe (Entity Category))]
 getEvents (Just i) = do
-  runDb $ select $ from $ \(e `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
-    on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId
-    on $ just (e ^. EventId) ==. ec ?. EventCategoryEventId
-    where_ (e ^. EventId ==. val (toSqlKey $ unhashId i))
-    orderBy [asc (e ^. EventTime)]
-    pure (e,c)
+  runDb
+    $ select
+    $ from
+    $ \(e `InnerJoin` u `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
+        on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId
+        on $ just (e ^. EventId) ==. ec ?. EventCategoryEventId
+        on $ e ^. EventAuthorId ==. u ^. UserId
+        where_ (e ^. EventId ==. val (toSqlKey $ unhashId i))
+        orderBy [asc (e ^. EventTime)]
+        pure (e, u, c)
 getEvents Nothing = do
-  runDb $ select $ from $ \(e `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
-    on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId
-    on $ just (e ^. EventId) ==. ec ?. EventCategoryEventId
-    orderBy [asc (e ^. EventTime)]
-    pure (e,c)
+  runDb
+    $ select
+    $ from
+    $ \(e `InnerJoin` u `LeftOuterJoin` ec `LeftOuterJoin` c) -> do
+        on $ c ?. CategoryId ==. ec ?. EventCategoryCategoryId
+        on $ just (e ^. EventId) ==. ec ?. EventCategoryEventId
+        on $ e ^. EventAuthorId ==. u ^. UserId
+        orderBy [asc (e ^. EventTime)]
+        pure (e, u, c)
 
 -- | Returns all events in the database.
 listEvents :: MonadIO m => AppT m [EventDisplay]

@@ -32,7 +32,7 @@ const EventsDetail = props => {
       <div key={e.id}>
       <Text strong>{e.title}</Text><br />
       <Text>{e.time}</Text><br />
-      <p class='byline'><em>{e.author_id}, {e.createTime}</em></p><br />
+      <p className='byline'><em>{e.author}, {e.createTime}</em></p><br />
       <Slate editor={editor} value={JSON.parse(e.body)}>
         <Editable
           readOnly

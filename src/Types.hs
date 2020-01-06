@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TypeApplications           #-}
 module Types where
 
 import           Control.Monad.Except  (MonadIO, liftIO)
@@ -14,7 +15,7 @@ import           Data.ByteString       (ByteString)
 import           Data.ByteString.Char8 (pack)
 import           Data.Int              (Int64)
 import           Data.List.NonEmpty    (NonEmpty)
-import           Data.Text             (Text)
+import           Data.Text             (Text, splitOn, unpack)
 import           Data.Text.Encoding    (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock       (UTCTime)
 import           Database.Persist.Sql
@@ -33,7 +34,7 @@ instance ToJSON UserRole
 instance FromJSON UserRole
 
 data ImageUpload = ImageUpload {
-    name :: !ImageName
+    name        :: !ImageName
   , contentType :: !Text
 } deriving (Show, Eq, Generic, Read)
 instance ToJSON ImageUpload
@@ -45,6 +46,22 @@ data PresignedUrl = PresignedUrl {
 instance ToJSON PresignedUrl
 instance FromJSON PresignedUrl
 
+data EventProcess = EventProcess {
+    body       :: !EventBody
+  , createTime :: !UTCTime
+  , id         :: !Text
+  , time       :: !UTCTime
+  , title      :: !EventTitle
+  , updateTime :: !UTCTime
+  , author     :: UserName
+} deriving (Show, Eq, Generic, Read)
+instance ToJSON EventProcess
+instance FromJSON EventProcess
+
+instance Ord EventProcess where
+  compare (EventProcess _ _ _ t1 _ _ _) (EventProcess _ _ _ t2 _ _ _) =
+    t1 `compare` t2
+
 data EventDisplay = EventDisplay {
     body       :: !EventBody
   , createTime :: !UTCTime
@@ -52,10 +69,69 @@ data EventDisplay = EventDisplay {
   , time       :: !UTCTime
   , title      :: !EventTitle
   , updateTime :: !UTCTime
+  , author     :: !UserName
   , categories :: !(Maybe [CategoryDisplay])
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON EventDisplay
 instance FromJSON EventDisplay
+
+data CategoryTree = CategoryTree {
+    id         :: !Text
+  , createTime :: !UTCTime
+  , updateTime :: !UTCTime
+  , name       :: !Text
+  , fullName   :: !Text
+  , details    :: !(Maybe CategoryDetails)
+  , parentId   :: !(Maybe Text)
+  , parents    :: !(Maybe [Text])
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON CategoryTree
+instance FromJSON CategoryTree
+
+instance RawSql CategoryTree where
+  rawSqlCols _ _ =
+    ( 8
+    , [ "id"
+      , "create_time"
+      , "update_time"
+      , "name"
+      , "full_name"
+      , "details"
+      , "parent_id"
+      , "parents"
+      ]
+    )
+  rawSqlColCountReason _ =
+    "A category with tree information contains 8 columns"
+  rawSqlProcessRow xs =
+    let PersistInt64   i  = xs !! 0
+        PersistUTCTime ct = xs !! 1
+        PersistUTCTime ut = xs !! 2
+        PersistText    n  = xs !! 3
+        PersistText    fn = xs !! 4
+        d                 = case xs !! 5 of
+          PersistText d' -> Just (CategoryDetails d')
+          _              -> Nothing
+        p = case xs !! 6 of
+          PersistInt64 p' -> Just (hashId p')
+          _               -> Nothing
+        ps = case xs !! 7 of
+          PersistText ps' -> Just (explodeParentIds ps')
+          _               -> Nothing
+    in  Right
+          (CategoryTree { id         = hashId i
+                        , createTime = ct
+                        , updateTime = ut
+                        , name       = n
+                        , fullName   = fn
+                        , details    = d
+                        , parentId   = p
+                        , parents    = ps
+                        }
+          )
+
+explodeParentIds :: Text -> [Text]
+explodeParentIds ids = reverse $ fmap (hashId . (read :: String -> Int64) . unpack) $ splitOn "," ids
 
 data CategoryDisplay = CategoryDisplay {
     name       :: !CategoryName
@@ -68,9 +144,9 @@ instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
 
 data NewEvent = NewEvent {
-    body :: !EventBody
-  , time :: !UTCTime
-  , title :: !EventTitle
+    body       :: !EventBody
+  , time       :: !UTCTime
+  , title      :: !EventTitle
   , categories :: !(NonEmpty Text)
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON NewEvent
@@ -113,6 +189,7 @@ newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistF
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserName = UserName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventTitle = EventTitle Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
+newtype CategoryId = CategoryId Int64 deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype CategoryName = CategoryName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype CategoryDetails = CategoryDetails Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventBody = EventBody Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
