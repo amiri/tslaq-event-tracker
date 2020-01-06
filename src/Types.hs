@@ -53,13 +53,14 @@ data EventProcess = EventProcess {
   , time       :: !UTCTime
   , title      :: !EventTitle
   , updateTime :: !UTCTime
-  , author     :: UserName
+  , author     :: !UserName
+  , authorId   :: !Text
 } deriving (Show, Eq, Generic, Read)
 instance ToJSON EventProcess
 instance FromJSON EventProcess
 
 instance Ord EventProcess where
-  compare (EventProcess _ _ _ t1 _ _ _) (EventProcess _ _ _ t2 _ _ _) =
+  compare (EventProcess _ _ _ t1 _ _ _ _) (EventProcess _ _ _ t2 _ _ _ _) =
     t1 `compare` t2
 
 data EventDisplay = EventDisplay {
@@ -70,6 +71,7 @@ data EventDisplay = EventDisplay {
   , title      :: !EventTitle
   , updateTime :: !UTCTime
   , author     :: !UserName
+  , authorId   :: !Text
   , categories :: !(Maybe [CategoryDisplay])
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON EventDisplay

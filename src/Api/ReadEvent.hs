@@ -43,7 +43,7 @@ eventsAndCategoriesToDisplay
 eventsAndCategoriesToDisplay = map toEventDisplay
 
 toEventDisplay :: (EventProcess, [Maybe (Entity Category)]) -> EventDisplay
-toEventDisplay ((EventProcess b ct i t tt ut a), cs) = EventDisplay
+toEventDisplay ((EventProcess b ct i t tt ut a ai), cs) = EventDisplay
   { body       = b
   , createTime = ct
   , id         = i
@@ -51,6 +51,7 @@ toEventDisplay ((EventProcess b ct i t tt ut a), cs) = EventDisplay
   , title      = tt
   , updateTime = ut
   , author     = a
+  , authorId   = ai
   , categories = (flattenCategories (catMaybes cs))
   }
 
@@ -80,6 +81,7 @@ toEventProcess = map
                    , title      = (eventTitle $ entityVal e)
                    , updateTime = (eventUpdateTime $ entityVal e)
                    , author     = (userName $ entityVal u)
+                   , authorId   = hashId $ fromSqlKey (entityKey u)
                    }
     , cs
     )
