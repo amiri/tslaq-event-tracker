@@ -133,7 +133,7 @@ instance RawSql CategoryTree where
           )
 
 explodeParentIds :: Text -> [Text]
-explodeParentIds ids = reverse $ fmap (hashId . (read :: String -> Int64) . unpack) $ splitOn "," ids
+explodeParentIds ids = fmap (hashId . (read :: String -> Int64) . unpack) $ splitOn "," ids
 
 data CategoryDisplay = CategoryDisplay {
     name       :: !CategoryName
