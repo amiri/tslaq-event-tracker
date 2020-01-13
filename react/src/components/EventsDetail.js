@@ -8,7 +8,7 @@ import { createEditor } from 'slate';
 import { Slate, Editable, withReact } from 'slate-react';
 import { renderLeaf, renderElement } from './Qeditor/Render';
 
-const {Text, Title} = Typography;
+const { Text } = Typography;
 const EventsDetail = props => {
   const { visible, setVisible } = useContext(ModalContext);
   const { history, location, events = [] } = props;
@@ -30,17 +30,24 @@ const EventsDetail = props => {
   const eventDisplays = eventsToDisplay.map(e => {
     return (
       <div key={e.id}>
-      <Text strong>{e.title}</Text><br />
-      <Text>{e.time}</Text><br />
-      <p className='byline'><em>{e.author}, {e.createTime}</em></p><br />
-      <Slate editor={editor} value={JSON.parse(e.body)}>
-        <Editable
-          readOnly
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-        />
-      </Slate>
-      <Divider />
+        <Text strong>{e.title}</Text>
+        <br />
+        <Text>{e.time}</Text>
+        <br />
+        <p className='byline'>
+          <em>
+            {e.author}, {e.createTime}
+          </em>
+        </p>
+        <br />
+        <Slate editor={editor} value={JSON.parse(e.body)}>
+          <Editable
+            readOnly
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+          />
+        </Slate>
+        <Divider />
       </div>
     );
   });

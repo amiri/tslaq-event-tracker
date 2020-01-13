@@ -52,3 +52,7 @@ div.logo {
     padding-left: 1em;
     border-left: 3px solid #ccc;
 }
+
+.ant-btn-group {
+  margin-right: 1em;
+}

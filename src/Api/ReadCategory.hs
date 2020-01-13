@@ -84,7 +84,7 @@ SELECT
 FROM
   categories
 ORDER BY
-  full_name;
+  ARRAY_LENGTH(REGEXP_SPLIT_TO_ARRAY(parents, ','), 1) DESC
 |]
 
 getCategoriesWithParents :: MonadIO m => ReaderT SqlBackend m [CategoryTree]

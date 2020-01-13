@@ -125,7 +125,7 @@ const Focus = ({
               color={'#444444'}
               dy={20}
               note={note}
-              className={hover === i ? '' : 'hidden'}
+              // className={hover === i ? '' : 'hidden'}
             />
             <circle
               fill={isEmpty(cs) ? 'black' : colors(cs[0].name)}
