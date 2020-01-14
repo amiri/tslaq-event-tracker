@@ -23,7 +23,7 @@ div#chart {
 }
 
 .hidden {
-  display: none;
+  visibility: hidden;
 }
 
 rect.annotation-note-bg {
