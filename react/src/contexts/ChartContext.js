@@ -1,5 +1,19 @@
 import React, { createContext, useState, useEffect, useReducer } from 'react';
 import { categoriesReducer } from '../reducers/CategoriesReducer';
+import { Select } from 'antd';
+import {
+  isArray,
+  isObject,
+  mapKeys,
+  mapValues,
+  isNil,
+  isEmpty,
+  get,
+  has,
+  set,
+} from 'lodash';
+
+const { Option, OptGroup } = Select;
 
 export const ChartContext = createContext();
 
@@ -13,9 +27,78 @@ const s = {
   // zoomDomain: [],
 };
 
+const renameKeys = (names, obj) => {
+  if (isArray(obj)) {
+    return obj.map(inner => renameKeys(names, inner));
+  } else if (isObject(obj)) {
+    const res = mapKeys(obj, (v, k) => names[k] || k);
+    return mapValues(res, v => renameKeys(names, v));
+  } else {
+    return obj;
+  }
+};
+
+const transformOpt = obj => {
+  return Object.keys(obj).reduce((os, k) => {
+    if (k === 'direct') {
+      os.push(
+        obj[k]
+          .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
+          .map(o => (
+            <Option key={o.id} value={o.id} label={o.name}>
+              {o.fullName}
+            </Option>
+          )),
+      );
+    } else {
+      os.push(
+        <OptGroup label={k} key={k}>
+          {transformOpt(obj[k])}
+        </OptGroup>,
+      );
+    }
+    return os;
+  }, []);
+};
+
 const ChartContextProvider = props => {
   const [config, setConfig] = useState(s);
   const [allCategories, dispatch] = useReducer(categoriesReducer, []);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+
+  // Load category options when categories change
+  useEffect(() => {
+    if (!isEmpty(allCategories)) {
+      let ns = {};
+      const opts = allCategories.reduce((os, c) => {
+        ns[c.id] = c.name;
+        if (isNil(c.parents)) {
+          const there = get(os, c.id, { direct: [] });
+          there.direct.push(c);
+          set(os, c.id, there);
+        } else {
+          const there = get(os, c.parents, { direct: [] });
+          if (has(there, c.id)) {
+            there[c.id].direct.push(c);
+          } else {
+            there.direct.push(c);
+          }
+          set(os, c.parents, there);
+        }
+        return os;
+      }, {});
+      const renamed = renameKeys(ns, opts);
+      const categoryOptions = Object.keys(renamed).reduce((os, k) => {
+        os.push(
+          <OptGroup label={k} key={k}>
+            {transformOpt(renamed[k])}
+          </OptGroup>,
+        );
+        return os;
+      }, []);
+      setCategoryOptions(categoryOptions);
+    }
+  }, [allCategories]);
 
   async function getCategories() {
     await window.api.getCategories().then(res =>
@@ -38,7 +121,9 @@ const ChartContextProvider = props => {
     return () => clearTimeout(timer);
   });
   return (
-    <ChartContext.Provider value={{ config, setConfig, allCategories }}>
+    <ChartContext.Provider
+      value={{ config, setConfig, allCategories, categoryOptions }}
+    >
       {props.children}
     </ChartContext.Provider>
   );
