@@ -3,6 +3,7 @@ import { categoriesReducer } from '../reducers/CategoriesReducer';
 import { Select } from 'antd';
 import {
   isArray,
+  flattenDeep,
   isObject,
   mapKeys,
   mapValues,
@@ -13,7 +14,7 @@ import {
   set,
 } from 'lodash';
 
-const { Option, OptGroup } = Select;
+const { Option } = Select;
 
 export const ChartContext = createContext();
 
@@ -51,11 +52,7 @@ const transformOpt = obj => {
           )),
       );
     } else {
-      os.push(
-        <OptGroup label={k} key={k}>
-          {transformOpt(obj[k])}
-        </OptGroup>,
-      );
+      os.push(transformOpt(obj[k]));
     }
     return os;
   }, []);
@@ -88,15 +85,13 @@ const ChartContextProvider = props => {
         return os;
       }, {});
       const renamed = renameKeys(ns, opts);
+      console.log('renamed: ', renamed);
       const categoryOptions = Object.keys(renamed).reduce((os, k) => {
-        os.push(
-          <OptGroup label={k} key={k}>
-            {transformOpt(renamed[k])}
-          </OptGroup>,
-        );
+        os.push(transformOpt(renamed[k]));
         return os;
       }, []);
-      setCategoryOptions(categoryOptions);
+      const flat = flattenDeep(categoryOptions);
+      setCategoryOptions(flat);
     }
   }, [allCategories]);
 

@@ -33,6 +33,7 @@ const transformApiError = ({ data }) => {
 };
 
 const EventForm = ({ setVisible, event, categoryOptions: children }) => {
+  console.log(children);
   const { dispatch } = useContext(EventsContext);
   const valuePerOptionName = children.reduce((obj, o) => {
     obj[o.props.label.toLowerCase()] = o.props.value;
