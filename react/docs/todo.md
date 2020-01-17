@@ -28,7 +28,7 @@ One idea to fix margins is to use padding around the two main svgs, so that the 
 
 # Backend errors
 
-Get errors returning from backend for type errors and DB errors. Evaluate https://hackage.haskell.org/package/servant-errors.
+✓ Get errors returning from backend for type errors and DB errors. Evaluate https://hackage.haskell.org/package/servant-errors.
 
 ✓ # Modify createEvent to populate event_category as well.
 
