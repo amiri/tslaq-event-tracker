@@ -4,7 +4,7 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { difference, includes, isNil } from 'lodash';
+import { isArray, difference, includes, isNil } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
 
@@ -32,13 +32,8 @@ const transformApiError = ({ data }) => {
   }
 };
 
-const EventForm = ({ setVisible, event, categoryOptions: children }) => {
-  console.log(children);
+const EventForm = ({ setVisible, event, categoryOptions: children, valuePerOptionName }) => {
   const { dispatch } = useContext(EventsContext);
-  const valuePerOptionName = children.reduce((obj, o) => {
-    obj[o.props.label.toLowerCase()] = o.props.value;
-    return obj;
-  }, {});
   const extractProperValue = ({ newOptions }) => {
     const newValues = newOptions.map(o =>
       !isNil(valuePerOptionName[o.toLowerCase()])
@@ -149,11 +144,13 @@ const EventForm = ({ setVisible, event, categoryOptions: children }) => {
           >
             <Select
               combobox
-              mode='tags'
+              mode='multiple'
               placeholder='Safety, Model 3'
               value={values.categories}
-              filterOption={true}
-              optionFilterProp='label'
+              filterOption={(i, o) => {
+                return isArray(o.props.children) ? false : o.props.children.toLowerCase().indexOf(i.toLowerCase()) >= 0
+              }}
+              // optionFilterProp='label'
               onChange={e => {
                 setFieldValue(
                   'categories',

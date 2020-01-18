@@ -3,7 +3,6 @@ import { categoriesReducer } from '../reducers/CategoriesReducer';
 import { Select } from 'antd';
 import {
   isArray,
-  flattenDeep,
   isObject,
   mapKeys,
   mapValues,
@@ -14,7 +13,7 @@ import {
   set,
 } from 'lodash';
 
-const { Option } = Select;
+const { Option, OptGroup } = Select;
 
 export const ChartContext = createContext();
 
@@ -52,7 +51,11 @@ const transformOpt = obj => {
           )),
       );
     } else {
-      os.push(transformOpt(obj[k]));
+      os.push(
+        <OptGroup label={k} key={`${k}-group`}>
+          {transformOpt(obj[k])}
+        </OptGroup>,
+      );
     }
     return os;
   }, []);
@@ -62,6 +65,7 @@ const ChartContextProvider = props => {
   const [config, setConfig] = useState(s);
   const [allCategories, dispatch] = useReducer(categoriesReducer, []);
   const [categoryOptions, setCategoryOptions] = useState([]);
+  const [valuePerOptionName, setValuePerOptionName] = useState({});
 
   // Load category options when categories change
   useEffect(() => {
@@ -85,13 +89,17 @@ const ChartContextProvider = props => {
         return os;
       }, {});
       const renamed = renameKeys(ns, opts);
-      console.log('renamed: ', renamed);
       const categoryOptions = Object.keys(renamed).reduce((os, k) => {
-        os.push(transformOpt(renamed[k]));
+        os.push(
+          <OptGroup label={k} key={k}>
+            {transformOpt(renamed[k])}
+          </OptGroup>,
+        );
         return os;
       }, []);
-      const flat = flattenDeep(categoryOptions);
-      setCategoryOptions(flat);
+      setCategoryOptions(categoryOptions);
+      const lowerCaseNs = Object.fromEntries(Object.entries(ns).map(([k, v]) => ([v.toLowerCase(), k])));
+      setValuePerOptionName(lowerCaseNs);
     }
   }, [allCategories]);
 
@@ -117,7 +125,7 @@ const ChartContextProvider = props => {
   });
   return (
     <ChartContext.Provider
-      value={{ config, setConfig, allCategories, categoryOptions }}
+      value={{ config, setConfig, allCategories, categoryOptions, valuePerOptionName}}
     >
       {props.children}
     </ChartContext.Provider>
