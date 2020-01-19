@@ -28,7 +28,7 @@ const App = () => {
               <Router>
                 <Layout style={{ height: '100%', width: '100%' }}>
                   <Header style={{ backgroundColor: '#f0f2f5' }}>
-                    <NavBar />
+                    <Route path='/' component={NavBar} />
                   </Header>
                   <Content style={{ height: '100%', width: '100%' }}>
                     <Route path='/' component={Chart} />

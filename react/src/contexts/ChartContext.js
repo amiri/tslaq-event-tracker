@@ -20,7 +20,7 @@ export const ChartContext = createContext();
 const s = {
   timeZone: 'America/New_York',
   resolution: 'daily',
-  dateRange: [],
+  dateRange: {},
   categories: [],
   searchCondition: 'and',
   // brushDomain: [],

@@ -16,7 +16,7 @@ const NewEvent = props => {
 
   const handleClose = () => {
     setVisible(false);
-    history.push('/');
+    history.goBack();
   };
 
   return (

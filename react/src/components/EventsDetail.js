@@ -19,7 +19,7 @@ const EventsDetail = props => {
   }, [location]);
   const handleClose = () => {
     setVisible(false);
-    history.push('/');
+    history.goBack();
   };
   const eventsToDisplay = !isEmpty(eventIds)
     ? events.filter(e => includes(eventIds, e.id))

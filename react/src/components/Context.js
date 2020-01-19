@@ -36,6 +36,7 @@ const Context = ({
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
     });
   }
+
   const brush = getBrush({ width, height: height + 5, brushed });
 
   const contextRef = useRef(null);

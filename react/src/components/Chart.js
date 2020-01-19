@@ -5,18 +5,18 @@ import { ChartContext } from '../contexts/ChartContext';
 import moment from 'moment';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
-import { calculateDimensions } from './utils/Chart';
+import { calculateDimensions, updateQueryParams } from './utils/Chart';
 import { isEmpty, includes, isNil } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
-import { Route, useHistory } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import EventsDetail from './EventsDetail';
 
-const Chart = () => {
+const Chart = props => {
   const { events, setFilteredEvents } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
-  const history = useHistory();
+  const { history, location } = props;
 
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
@@ -71,8 +71,8 @@ const Chart = () => {
             .filter(e =>
               isEmpty(dateRange)
                 ? true
-                : e.eventTime.isSameOrAfter(dateRange[0]) &&
-                  e.eventTime.isSameOrBefore(dateRange[1]),
+                : e.eventTime.isSameOrAfter(dateRange.startDate) &&
+                  e.eventTime.isSameOrBefore(dateRange.endDate),
             )
             .filter(e =>
               isEmpty(categories)
@@ -115,8 +115,8 @@ const Chart = () => {
         ? ps.filter(p =>
             isEmpty(dateRange)
               ? true
-              : p.priceTime.isSameOrAfter(dateRange[0]) &&
-                p.priceTime.isSameOrBefore(dateRange[1]),
+              : p.priceTime.isSameOrAfter(dateRange.startDate) &&
+                p.priceTime.isSameOrBefore(dateRange.endDate),
           )
         : null,
     [ps, dateRange],
@@ -139,8 +139,13 @@ const Chart = () => {
       : null;
     setConfig({
       ...config,
-      ...(moments && { dateRange: moments }),
+      ...(moments && {
+        dateRange: { startDate: moments[0], endDate: moments[1] },
+      }),
     });
+    const formatted = moments.map(d => d.format('YYYY-MM-DD'));
+    const params = { startDate: formatted[0], endDate: formatted[1] };
+    updateQueryParams({ params, history, location });
     if (eventType) {
       setZoomDomain(range);
     }

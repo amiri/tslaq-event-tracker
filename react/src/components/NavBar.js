@@ -5,17 +5,12 @@ import { EventsContext } from '../contexts/EventsContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { Row, Col, Button, Typography } from 'antd';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useHistory,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { DatePicker, Select, Radio } from 'antd';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
 import EventsDetail from './EventsDetail';
-import { encryptIds } from './utils/Chart';
+import { encryptIds, updateQueryParams } from './utils/Chart';
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -40,20 +35,35 @@ const radioStyle = {
 
 const { Option } = Select;
 
-const NavBar = () => {
+const NavBar = props => {
   const { user, dispatch } = useContext(AuthContext);
-  const history = useHistory();
+  const { history, location } = props;
   const { config, setConfig, allCategories } = useContext(ChartContext);
   const { filteredEvents } = useContext(EventsContext);
   const options = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
+
   const updateCategories = categories => {
     setConfig({ ...config, categories });
+    updateQueryParams({ params: { categories }, history, location });
   };
+
   const updateRange = dates => {
     const estDates = dates.map(d =>
       moment.tz(d.format('YYYY-MM-DD 00:00:00'), config.timeZone),
     );
-    setConfig({ ...config, dateRange: estDates });
+    setConfig({
+      ...config,
+      dateRange: { startDate: estDates[0], endDate: estDates[1] },
+    });
+    const formatted = estDates.map(d => d.format('YYYY-MM-DD'));
+    const params = { startDate: formatted[0], endDate: formatted[1] };
+    updateQueryParams({ params, history, location });
+  };
+
+  const updateSearchCondition = e => {
+    setConfig({ ...config, searchCondition: e.target.value });
+    const params = { searchCondition: e.target.value };
+    updateQueryParams({ params, history, location });
   };
 
   const viewEvents = () => {
@@ -65,9 +75,6 @@ const NavBar = () => {
     });
   };
 
-  const updateSearchCondition = e => {
-    setConfig({ ...config, searchCondition: e.target.value });
-  };
   return (
     <Router>
       <Route path='/event' render={props => <EventsDetail {...props} />} />
@@ -129,7 +136,11 @@ const NavBar = () => {
               size='small'
               allowClear={true}
               onChange={dates => updateRange(dates)}
-              value={!isEmpty(config.dateRange) ? config.dateRange : null}
+              value={
+                !isEmpty(config.dateRange)
+                  ? [config.dateRange.startDate, config.dateRange.endDate]
+                  : null
+              }
             />
           </Col>
           <Col style={{ ...colStyle, marginLeft: '1em', order: 5 }}>

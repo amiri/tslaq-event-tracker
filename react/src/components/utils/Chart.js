@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as d3 from 'd3';
 import SimpleCrypto from 'simple-crypto-js';
+import * as QueryString from 'query-string';
 
 export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
@@ -295,4 +296,16 @@ export const encryptIds = ({ ids }) => {
 export const decryptIds = ({ ids }) => {
   const d = safeDecrypt({ ids });
   return JSON.parse(crypto.decrypt(Buffer.from(d, 'base64').toString()));
+};
+
+export const updateQueryParams = ({ params, history, location }) => {
+  const c = QueryString.parse(location.search);
+  const updated = Object.assign(c, params);
+  history.push({
+    pathname: location.pathname,
+    search: QueryString.stringify(updated, {
+      arrayFormat: 'index',
+      parseBooleans: true,
+    }),
+  });
 };
