@@ -98,7 +98,9 @@ const ChartContextProvider = props => {
         return os;
       }, []);
       setCategoryOptions(categoryOptions);
-      const lowerCaseNs = Object.fromEntries(Object.entries(ns).map(([k, v]) => ([v.toLowerCase(), k])));
+      const lowerCaseNs = Object.fromEntries(
+        Object.entries(ns).map(([k, v]) => [v.toLowerCase(), k]),
+      );
       setValuePerOptionName(lowerCaseNs);
     }
   }, [allCategories]);
@@ -125,7 +127,13 @@ const ChartContextProvider = props => {
   });
   return (
     <ChartContext.Provider
-      value={{ config, setConfig, allCategories, categoryOptions, valuePerOptionName}}
+      value={{
+        config,
+        setConfig,
+        allCategories,
+        categoryOptions,
+        valuePerOptionName,
+      }}
     >
       {props.children}
     </ChartContext.Provider>

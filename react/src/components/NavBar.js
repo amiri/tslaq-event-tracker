@@ -22,12 +22,10 @@ const { Text } = Typography;
 
 const logout = async (dispatch, history) => {
   sessionStorage.removeItem('user');
-  await window.api
-    .getLogout()
-    .then(d => {
-      dispatch({ type: 'LOGOUT', payload: d });
-      history.push('/');
-    });
+  await window.api.getLogout().then(d => {
+    dispatch({ type: 'LOGOUT', payload: d });
+    history.push('/');
+  });
 };
 
 const colStyle = {
@@ -80,7 +78,11 @@ const NavBar = () => {
           </Col>
           <Col style={colStyle}>
             {user ? (
-              <Button size='small' type='link' onClick={() => logout(dispatch, history)}>
+              <Button
+                size='small'
+                type='link'
+                onClick={() => logout(dispatch, history)}
+              >
                 Logout
               </Button>
             ) : (

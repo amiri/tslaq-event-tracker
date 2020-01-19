@@ -32,7 +32,12 @@ const transformApiError = ({ data }) => {
   }
 };
 
-const EventForm = ({ setVisible, event, categoryOptions: children, valuePerOptionName }) => {
+const EventForm = ({
+  setVisible,
+  event,
+  categoryOptions: children,
+  valuePerOptionName,
+}) => {
   const { dispatch } = useContext(EventsContext);
   const extractProperValue = ({ newOptions }) => {
     const newValues = newOptions.map(o =>
@@ -148,7 +153,10 @@ const EventForm = ({ setVisible, event, categoryOptions: children, valuePerOptio
               placeholder='Safety, Model 3'
               value={values.categories}
               filterOption={(i, o) => {
-                return isArray(o.props.children) ? false : o.props.children.toLowerCase().indexOf(i.toLowerCase()) >= 0
+                return isArray(o.props.children)
+                  ? false
+                  : o.props.children.toLowerCase().indexOf(i.toLowerCase()) >=
+                      0;
               }}
               // optionFilterProp='label'
               onChange={e => {
