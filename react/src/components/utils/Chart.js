@@ -276,8 +276,23 @@ export const openNewEventModal = ({ eventDate, history }) => {
   });
 };
 
-export const encryptIds = ({ ids }) =>
-  Buffer.from(crypto.encrypt(JSON.stringify(ids))).toString('base64');
+export const safeEncrypt = ({ ids }) =>
+  ids
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 
-export const decryptIds = ({ ids }) =>
-  JSON.parse(crypto.decrypt(Buffer.from(ids, 'base64').toString()));
+export const safeDecrypt = ({ ids }) => {
+  const safeIds = (ids + '===').slice(0, ids.length + (ids.length % 4));
+  return safeIds.replace(/-/g, '+').replace(/_/g, '/');
+};
+
+export const encryptIds = ({ ids }) => {
+  const e = Buffer.from(crypto.encrypt(JSON.stringify(ids))).toString('base64');
+  return safeEncrypt({ ids: e });
+};
+
+export const decryptIds = ({ ids }) => {
+  const d = safeDecrypt({ ids });
+  return JSON.parse(crypto.decrypt(Buffer.from(d, 'base64').toString()));
+};
