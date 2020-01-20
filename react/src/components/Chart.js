@@ -132,7 +132,7 @@ const Chart = props => {
     width - margin.right,
   ]);
 
-  const onBrush = ({ xScale, range, eventType }) => {
+  const onBrush = ({ xScale, range }) => {
     const newDomain = xScale ? range.map(xScale.invert, xScale) : null;
     const moments = newDomain
       ? newDomain.map(t => moment(t).tz('America/New_York'))
@@ -146,16 +146,16 @@ const Chart = props => {
     const formatted = moments.map(d => d.format('YYYY-MM-DD'));
     const params = { startDate: formatted[0], endDate: formatted[1] };
     updateQueryParams({ params, history, location });
-    if (eventType) {
-      setZoomDomain(range);
-    }
+    setZoomDomain(range);
   };
 
-  const onZoom = ({ params }) => {
+  const onZoom = ({ params, eventType }) => {
     const l = params[0] < margin.left ? margin.left : params[0];
     const r =
       params[1] > width - margin.right ? width - margin.right : params[1];
-    setBrushDomain([l, r]);
+    if (eventType === 'wheel' || eventType === 'mousemove') {
+      setBrushDomain([l, r]);
+    }
   };
 
   return (
