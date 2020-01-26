@@ -17,6 +17,7 @@ import {
   openViewModal,
   openNewEventModal,
   encryptIds,
+  margin,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
 import { isNil, isEmpty, compact } from 'lodash';
@@ -24,7 +25,6 @@ import { isNil, isEmpty, compact } from 'lodash';
 const Focus = ({
   width,
   height,
-  margin,
   ps,
   config,
   zoomF,
@@ -44,8 +44,8 @@ const Focus = ({
   const yExtent = d3.extent(ps, p => p.close);
 
   // Scales
-  const xScale = getXScale({ xExtent, width, margin });
-  const yScale = getYScale({ yExtent, height, margin });
+  const xScale = getXScale({ xExtent, width });
+  const yScale = getYScale({ yExtent, height });
 
   const colors = d3
     .scaleOrdinal()
@@ -193,11 +193,11 @@ const Focus = ({
 
     // ClipPath
     const clipPath = svg.selectAll('defs').data([0]);
-    updateClipPath({ s: clipPath, width, height, margin });
+    updateClipPath({ s: clipPath, width, height });
 
     // FocusYAxis
     const focusYAxis = focus.selectAll('.y-axis').data([0]);
-    updateYAxis({ s: focusYAxis, margin, yScale, width });
+    updateYAxis({ s: focusYAxis, yScale, width });
 
     // FocusXAxis
     const focusXAxis = focus.selectAll('.x-axis').data([0]);
@@ -207,7 +207,6 @@ const Focus = ({
       tickVals,
       tickFmt,
       height,
-      margin,
     });
 
     const zeroLine = focus.selectAll('.zero').data([0]);
@@ -216,13 +215,11 @@ const Focus = ({
       yScale,
       yExtent,
       width,
-      margin,
     });
 
     const highLine = focus.selectAll('.high').data([0]);
     updateHighLine({
       s: highLine,
-      margin,
       width,
       yScale,
       yExtent,
@@ -231,7 +228,6 @@ const Focus = ({
     const lowLine = focus.selectAll('.low').data([0]);
     updateLowLine({
       s: lowLine,
-      margin,
       width,
       yScale,
       yExtent,

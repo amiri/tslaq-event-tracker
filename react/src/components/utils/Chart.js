@@ -3,18 +3,18 @@ import * as d3 from 'd3';
 import SimpleCrypto from 'simple-crypto-js';
 import * as QueryString from 'query-string';
 
+export const margin = { top: 10, right: 20, bottom: 15, left: 15 };
+
 export const calculateDimensions = ({ height }) => {
   const totalHeightContext = Math.floor(height / 6);
   const totalHeightFocus = height - totalHeightContext;
 
-  const margin = { top: 10, right: 20, bottom: 15, left: 15 };
   const heightContext = totalHeightContext - margin.top - margin.bottom;
   const heightFocus = totalHeightFocus - margin.top - margin.bottom;
 
   return {
     totalHeightContext,
     totalHeightFocus,
-    margin,
     heightContext,
     heightFocus,
   };
@@ -27,19 +27,19 @@ export const getLines = ({ xScale, yScale }) =>
     .y(d => yScale(d.close))
     .curve(d3.curveMonotoneX);
 
-export const getXScale = ({ xExtent, width, margin }) =>
+export const getXScale = ({ xExtent, width }) =>
   d3
     .scaleTime()
     .domain(xExtent)
     .range([margin.left, width - margin.right]);
 
-export const getYScale = ({ yExtent, height, margin }) =>
+export const getYScale = ({ yExtent, height }) =>
   d3
     .scaleLinear()
     .domain([yExtent[0] - 5, yExtent[1]])
     .range([height - margin.bottom, margin.top]);
 
-export const getXAxis = (g, { xScale, tickVals, tickFmt, height, margin }) => {
+export const getXAxis = (g, { xScale, tickVals, tickFmt, height }) => {
   g.attr('transform', `translate(0,${height - margin.bottom})`)
     .call(
       d3
@@ -50,7 +50,7 @@ export const getXAxis = (g, { xScale, tickVals, tickFmt, height, margin }) => {
     .call(g => g.select('.domain').remove());
 };
 
-export const getYAxis = (g, { yScale, margin, width }) => {
+export const getYAxis = (g, { yScale, width }) => {
   g.attr('transform', `translate(${margin.left},0)`)
     .call(d3.axisRight(yScale).tickSize(width - margin.left - margin.right))
     .call(g => g.select('.domain').remove())
@@ -159,14 +159,7 @@ export const updateContextBrush = ({ brush, s, xScale }) => {
 };
 
 // XAxis Enter + Update + Remove
-export const updateXAxis = ({
-  s,
-  xScale,
-  tickVals,
-  tickFmt,
-  height,
-  margin,
-}) => {
+export const updateXAxis = ({ s, xScale, tickVals, tickFmt, height }) => {
   s.enter()
     .append('g')
     .attr('class', 'x-axis')
@@ -176,7 +169,6 @@ export const updateXAxis = ({
       tickVals,
       tickFmt,
       height,
-      margin,
     });
 
   // XAxis Exit
@@ -184,7 +176,7 @@ export const updateXAxis = ({
 };
 
 // ClipPath Enter + Update + Remove
-export const updateClipPath = ({ s, width, height, margin }) => {
+export const updateClipPath = ({ s, width, height }) => {
   s.enter()
     .append('defs')
     .append('clipPath')
@@ -200,18 +192,18 @@ export const updateClipPath = ({ s, width, height, margin }) => {
 };
 
 // FocusYAxis Enter + Update + Remove
-export const updateYAxis = ({ s, yScale, margin, width }) => {
+export const updateYAxis = ({ s, yScale, width }) => {
   s.enter()
     .append('g')
     .attr('class', 'y-axis')
     .merge(s)
-    .call(getYAxis, { yScale, margin, width });
+    .call(getYAxis, { yScale, width });
 
   // FocusYAxis Exit
   s.exit().remove();
 };
 
-export const updateZeroLine = ({ s, yScale, yExtent, width, margin }) => {
+export const updateZeroLine = ({ s, yScale, yExtent, width }) => {
   s.enter()
     .append('line')
     .attr('class', 'zero')
@@ -224,7 +216,7 @@ export const updateZeroLine = ({ s, yScale, yExtent, width, margin }) => {
     .attr('stroke', 'black');
 };
 
-export const updateHighLine = ({ s, yScale, yExtent, width, margin }) => {
+export const updateHighLine = ({ s, yScale, yExtent, width }) => {
   s.enter()
     .append('line')
     .attr('class', 'high')
@@ -237,7 +229,7 @@ export const updateHighLine = ({ s, yScale, yExtent, width, margin }) => {
     .attr('stroke', '#85bb65');
 };
 
-export const updateLowLine = ({ s, yScale, yExtent, width, margin }) => {
+export const updateLowLine = ({ s, yScale, yExtent, width }) => {
   s.enter()
     .append('line')
     .attr('class', 'low')

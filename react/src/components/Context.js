@@ -7,24 +7,17 @@ import {
   getTickVals,
   getBrush,
   updateXAxis,
+  margin,
 } from './utils/Chart';
 
-const Context = ({
-  config,
-  width,
-  height,
-  margin,
-  ps,
-  brushF,
-  brushDomain,
-}) => {
+const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
   const yExtent = d3.extent(ps, p => p.high);
 
   // Scales
-  const xScale = getXScale({ xExtent, width, margin });
-  const yScale = getYScale({ yExtent, height, margin });
+  const xScale = getXScale({ xExtent, width });
+  const yScale = getYScale({ yExtent, height });
 
   // Brush
   function brushed() {
@@ -52,7 +45,6 @@ const Context = ({
       tickVals,
       tickFmt,
       height,
-      margin,
     });
     const contextBrush = context.selectAll('.brush').data([0]);
     contextBrush.call(brush).call(brush.move, xScale.range());

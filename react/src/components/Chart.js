@@ -11,6 +11,7 @@ import Focus from './Focus';
 import Context from './Context';
 import { Route } from 'react-router-dom';
 import EventsDetail from './EventsDetail';
+import { margin } from './utils/Chart';
 
 const Chart = props => {
   const { events, setFilteredEvents } = useContext(EventsContext);
@@ -21,10 +22,16 @@ const Chart = props => {
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
   const { height, width } = dimensions;
-  const { margin, heightContext, heightFocus } = calculateDimensions({
-    height,
-    width,
-  });
+
+  const { heightContext, heightFocus } = useMemo(
+    () =>
+      calculateDimensions({
+        height,
+        width,
+      }),
+    [height, width],
+  );
+
   const {
     timeZone,
     resolution,
@@ -176,7 +183,6 @@ const Chart = props => {
           <Focus
             width={width}
             height={heightFocus}
-            margin={margin}
             ps={psFiltered}
             events={esFiltered}
             config={config}
@@ -188,7 +194,6 @@ const Chart = props => {
           <Context
             width={width}
             height={heightContext}
-            margin={margin}
             ps={ps}
             config={config}
             brushF={onBrush}
