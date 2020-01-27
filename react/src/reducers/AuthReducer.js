@@ -1,5 +1,5 @@
 export const authReducer = (state, action) => {
-  console.log(state);
+  // console.log(state);
   switch (action.type) {
     case 'LOGIN_SUCCESS': {
       sessionStorage.setItem('user', JSON.stringify(action.payload));

@@ -27,8 +27,8 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
     //   'brushed eventType:',
     //   d3.event.sourceEvent ? d3.event.sourceEvent.type : 'NULL',
     // );
-    console.log('brushed selection:', d3.event.selection);
-    console.log('brushed xScale range:', xScale.range());
+    // console.log('brushed selection:', d3.event.selection);
+    // console.log('brushed xScale range:', xScale.range());
     const xRange = xScale.range();
 
     const s = d3.event.selection || xScale.range();

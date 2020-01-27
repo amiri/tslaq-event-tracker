@@ -46,28 +46,28 @@ const Chart = props => {
     [height, width],
   );
 
-  console.log('Chart queryConfig:', queryConfig);
+  //console.log('Chart queryConfig:', queryConfig);
 
   if (!isEmpty(queryConfig)) {
     const merged = merge({}, config, queryConfig);
-    console.log('QC: Nonempty queryConfig');
+    //console.log('QC: Nonempty queryConfig');
     if (
       sameDateRange({ orig: config.dateRange, updates: queryConfig.dateRange })
     ) {
-      console.log('QC: I have the same dateRange');
+      //console.log('QC: I have the same dateRange');
 
       if (!isEqual(omit(merged, ['dateRange']), omit(config, ['dateRange']))) {
-        console.log('QC: setConfig: unequal configs with same dateRange');
+        //console.log('QC: setConfig: unequal configs with same dateRange');
         setConfig(merged);
       } else {
-        console.log('QC: configs are equal with same dateRange');
+        //console.log('QC: configs are equal with same dateRange');
       }
     } else {
       if (!isEqual(merged, config)) {
-        console.log('QC: setConfig: unequal configs with diff dateRange');
+        //console.log('QC: setConfig: unequal configs with diff dateRange');
         setConfig(merged);
       } else {
-        console.log('QC: configs are equal with diff dateRange');
+        //console.log('QC: configs are equal with diff dateRange');
       }
     }
   }
@@ -234,7 +234,7 @@ const Chart = props => {
       params[1] > width - margin.right ? width - margin.right : params[1];
     if (eventType === 'wheel' || eventType === 'mousemove') {
       if (!isEqual([l, r], brushDomain)) {
-        console.log('brushDomain and new domain unequal; setting brushDomain');
+        // console.log('brushDomain and new domain unequal; setting brushDomain');
         setBrushDomain([l, r]);
       }
     }
