@@ -5,8 +5,21 @@ import { ChartContext } from '../contexts/ChartContext';
 import moment from 'moment';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
-import { calculateDimensions, updateQueryParams } from './utils/Chart';
-import { isEmpty, includes, isNil } from 'lodash';
+import {
+  calculateDimensions,
+  updateQueryParams,
+  sameDateRange,
+  getQueryConfig,
+} from './utils/Chart';
+import {
+  omit,
+  mapValues,
+  isEqual,
+  isEmpty,
+  includes,
+  isNil,
+  merge,
+} from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
 import { Route } from 'react-router-dom';
@@ -18,6 +31,7 @@ const Chart = props => {
   const { prices } = useContext(PricesContext);
   const { config, setConfig } = useContext(ChartContext);
   const { history, location } = props;
+  const queryConfig = getQueryConfig({ location });
 
   const chartRef = useRef(null);
   const dimensions = useComponentSize(chartRef);
@@ -31,6 +45,32 @@ const Chart = props => {
       }),
     [height, width],
   );
+
+  console.log('Chart queryConfig:', queryConfig);
+
+  if (!isEmpty(queryConfig)) {
+    const merged = merge({}, config, queryConfig);
+    console.log('QC: Nonempty queryConfig');
+    if (
+      sameDateRange({ orig: config.dateRange, updates: queryConfig.dateRange })
+    ) {
+      console.log('QC: I have the same dateRange');
+
+      if (!isEqual(omit(merged, ['dateRange']), omit(config, ['dateRange']))) {
+        console.log('QC: setConfig: unequal configs with same dateRange');
+        setConfig(merged);
+      } else {
+        console.log('QC: configs are equal with same dateRange');
+      }
+    } else {
+      if (!isEqual(merged, config)) {
+        console.log('QC: setConfig: unequal configs with diff dateRange');
+        setConfig(merged);
+      } else {
+        console.log('QC: configs are equal with diff dateRange');
+      }
+    }
+  }
 
   const {
     timeZone,
@@ -144,16 +184,48 @@ const Chart = props => {
     const moments = newDomain
       ? newDomain.map(t => moment(t).tz('America/New_York'))
       : null;
-    setConfig({
-      ...config,
-      ...(moments && {
-        dateRange: { startDate: moments[0], endDate: moments[1] },
-      }),
+    const dateRange = { startDate: moments[0], endDate: moments[1] };
+    // const merged = merge({}, config, { dateRange });
+    // console.log('####START onBrush zoomDomain: ', zoomDomain);
+    // console.log('onBrush range:', range);
+    // console.log('onBrush eventType:', eventType);
+    // console.log('onBrush config: ', config);
+    // console.log('onBrush updated: ', merged);
+    // const diff = difference(config, merged);
+    // console.log('onBrush difference: ', diff);
+    const params = mapValues(dateRange, v => {
+      return v.format('YYYY-MM-DD');
     });
-    const formatted = moments.map(d => d.format('YYYY-MM-DD'));
-    const params = { startDate: formatted[0], endDate: formatted[1] };
+    // if (
+    //   sameDateRange({
+    //     orig: config.dateRange,
+    //     updates: { startDate: moments[0], endDate: moments[1] },
+    //   })
+    // ) {
+    //   console.log('in onBrush: same dateRange');
+    //   if (!isEqual(omit(merged, ['dateRange']), omit(config, ['dateRange']))) {
+    //     console.log('onBrush setConfig: unequal configs with same dateRange');
+    //     // setConfig(merged);
+    //   } else {
+    //     console.log('onBrush: configs equal with same dateRange');
+    //   }
+    // } else {
+    //   console.log('in onBrush: different dateRange');
+    //   if (!isEqual(merged, config)) {
+    //     console.log('onBrush setConfig: unequal configs with diff dateRange');
+    //     // setConfig(merged);
+    //   } else {
+    //     console.log('onBrush: configs equal with diff dateRange');
+    //   }
+    // }
     updateQueryParams({ params, history, location });
-    setZoomDomain(range);
+    // console.log('onBrush: updatedQueryParams');
+    // const zoomDiff = difference(zoomDomain, range);
+    // console.log('onBrush zoomDiff: ', zoomDiff);
+    if (!isEqual(range, zoomDomain)) {
+      // console.log('#####END zoomDomain and new range unequal; setting zoomDomain');
+      setZoomDomain(range);
+    }
   };
 
   const onZoom = ({ params, eventType }) => {
@@ -161,7 +233,10 @@ const Chart = props => {
     const r =
       params[1] > width - margin.right ? width - margin.right : params[1];
     if (eventType === 'wheel' || eventType === 'mousemove') {
-      setBrushDomain([l, r]);
+      if (!isEqual([l, r], brushDomain)) {
+        console.log('brushDomain and new domain unequal; setting brushDomain');
+        setBrushDomain([l, r]);
+      }
     }
   };
 

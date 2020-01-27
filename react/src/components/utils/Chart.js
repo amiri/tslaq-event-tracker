@@ -2,6 +2,17 @@ import moment from 'moment';
 import * as d3 from 'd3';
 import SimpleCrypto from 'simple-crypto-js';
 import * as QueryString from 'query-string';
+import {
+  transform,
+  isObject,
+  merge,
+  isEqual,
+  omit,
+  isEmpty,
+  pick,
+  omitBy,
+  mapValues,
+} from 'lodash';
 
 export const margin = { top: 10, right: 20, bottom: 15, left: 15 };
 
@@ -292,12 +303,69 @@ export const decryptIds = ({ ids }) => {
 
 export const updateQueryParams = ({ params, history, location }) => {
   const c = QueryString.parse(location.search);
-  const updated = Object.assign(c, params);
-  history.push({
-    pathname: location.pathname,
-    search: QueryString.stringify(updated, {
-      arrayFormat: 'index',
-      parseBooleans: true,
-    }),
+  const updated = merge({}, c, params);
+  if (!isEqual(c, updated)) {
+    //console.log('updateQueryParams: unequal!');
+    history.push({
+      pathname: location.pathname,
+      search: QueryString.stringify(updated, {
+        arrayFormat: 'index',
+        parseBooleans: true,
+      }),
+    });
+  }
+};
+
+export const getQueryConfig = ({ location }) => {
+  const q = QueryString.parse(location.search);
+  const pickedDates = omitBy(pick(q, ['startDate', 'endDate']), isEmpty);
+  const dateRange = mapValues(pickedDates, v => {
+    return moment.tz(`${v} 00:00:00`, 'America/New_York');
   });
+  return omitBy(
+    {
+      dateRange,
+      ...omit(q, ['startDate', 'endDate']),
+    },
+    isEmpty,
+  );
+};
+
+export const sameDateRange = ({ orig, updates }) => {
+  //console.log('orig dateRange:', orig);
+  //console.log('updates dateRange:', orig);
+  if (isEmpty(updates) || isEmpty(orig)) {
+    return false;
+  } else {
+    return orig.startDate.isSame(updates.startDate) &&
+      orig.endDate.isSame(updates.endDate)
+      ? true
+      : false;
+  }
+};
+
+export const getInitialSelection = ({ xScale, dateRange }) => {
+  //console.log('getInitialSelection xScale range:', xScale.range());
+  //console.log('getInitialSelection dateRange:', dateRange);
+  if (isEmpty(dateRange)) {
+    return xScale.range();
+  } else {
+    return [dateRange.startDate, dateRange.endDate].map(t =>
+      xScale(t.toDate()),
+    );
+  }
+};
+
+export const difference = (object, base) => {
+  function changes(object, base) {
+    return transform(object, function(result, value, key) {
+      if (!isEqual(value, base[key])) {
+        result[key] =
+          isObject(value) && isObject(base[key])
+            ? changes(value, base[key])
+            : value;
+      }
+    });
+  }
+  return changes(object, base);
 };

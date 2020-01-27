@@ -8,7 +8,7 @@ import { Row, Col, Button, Typography } from 'antd';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { DatePicker, Select, Radio } from 'antd';
 import moment from 'moment';
-import { isEmpty } from 'lodash';
+import { isEmpty, mapValues } from 'lodash';
 import EventsDetail from './EventsDetail';
 import { encryptIds, updateQueryParams } from './utils/Chart';
 
@@ -51,12 +51,15 @@ const NavBar = props => {
     const estDates = dates.map(d =>
       moment.tz(d.format('YYYY-MM-DD 00:00:00'), config.timeZone),
     );
+    const dateRange = { startDate: estDates[0], endDate: estDates[1] };
     setConfig({
       ...config,
-      dateRange: { startDate: estDates[0], endDate: estDates[1] },
+      dateRange,
     });
-    const formatted = estDates.map(d => d.format('YYYY-MM-DD'));
-    const params = { startDate: formatted[0], endDate: formatted[1] };
+    const params = mapValues(dateRange, v => {
+      return v.format('YYYY-MM-DD');
+    });
+    //console.log('About to updateQueryParams in navbar');
     updateQueryParams({ params, history, location });
   };
 

@@ -8,6 +8,7 @@ import {
   getBrush,
   updateXAxis,
   margin,
+  getInitialSelection,
 } from './utils/Chart';
 
 const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
@@ -22,9 +23,21 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
   // Brush
   function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
+    // console.log(
+    //   'brushed eventType:',
+    //   d3.event.sourceEvent ? d3.event.sourceEvent.type : 'NULL',
+    // );
+    console.log('brushed selection:', d3.event.selection);
+    console.log('brushed xScale range:', xScale.range());
+    const xRange = xScale.range();
+
     const s = d3.event.selection || xScale.range();
+    const sel = [
+      s[0] < xRange[0] ? xRange[0] : s[0],
+      s[1] > xRange[1] ? xRange[1] : s[1],
+    ];
     brushF({
-      range: s,
+      range: sel,
       xScale,
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
     });
@@ -33,7 +46,7 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
   const brush = getBrush({ width, height: height + 5, brushed });
 
   const contextRef = useRef(null);
-  const { timeZone } = config;
+  const { timeZone, dateRange } = config;
 
   useEffect(() => {
     const context = d3.select(contextRef.current);
@@ -47,14 +60,18 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
       height,
     });
     const contextBrush = context.selectAll('.brush').data([0]);
-    contextBrush.call(brush).call(brush.move, xScale.range());
-  }, [height, width]);
+    const initialSelection = getInitialSelection({ xScale, dateRange });
+    //console.log('In main Context effect moving brush to ', initialSelection);
+    contextBrush.call(brush).call(brush.move, initialSelection);
+  }, [height, width, dateRange]);
 
   // Brush
   useEffect(() => {
     if (brushDomain[0] >= 0 && brushDomain[1] >= 0) {
       const context = d3.select(contextRef.current);
       const contextBrush = context.selectAll('.brush');
+      //console.log('In brush Context effect moving brush to ', brushDomain);
+      //console.log('In brush Context effect xScale.range() is ', xScale.range());
       contextBrush.call(brush.move, brushDomain);
     }
   }, [brushDomain]);
