@@ -23,12 +23,6 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
   // Brush
   function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
-    // console.log(
-    //   'brushed eventType:',
-    //   d3.event.sourceEvent ? d3.event.sourceEvent.type : 'NULL',
-    // );
-    // console.log('brushed selection:', d3.event.selection);
-    // console.log('brushed xScale range:', xScale.range());
     const xRange = xScale.range();
 
     const s = d3.event.selection || xScale.range();
@@ -61,7 +55,6 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
     });
     const contextBrush = context.selectAll('.brush').data([0]);
     const initialSelection = getInitialSelection({ xScale, dateRange });
-    //console.log('In main Context effect moving brush to ', initialSelection);
     contextBrush.call(brush).call(brush.move, initialSelection);
   }, [height, width, dateRange]);
 
@@ -70,8 +63,6 @@ const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
     if (brushDomain[0] >= 0 && brushDomain[1] >= 0) {
       const context = d3.select(contextRef.current);
       const contextBrush = context.selectAll('.brush');
-      //console.log('In brush Context effect moving brush to ', brushDomain);
-      //console.log('In brush Context effect xScale.range() is ', xScale.range());
       contextBrush.call(brush.move, brushDomain);
     }
   }, [brushDomain]);

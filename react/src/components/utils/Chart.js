@@ -305,7 +305,6 @@ export const updateQueryParams = ({ params, history, location }) => {
   const c = QueryString.parse(location.search);
   const updated = merge({}, c, params);
   if (!isEqual(c, updated)) {
-    //console.log('updateQueryParams: unequal!');
     history.push({
       pathname: location.pathname,
       search: QueryString.stringify(updated, {
@@ -332,8 +331,6 @@ export const getQueryConfig = ({ location }) => {
 };
 
 export const sameDateRange = ({ orig, updates }) => {
-  //console.log('orig dateRange:', orig);
-  //console.log('updates dateRange:', orig);
   if (isEmpty(updates) || isEmpty(orig)) {
     return false;
   } else {
@@ -345,8 +342,6 @@ export const sameDateRange = ({ orig, updates }) => {
 };
 
 export const getInitialSelection = ({ xScale, dateRange }) => {
-  //console.log('getInitialSelection xScale range:', xScale.range());
-  //console.log('getInitialSelection dateRange:', dateRange);
   if (isEmpty(dateRange)) {
     return xScale.range();
   } else {

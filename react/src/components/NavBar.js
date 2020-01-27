@@ -59,7 +59,6 @@ const NavBar = props => {
     const params = mapValues(dateRange, v => {
       return v.format('YYYY-MM-DD');
     });
-    //console.log('About to updateQueryParams in navbar');
     updateQueryParams({ params, history, location });
   };
 

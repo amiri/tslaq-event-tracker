@@ -85,11 +85,11 @@ const ImageUploadForm = ({ editor, setVisible }) => {
                     return 'https://images.tslaq-event-tracker.org/' + fileName;
                   })
                   .catch(err => {
-                    console.log('Put s3 error: ', err);
+                    console.error('Put s3 error: ', err);
                   });
               })
               .catch(apiError => {
-                console.log('Sign upload error: ', apiError);
+                console.error('Sign upload error: ', apiError);
               });
           }),
         );

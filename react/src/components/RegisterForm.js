@@ -15,8 +15,6 @@ const RegisterSchema = Yup.object().shape({
 });
 
 const transformApiError = ({ statusText, data }) => {
-  // console.log(statusText);
-  // console.log(data);
   return {
     email:
       statusText === 'Conflict'
@@ -53,7 +51,7 @@ const RegisterForm = () => {
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');
-            // console.log(apiError);
+            console.error('Register error: ', apiError);
             dispatch({
               type: 'REGISTER_FAILURE',
               payload: apiError,
