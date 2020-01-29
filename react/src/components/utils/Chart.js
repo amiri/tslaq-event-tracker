@@ -276,8 +276,7 @@ export const openViewModal = ({ id, history }) => {
 export const openNewEventModal = ({ eventDate, history }) => {
   history.push({
     pathname: '/new/',
-    state: {visible: true, eventDate },
-    ...location.search && {search: location.search},
+    state: { visible: true, eventDate },
   });
 };
 
@@ -312,7 +311,6 @@ export const updateQueryParams = ({ params, history, location }) => {
         arrayFormat: 'index',
         parseBooleans: true,
       }),
-      ...location.state && {state: location.state},
     });
   }
 };

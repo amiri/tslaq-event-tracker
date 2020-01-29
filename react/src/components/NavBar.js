@@ -38,8 +38,9 @@ const { Option } = Select;
 const NavBar = props => {
   const { user, dispatch } = useContext(AuthContext);
   const { history, location } = props;
-  const { config, setConfig, categoryOptions } = useContext(ChartContext);
+  const { config, setConfig, allCategories } = useContext(ChartContext);
   const { filteredEvents } = useContext(EventsContext);
+  const options = allCategories.map(o => <Option key={o.id}>{o.name}</Option>);
 
   const updateCategories = categories => {
     setConfig({ ...config, categories });
@@ -112,7 +113,7 @@ const NavBar = props => {
               placeholder='Safety, Model 3'
               onChange={values => updateCategories(values)}
             >
-              {categoryOptions}
+              {options}
             </Select>
           </Col>
           <Col style={{ ...colStyle, order: 3 }}>

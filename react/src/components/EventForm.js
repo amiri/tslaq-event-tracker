@@ -125,7 +125,7 @@ const EventForm = ({
           >
             <Input
               type='text'
-              placeholder='Title, e.g., Some Event Happened'
+              placeholder='Some Event Happened'
               onChange={handleChange}
               onBlur={handleBlur}
               value={values.title}
@@ -150,7 +150,7 @@ const EventForm = ({
             <Select
               combobox
               mode='multiple'
-              placeholder='Categories, e.g., Safety, Model 3'
+              placeholder='Safety, Model 3'
               value={values.categories}
               filterOption={(i, o) => {
                 return isArray(o.props.children)

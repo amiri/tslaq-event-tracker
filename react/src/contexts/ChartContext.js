@@ -23,6 +23,8 @@ const s = {
   dateRange: {},
   categories: [],
   searchCondition: 'and',
+  // brushDomain: [],
+  // zoomDomain: [],
 };
 
 const renameKeys = (names, obj) => {
