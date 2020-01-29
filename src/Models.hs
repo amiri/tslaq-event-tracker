@@ -16,13 +16,15 @@ module Models where
 import           AppContext           (AppT (..), ctxPool)
 import           Control.Monad.Reader (MonadIO, asks, liftIO)
 import           Data.Ord             (comparing)
-import           Data.Time.Clock      (UTCTime)
-import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
+import           Data.Time.Clock      (UTCTime, getCurrentTime)
+import           Database.Persist.Sql (SqlPersistT, insertBy, runMigration,
+                                       runSqlPool)
 import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
                                        share, sqlSettings)
 import           Types                (BCrypt, CategoryDetails, CategoryName,
                                        EventBody, EventTitle, RoleName,
                                        UserEmail, UserName)
+import qualified Types                as TS (RoleName (..))
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   User json sql=users
@@ -68,7 +70,13 @@ instance Ord Event where
   compare = comparing eventTime
 
 doMigrations :: SqlPersistT IO ()
-doMigrations = runMigration migrateAll
+doMigrations = do
+  runMigration migrateAll
+  currentTime <- liftIO $ getCurrentTime
+  _           <- insertBy $ Role currentTime currentTime (TS.RoleName "Admin")
+  _           <- insertBy $ Role currentTime currentTime (TS.RoleName "Contributor")
+  _           <- insertBy $ Role currentTime currentTime (TS.RoleName "Normal")
+  pure ()
 
 runDb :: MonadIO m => SqlPersistT IO b -> AppT m b
 runDb query = do

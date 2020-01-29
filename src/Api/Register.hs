@@ -18,13 +18,15 @@ import           Data.Maybe                  (fromJust)
 import           Data.Text                   (pack)
 import           Data.Text.Encoding          (decodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
-import           Database.Persist.Postgresql (Entity (..), getBy, insertEntity)
+import           Database.Persist.Postgresql (Entity (..), getBy, insert,
+                                              insertEntity)
 import           Errors
-import           Models                      (Unique (..), User (User), runDb)
+import           Models                      (Unique (..), User (User),
+                                              UserRole (..), runDb)
 import           Servant
 import           Servant.Auth.Server         as SAS
 import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              UserEmail (..),
+                                              RoleName (..), UserEmail (..),
                                               UserRegistration (..),
                                               hashPassword)
 
@@ -78,6 +80,9 @@ register cs jwts (UserRegistration e n p) = do
           (User currentTime currentTime e n (BCrypt . decodeUtf8 $ pw'))
         )
       let k = entityKey newUser
+      contributorRole <- runDb (getBy $ UniqueRole (RoleName "Contributor"))
+      let contrib = fromJust contributorRole
+      _ <- runDb $ insert (UserRole k (entityKey contrib))
       logDebugNS
         "web"
         (  "Registered user "
