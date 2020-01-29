@@ -338,8 +338,8 @@ connStr sfx =
     <> sfx
     <> " user=test password=test port=5432"
 
-userHasRole :: Monad m => AuthorizedUser -> UserRole -> AppT m ()
-userHasRole u r = if (authUserRole u) == r
+userHasRole :: Monad m => AuthorizedUser -> UserRoleName -> AppT m ()
+userHasRole u r = if r `elem` (authUserRoles u)
   then return ()
   else throwError $ encodeJSONError
     (JSONError 401

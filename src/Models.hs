@@ -21,8 +21,8 @@ import           Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
 import           Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
                                        share, sqlSettings)
 import           Types                (BCrypt, CategoryDetails, CategoryName,
-                                       EventBody, EventTitle, UserEmail,
-                                       UserName)
+                                       EventBody, EventTitle, RoleName,
+                                       UserEmail, UserName)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   User json sql=users
@@ -53,6 +53,15 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   EventCategory json sql=event_category
     eventId EventId sql=event_id
     categoryId CategoryId sql=category_id
+  Role json sql=role
+    createTime UTCTime sql=create_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    updateTime UTCTime sql=update_time sqltype=timestamptz default=CURRENT_TIMESTAMP
+    name RoleName
+    UniqueRole name
+    deriving Eq Show Read
+  UserRole json sql=user_role
+    userId UserId sql=user_id
+    roleId RoleId sql=role_id
 |]
 
 instance Ord Event where

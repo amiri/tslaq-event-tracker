@@ -32,7 +32,7 @@ import           Servant
 import           Types                       (AuthorizedUser (..),
                                               CategoryName (..), EventDisplay,
                                               EventTitle, NewEvent (..),
-                                              UserRole (..), hashId, unhash,
+                                              UserRoleName (..), hashId, unhash,
                                               unhashId)
 
 type EventAPI

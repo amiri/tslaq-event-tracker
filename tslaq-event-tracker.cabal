@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1392474ccaf8ee9995ce9694a768432a2f5f6af5686531ff7e0f1cf6b547b87b
+-- hash: de8d463f364c07d99cc6fa23c1a4d5afbdb1c67cdc2911d6732335a6604cdf4b
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -50,6 +50,7 @@ library
       Paths_tslaq_event_tracker
   hs-source-dirs:
       src
+  ghc-options: -Werror -Wall
   build-depends:
       aeson
     , amazonka

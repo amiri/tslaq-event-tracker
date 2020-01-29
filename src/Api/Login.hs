@@ -8,21 +8,20 @@
 
 module Api.Login where
 
-import           AppContext                  (AppT (..))
-import           Control.Monad.Except        (MonadError (..), MonadIO, liftIO)
-import           Control.Monad.Logger        (MonadLogger (..), logDebugNS)
-import           Control.Monad.Metrics       (increment)
-import           Data.Text                   (Text, pack, unpack)
-import           Database.Persist.Postgresql (Entity (..), fromSqlKey, getBy)
+import           AppContext            (AppT (..))
+import           Control.Monad.Except  (MonadError (..), MonadIO, liftIO)
+import           Control.Monad.Logger  (MonadLogger (..), logDebugNS)
+import           Control.Monad.Metrics (increment)
+import           Data.Maybe            (catMaybes)
+import           Data.Text             (Text, pack)
+import           Database.Esqueleto
 import           Errors
-import           Models                      (Unique (..), runDb, userName,
-                                              userPassword)
+import           Models
 import           Servant
-import           Servant.Auth.Server         as SAS
-import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              UserEmail, UserLogin (..),
-                                              UserName (..), UserRole (..),
-                                              hashId, passwordValid)
+import           Servant.Auth.Server   as SAS
+import           Types                 (AuthorizedUser (..), RoleName (..),
+                                        UserEmail, UserLogin (..),
+                                        UserRoleName (..), hashId)
 
 type LoginAPI
   = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
@@ -93,25 +92,36 @@ setLoginCookies u cs jwts = case u of
         pure $ applyCookies u'
 
 
+toUserRoleName :: RoleName -> UserRoleName
+toUserRoleName (Types.RoleName n) = case n of
+  "Admin"       -> Admin
+  "Contributor" -> Contributor
+  _             -> Normal
+
 validateLogin
   :: MonadIO m => UserEmail -> Text -> AppT m (Maybe (AuthorizedUser))
-validateLogin e p = do
-  maybeUser <- runDb (getBy $ UniqueEmailAddress e)
-  case maybeUser of
-    Nothing           -> return Nothing
-    Just (Entity k v) -> do
-      let uName = userName v
-      let uId   = fromSqlKey k
-      case passwordValid (unpack p) (unpack $ unBCrypt $ userPassword v) of
-        True -> pure
-          (Just
-            (AuthorizedUser { authUserName = uName
-                            , authUserId   = hashId uId
-                            , authUserRole = getUserRole (userName v)
-                            }
+validateLogin e _ = do
+  userWithRoles <-
+    runDb $ select $ from $ \(u `LeftOuterJoin` ur `LeftOuterJoin` r) -> do
+      on $ r ?. RoleId ==. ur ?. UserRoleRoleId
+      on $ just (u ^. UserId) ==. ur ?. UserRoleUserId
+      where_ (u ^. UserEmailAddress ==. val e)
+      pure (u, r)
+  case userWithRoles of
+    [] -> pure Nothing
+    _  -> do
+      let (users, roles) = unzip userWithRoles
+      let ((Entity uk uv), rs) =
+            ( (head users)
+            , ( map (\r' -> toUserRoleName $ roleName $ entityVal r')
+              $ catMaybes roles
+              )
             )
+      pure
+        (Just
+          (AuthorizedUser { authUserName  = userName uv
+                          , authUserId    = hashId $ fromSqlKey uk
+                          , authUserRoles = rs
+                          }
           )
-        False -> pure Nothing
-
-getUserRole :: UserName -> UserRole
-getUserRole n = if (n == (UserName "amiribarksdale")) then Admin else Normal
+        )

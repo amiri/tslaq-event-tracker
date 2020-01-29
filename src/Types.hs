@@ -29,9 +29,9 @@ data PriceUrl = PriceUrl {
 instance ToJSON PriceUrl
 instance FromJSON PriceUrl
 
-data UserRole = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read)
-instance ToJSON UserRole
-instance FromJSON UserRole
+data UserRoleName = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read)
+instance ToJSON UserRoleName
+instance FromJSON UserRoleName
 
 data ImageUpload = ImageUpload {
     name        :: !ImageName
@@ -133,7 +133,8 @@ instance RawSql CategoryTree where
           )
 
 explodeParentIds :: Text -> [Text]
-explodeParentIds ids = fmap (hashId . (read :: String -> Int64) . unpack) $ splitOn "," ids
+explodeParentIds ids =
+  fmap (hashId . (read :: String -> Int64) . unpack) $ splitOn "," ids
 
 data CategoryDisplay = CategoryDisplay {
     name       :: !CategoryName
@@ -178,9 +179,9 @@ instance ToJSON UserLogin
 instance FromJSON UserLogin
 
 data AuthorizedUser = AuthorizedUser {
-    authUserName :: !UserName
-  , authUserId   :: !Text
-  , authUserRole :: !UserRole
+    authUserName  :: !UserName
+  , authUserId    :: !Text
+  , authUserRoles :: ![UserRoleName]
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON AuthorizedUser
 instance FromJSON AuthorizedUser
@@ -196,6 +197,8 @@ newtype CategoryName = CategoryName Text deriving (Eq, PersistField, PersistFiel
 newtype CategoryDetails = CategoryDetails Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype EventBody = EventBody Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype ImageName = ImageName Text deriving (Eq, FromJSON, ToJSON, Show, Read)
+newtype RoleId = RoleId Int64 deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
+newtype RoleName = RoleName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 
 hashPassword :: MonadIO m => Text -> m (Maybe ByteString)
 hashPassword p =

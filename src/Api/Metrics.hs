@@ -18,7 +18,7 @@ import           Data.IORef             (readIORef)
 import           Data.Text              (Text, pack)
 import           Servant
 import qualified System.Metrics.Counter as Counter
-import           Types                  (AuthorizedUser (..), UserRole (..))
+import           Types                  (AuthorizedUser (..), UserRoleName (..))
 
 type MetricsAPI = "metrics" :> Get '[JSON] (HashMap Text Int64)
 

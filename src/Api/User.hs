@@ -21,7 +21,7 @@ import           Database.Persist.Postgresql (Entity (..), fromSqlKey,
 import           Models                      (Key, User (User), runDb)
 import           Servant
 import           Types                       (AuthorizedUser (..), BCrypt (..),
-                                              NewUser (..), UserRole (..),
+                                              NewUser (..), UserRoleName (..),
                                               hashPassword, unhashId)
 import Errors
 

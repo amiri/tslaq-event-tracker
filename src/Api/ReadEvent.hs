@@ -22,7 +22,7 @@ import           Errors
 import           Models
 import           Servant
 import           Servant.Auth.Server         as SAS
-import           Types hiding (CategoryId)
+import           Types                       hiding (CategoryId)
 
 type ReadEventAPI
   = "events" :> Get '[JSON] [EventDisplay] :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
