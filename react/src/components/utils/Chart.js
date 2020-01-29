@@ -311,7 +311,7 @@ export const updateQueryParams = ({ params, history, location }) => {
         arrayFormat: 'index',
         parseBooleans: true,
       }),
-      ...location.state && {state: location.state},
+      ...(location.state && { state: location.state }),
     });
   }
 };

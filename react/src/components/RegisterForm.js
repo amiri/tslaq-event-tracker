@@ -14,7 +14,7 @@ const RegisterSchema = Yup.object().shape({
   name: Yup.string().required('You must enter your username'),
 });
 
-const transformApiError = ({ statusText, data }) => {
+const transformApiError = ({ statusText }) => {
   return {
     email:
       statusText === 'Conflict'

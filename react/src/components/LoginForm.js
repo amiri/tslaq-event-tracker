@@ -43,7 +43,7 @@ const LoginForm = () => {
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');
-            console.error('Login error: ',apiError);
+            console.error('Login error: ', apiError);
             dispatch({
               type: 'LOGIN_FAILURE',
               payload: apiError,

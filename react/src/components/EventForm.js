@@ -32,6 +32,7 @@ const transformApiError = ({ data }) => {
   }
 };
 
+const { Option } = Select;
 const EventForm = ({
   setVisible,
   event,
@@ -54,6 +55,11 @@ const EventForm = ({
     return [...updated, ...newMarked];
   };
 
+  const optionAddNewCategory = (
+    <Option key='new-category' value='' label='Add new category'>
+      Add new category
+    </Option>
+  );
   return (
     <Formik
       initialValues={{
@@ -169,7 +175,7 @@ const EventForm = ({
               name='categories'
               size='small'
             >
-              {children}
+              {[optionAddNewCategory, ...children]}
             </Select>
           </Form.Item>
           <Form.Item>
