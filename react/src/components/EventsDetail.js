@@ -14,6 +14,7 @@ const EventsDetail = props => {
   const { history, location, events = [] } = props;
   const params = QueryString.parse(location.search);
   const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];
+  console.log(location);
   useEffect(() => {
     setVisible(location.state.visible);
   }, [location]);
