@@ -1,10 +1,14 @@
+import React from 'react';
 import moment from 'moment';
 import * as d3 from 'd3';
 import SimpleCrypto from 'simple-crypto-js';
 import * as QueryString from 'query-string';
 import {
   transform,
+  isArray,
+  mapKeys,
   isObject,
+  isNil,
   merge,
   isEqual,
   omit,
@@ -12,7 +16,14 @@ import {
   pick,
   omitBy,
   mapValues,
+  get,
+  set,
+  has,
 } from 'lodash';
+
+import { Select } from 'antd';
+
+const { Option, OptGroup } = Select;
 
 export const margin = { top: 10, right: 20, bottom: 15, left: 15 };
 
@@ -280,6 +291,13 @@ export const openNewEventModal = ({ eventDate, history }) => {
   });
 };
 
+export const openNewCategoryModal = ({ history }) => {
+  history.push({
+    pathname: '/new/category',
+    state: { visible: true },
+  });
+};
+
 export const safeEncrypt = ({ ids }) =>
   ids
     .replace(/\+/g, '-')
@@ -364,4 +382,60 @@ export const difference = (object, base) => {
     });
   }
   return changes(object, base);
+};
+
+export const renameKeys = (names, obj) => {
+  if (isArray(obj)) {
+    return obj.map(inner => renameKeys(names, inner));
+  } else if (isObject(obj)) {
+    const res = mapKeys(obj, (v, k) => names[k] || k);
+    return mapValues(res, v => renameKeys(names, v));
+  } else {
+    return obj;
+  }
+};
+
+export const transformOpt = obj => {
+  return Object.keys(obj).reduce((os, k) => {
+    if (k === 'direct') {
+      os.push(
+        obj[k]
+          .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
+          .map(o => (
+            <Option key={o.id} value={o.id} label={o.name}>
+              {o.fullName}
+            </Option>
+          )),
+      );
+    } else {
+      os.push(
+        <OptGroup label={k} key={`${k}-group`}>
+          {transformOpt(obj[k])}
+        </OptGroup>,
+      );
+    }
+    return os;
+  }, []);
+};
+
+export const nestCategories = allCategories => {
+  let ns = {};
+  const opts = allCategories.reduce((os, c) => {
+    ns[c.id] = c.name;
+    if (isNil(c.parents)) {
+      const there = get(os, c.id, { direct: [] });
+      there.direct.push(c);
+      set(os, c.id, there);
+    } else {
+      const there = get(os, c.parents, { direct: [] });
+      if (has(there, c.id)) {
+        there[c.id].direct.push(c);
+      } else {
+        there.direct.push(c);
+      }
+      set(os, c.parents, there);
+    }
+    return os;
+  }, {});
+  return [opts, ns];
 };

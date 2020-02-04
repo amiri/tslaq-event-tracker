@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useContext } from 'react';
-import { ModalContext } from '../contexts/ModalContext';
+import { NewEventModalContext } from '../contexts/NewEventModalContext';
 import { includes, isNil, isEmpty } from 'lodash';
 import * as QueryString from 'query-string';
 import { Modal, Divider, Typography } from 'antd';
@@ -10,7 +10,7 @@ import { renderLeaf, renderElement } from './Qeditor/Render';
 
 const { Text } = Typography;
 const EventsDetail = props => {
-  const { visible, setVisible } = useContext(ModalContext);
+  const { visible, setVisible } = useContext(NewEventModalContext);
   const { history, location, events = [] } = props;
   const params = QueryString.parse(location.search);
   const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];

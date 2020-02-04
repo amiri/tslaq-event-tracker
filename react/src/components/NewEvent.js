@@ -1,18 +1,18 @@
 import React, { useEffect, useContext } from 'react';
-import { ModalContext } from '../contexts/ModalContext';
+import { NewEventModalContext } from '../contexts/NewEventModalContext';
 import { ChartContext } from '../contexts/ChartContext';
 import EventForm from './EventForm';
 import { Modal } from 'antd';
 
 const NewEvent = props => {
-  const { visible, setVisible } = useContext(ModalContext);
+  const { visible, setVisible } = useContext(NewEventModalContext);
   const { categoryOptions, valuePerOptionName } = useContext(ChartContext);
   const { history, location } = props;
   const eventDate = location.state.eventDate;
 
   useEffect(() => {
     setVisible(location.state.visible);
-  }, [location]);
+  }, []);
 
   const handleClose = () => {
     setVisible(false);
@@ -32,6 +32,7 @@ const NewEvent = props => {
         valuePerOptionName={valuePerOptionName}
         event={{ time: eventDate }}
         setVisible={setVisible}
+        history={history}
       />
     </Modal>
   );

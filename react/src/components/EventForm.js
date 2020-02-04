@@ -7,6 +7,7 @@ import { Formik } from 'formik';
 import { isArray, difference, includes, isNil } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
+import { openNewCategoryModal } from './utils/Chart';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -38,14 +39,18 @@ const EventForm = ({
   event,
   categoryOptions: children,
   valuePerOptionName,
+  history,
 }) => {
   const { dispatch } = useContext(EventsContext);
   const extractProperValue = ({ newOptions }) => {
-    const newValues = newOptions.map(o =>
-      !isNil(valuePerOptionName[o.toLowerCase()])
-        ? valuePerOptionName[o.toLowerCase()]
-        : o,
-    );
+    console.log('extractProperValue: ');
+    const newValues = newOptions
+      .filter(o => o !== 'new-category')
+      .map(o =>
+        !isNil(valuePerOptionName[o.toLowerCase()])
+          ? valuePerOptionName[o.toLowerCase()]
+          : o,
+      );
     return newValues;
   };
   const markNewCategories = ({ values, options }) => {
@@ -56,7 +61,7 @@ const EventForm = ({
   };
 
   const optionAddNewCategory = (
-    <Option key='new-category' value='' label='Add new category'>
+    <Option key='new-category' value='new-category' label='Add new category'>
       Add new category
     </Option>
   );
@@ -157,6 +162,11 @@ const EventForm = ({
               combobox
               mode='multiple'
               placeholder='Safety, Model 3'
+              onSelect={e => {
+                if (e === 'new-category') {
+                  openNewCategoryModal({ history });
+                }
+              }}
               value={values.categories}
               filterOption={(i, o) => {
                 return isArray(o.props.children)

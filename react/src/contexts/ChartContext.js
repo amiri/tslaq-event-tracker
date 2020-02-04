@@ -1,19 +1,14 @@
 import React, { createContext, useState, useEffect, useReducer } from 'react';
 import { categoriesReducer } from '../reducers/CategoriesReducer';
 import { Select } from 'antd';
+import { isEmpty } from 'lodash';
 import {
-  isArray,
-  isObject,
-  mapKeys,
-  mapValues,
-  isNil,
-  isEmpty,
-  get,
-  has,
-  set,
-} from 'lodash';
+  renameKeys,
+  transformOpt,
+  nestCategories,
+} from '../components/utils/Chart';
 
-const { Option, OptGroup } = Select;
+const { OptGroup } = Select;
 
 export const ChartContext = createContext();
 
@@ -27,68 +22,21 @@ const s = {
   // zoomDomain: [],
 };
 
-const renameKeys = (names, obj) => {
-  if (isArray(obj)) {
-    return obj.map(inner => renameKeys(names, inner));
-  } else if (isObject(obj)) {
-    const res = mapKeys(obj, (v, k) => names[k] || k);
-    return mapValues(res, v => renameKeys(names, v));
-  } else {
-    return obj;
-  }
-};
-
-const transformOpt = obj => {
-  return Object.keys(obj).reduce((os, k) => {
-    if (k === 'direct') {
-      os.push(
-        obj[k]
-          .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
-          .map(o => (
-            <Option key={o.id} value={o.id} label={o.name}>
-              {o.fullName}
-            </Option>
-          )),
-      );
-    } else {
-      os.push(
-        <OptGroup label={k} key={`${k}-group`}>
-          {transformOpt(obj[k])}
-        </OptGroup>,
-      );
-    }
-    return os;
-  }, []);
-};
-
 const ChartContextProvider = props => {
+  // Chart configuration
   const [config, setConfig] = useState(s);
+  // All categories, in list form
   const [allCategories, dispatch] = useReducer(categoriesReducer, []);
+  // Categories in optgroup/option form
   const [categoryOptions, setCategoryOptions] = useState([]);
+  // Reverse lookup for options
   const [valuePerOptionName, setValuePerOptionName] = useState({});
 
   // Load category options when categories change
   useEffect(() => {
     if (!isEmpty(allCategories)) {
-      let ns = {};
-      const opts = allCategories.reduce((os, c) => {
-        ns[c.id] = c.name;
-        if (isNil(c.parents)) {
-          const there = get(os, c.id, { direct: [] });
-          there.direct.push(c);
-          set(os, c.id, there);
-        } else {
-          const there = get(os, c.parents, { direct: [] });
-          if (has(there, c.id)) {
-            there[c.id].direct.push(c);
-          } else {
-            there.direct.push(c);
-          }
-          set(os, c.parents, there);
-        }
-        return os;
-      }, {});
-      const renamed = renameKeys(ns, opts);
+      const [nested, ns] = nestCategories(allCategories);
+      const renamed = renameKeys(ns, nested);
       const categoryOptions = Object.keys(renamed).reduce((os, k) => {
         os.push(
           <OptGroup label={k} key={k}>
@@ -97,10 +45,12 @@ const ChartContextProvider = props => {
         );
         return os;
       }, []);
+      // SET options
       setCategoryOptions(categoryOptions);
       const lowerCaseNs = Object.fromEntries(
         Object.entries(ns).map(([k, v]) => [v.toLowerCase(), k]),
       );
+      // SET reverse lookup
       setValuePerOptionName(lowerCaseNs);
     }
   }, [allCategories]);
