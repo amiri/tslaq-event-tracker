@@ -7,7 +7,7 @@ import { Formik } from 'formik';
 import { compact, isArray, difference, includes, } from 'lodash';
 import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
-import { extractProperValues, openNewCategoryModal } from './utils/Chart';
+import { openNewCategoryModal } from './utils/Chart';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -43,12 +43,6 @@ const EventForm = ({
   history,
 }) => {
   const { dispatch } = useContext(EventsContext);
-  const markNewCategories = ({ values, options }) => {
-    const newCategories = difference(values, options);
-    const updated = values.filter(v => !includes(newCategories, v));
-    const newMarked = newCategories.map(c => `newcat-${c}`);
-    return [...updated, ...newMarked];
-  };
 
   const optionAddNewCategory = (
     <Option key='parent-' value='parent-' label='Add new top-level category'>
@@ -75,10 +69,7 @@ const EventForm = ({
           body: JSON.stringify(values.body),
           time: values.time,
           title: values.title,
-          categories: markNewCategories({
-            values: values.categories,
-            options: children.map(o => o.key),
-          }),
+          categories: values.categories,
         };
         await window.api
           .postEvents(eventData)
@@ -154,7 +145,7 @@ const EventForm = ({
               mode='multiple'
               placeholder='Safety, Model 3'
               onSelect={e => {
-                if (/^parent-/.test(e)) {
+                if (/^parent-/.test(e.toString())) {
                    openNewCategoryModal({ history, option: e });
                 }
               }}
@@ -165,12 +156,8 @@ const EventForm = ({
                   : o.props.children.toLowerCase().indexOf(i.toLowerCase()) >=
                       0;
               }}
-              // optionFilterProp='label'
               onChange={e => {
-                setFieldValue(
-                  'categories',
-                  extractProperValues({ newOptions: e, valuePerOptionFullName }),
-                );
+                setFieldValue('categories', e.filter(o => !/^parent-/.test(o.toString())));
                 sessionStorage.removeItem('newCategoryChoice');
               }}
               onBlur={handleBlur}

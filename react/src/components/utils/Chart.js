@@ -466,22 +466,3 @@ export const nestCategories = allCategories => {
   }, {});
   return [opts, nsFull, ns];
 };
-
-export const extractProperValues = ({ valuePerOptionFullName, newOptions }) => {
-  const newValues = newOptions
-    .filter(o => !/^parent-/.test(o))
-    .map(o =>
-      !isNil(valuePerOptionFullName[o.toLowerCase()])
-        ? valuePerOptionFullName[o.toLowerCase()]
-        : o,
-    );
-  return newValues;
-};
-
-export const extractProperValue = ({ valuePerOptionFullName, newOption }) => {
-  console.log('extractProperValue: ');
-  const newValue = !isNil(valuePerOptionFullName[newOption.toLowerCase()])
-    ? valuePerOptionFullName[newOption.toLowerCase()]
-    : newOption;
-  return newValue;
-};

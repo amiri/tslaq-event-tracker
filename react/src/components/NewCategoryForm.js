@@ -3,7 +3,6 @@ import * as Yup from 'yup';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
 import { Input, Form, Button } from 'antd';
-import { extractProperValue } from './utils/Chart';
 import { isEmpty } from 'lodash';
 
 const categoryExists = async (value) => {
