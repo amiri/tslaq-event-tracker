@@ -4,10 +4,10 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { isArray, difference, includes, isNil } from 'lodash';
-import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
+import { compact, isArray, difference, includes, } from 'lodash';
+import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
-import { openNewCategoryModal } from './utils/Chart';
+import { extractProperValues, openNewCategoryModal } from './utils/Chart';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -38,21 +38,11 @@ const EventForm = ({
   setVisible,
   event,
   categoryOptions: children,
+  valuePerOptionFullName,
   valuePerOptionName,
   history,
 }) => {
   const { dispatch } = useContext(EventsContext);
-  const extractProperValue = ({ newOptions }) => {
-    console.log('extractProperValue: ');
-    const newValues = newOptions
-      .filter(o => o !== 'new-category')
-      .map(o =>
-        !isNil(valuePerOptionName[o.toLowerCase()])
-          ? valuePerOptionName[o.toLowerCase()]
-          : o,
-      );
-    return newValues;
-  };
   const markNewCategories = ({ values, options }) => {
     const newCategories = difference(values, options);
     const updated = values.filter(v => !includes(newCategories, v));
@@ -61,10 +51,11 @@ const EventForm = ({
   };
 
   const optionAddNewCategory = (
-    <Option key='new-category' value='new-category' label='Add new category'>
-      Add new category
+    <Option key='parent-' value='parent-' label='Add new top-level category'>
+      <Icon type='plus' /> New top-level category
     </Option>
   );
+
   return (
     <Formik
       initialValues={{
@@ -163,11 +154,11 @@ const EventForm = ({
               mode='multiple'
               placeholder='Safety, Model 3'
               onSelect={e => {
-                if (e === 'new-category') {
-                  openNewCategoryModal({ history });
+                if (/^parent-/.test(e)) {
+                   openNewCategoryModal({ history, option: e });
                 }
               }}
-              value={values.categories}
+              value={compact([...values.categories, sessionStorage.getItem('newCategoryChoice') ? valuePerOptionName[sessionStorage.getItem('newCategoryChoice')] : null])}
               filterOption={(i, o) => {
                 return isArray(o.props.children)
                   ? false
@@ -178,8 +169,9 @@ const EventForm = ({
               onChange={e => {
                 setFieldValue(
                   'categories',
-                  extractProperValue({ newOptions: e }),
+                  extractProperValues({ newOptions: e, valuePerOptionFullName }),
                 );
+                sessionStorage.removeItem('newCategoryChoice');
               }}
               onBlur={handleBlur}
               name='categories'

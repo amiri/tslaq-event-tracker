@@ -21,7 +21,7 @@ import {
   has,
 } from 'lodash';
 
-import { Select } from 'antd';
+import { Icon, Select } from 'antd';
 
 const { Option, OptGroup } = Select;
 
@@ -291,10 +291,10 @@ export const openNewEventModal = ({ eventDate, history }) => {
   });
 };
 
-export const openNewCategoryModal = ({ history }) => {
+export const openNewCategoryModal = ({ history, option }) => {
   history.push({
     pathname: '/new/category',
-    state: { visible: true },
+    state: { visible: true, option },
   });
 };
 
@@ -395,23 +395,48 @@ export const renameKeys = (names, obj) => {
   }
 };
 
-export const transformOpt = obj => {
+const makeOption = c => (
+  <Option key={c.id} value={c.id} label={c.name}>
+    {c.fullName}
+  </Option>
+);
+
+export const getCategoriesByParent = allCategories => {
+  return allCategories
+    .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
+    .reduce((os, c) => {
+      if (isNil(c.parentId)) {
+        const there = get(os, 'tl', []);
+        there.push(makeOption(c));
+        set(os, 'tl', there);
+      } else {
+        const there = get(os, c.parentId, []);
+        there.push(makeOption(c));
+        set(os, c.parentId, there);
+      }
+      return os;
+    }, {});
+};
+
+export const transformOpt = (obj, groupName, groupId, dict) => {
   return Object.keys(obj).reduce((os, k) => {
+          // console.log('in transformOpt reduce k is ', k);
     if (k === 'direct') {
       os.push(
         obj[k]
           .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
-          .map(o => (
-            <Option key={o.id} value={o.id} label={o.name}>
-              {o.fullName}
-            </Option>
-          )),
+          .map(o => makeOption(o)),
+      );
+      os.push(
+        <Option key={`parent-${groupId}`} label={`New ${groupName} sub-category`} value={`parent-${groupId}`}><Icon type='plus' /> {`New ${groupName} sub-category`}</Option>
       );
     } else {
+        // console.log('in transformOpt obj k is: ', obj[k]);
+        // console.log('in transformOpt dict[k] is: ', dict[k]);
       os.push(
         <OptGroup label={k} key={`${k}-group`}>
-          {transformOpt(obj[k])}
-        </OptGroup>,
+          {transformOpt(obj[k], k, dict[k], dict)}
+        </OptGroup>
       );
     }
     return os;
@@ -419,9 +444,11 @@ export const transformOpt = obj => {
 };
 
 export const nestCategories = allCategories => {
+  let nsFull = {};
   let ns = {};
   const opts = allCategories.reduce((os, c) => {
-    ns[c.id] = c.name;
+    nsFull[c.id] = c.fullName;
+    ns[c.name] = c.id;
     if (isNil(c.parents)) {
       const there = get(os, c.id, { direct: [] });
       there.direct.push(c);
@@ -437,5 +464,24 @@ export const nestCategories = allCategories => {
     }
     return os;
   }, {});
-  return [opts, ns];
+  return [opts, nsFull, ns];
+};
+
+export const extractProperValues = ({ valuePerOptionFullName, newOptions }) => {
+  const newValues = newOptions
+    .filter(o => !/^parent-/.test(o))
+    .map(o =>
+      !isNil(valuePerOptionFullName[o.toLowerCase()])
+        ? valuePerOptionFullName[o.toLowerCase()]
+        : o,
+    );
+  return newValues;
+};
+
+export const extractProperValue = ({ valuePerOptionFullName, newOption }) => {
+  console.log('extractProperValue: ');
+  const newValue = !isNil(valuePerOptionFullName[newOption.toLowerCase()])
+    ? valuePerOptionFullName[newOption.toLowerCase()]
+    : newOption;
+  return newValue;
 };
