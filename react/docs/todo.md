@@ -22,9 +22,11 @@
 
 ## Proper Candlesticks
 
-## Fix margins
+## ✓ Fix margins:
 
-One idea to fix margins is to use padding around the two main svgs, so that the svgs themselves are just 100 percent full width, and don't have any padding inside them.
+✓ One idea to fix margins is to use padding around the two main svgs, so that the svgs themselves are just 100 percent full width, and don't have any padding inside them.
+
+This one was solved in commit 7a456b0.
 
 # Backend errors
 
