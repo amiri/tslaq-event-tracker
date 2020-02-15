@@ -27,7 +27,8 @@ import           Text.RawString.QQ
 import           Types
 
 type ReadCategoryAPI
-  = "categories" :> Get '[JSON] [CategoryTree] :<|> "categories" :> Capture "id" Text :> Get '[JSON] CategoryDisplay
+  = "categories" :> Get '[JSON] [CategoryTree] :<|> "categories" :> Capture "id" Text :> Get '[JSON] CategoryDisplay :<|> "categories" :> "name" :> Capture "name" Text :> Get '[JSON] CategoryExists
+
 
 readCategoryApi :: Proxy ReadCategoryAPI
 readCategoryApi = Proxy
@@ -37,7 +38,7 @@ readCategoryServer
   => CookieSettings
   -> JWTSettings
   -> ServerT ReadCategoryAPI (AppT m)
-readCategoryServer _ _ = getCategories :<|> getCategory
+readCategoryServer _ _ = getCategories :<|> getCategory :<|> categoryNameExists
 
 categoriesWithParents :: Text
 categoriesWithParents = [r|
@@ -99,6 +100,7 @@ getCategories = do
   pool <- asks ctxPool
   liftIO $ runSqlPersistMPool getCategoriesWithParents pool
 
+-- TBD: getCategory should return a single CategoryTree
 getCategory :: MonadIO m => Text -> AppT m CategoryDisplay
 getCategory i = do
   increment "getCategory"
@@ -108,3 +110,12 @@ getCategory i = do
     Nothing -> throwError $ encodeJSONError
       (JSONError 404 "NoSuchCategory" "There is no such category.")
     Just c -> pure $ toCategoryDisplay c
+
+categoryNameExists :: MonadIO m => Text -> AppT m CategoryExists
+categoryNameExists n = do
+  increment "categoryNameExists"
+  logDebugNS "web" "categoryNameExists"
+  maybeCategory <- runDb (getBy $ UniqueName (Types.CategoryName n))
+  case maybeCategory of
+    Nothing -> pure $ CategoryExists False
+    Just _  -> pure $ CategoryExists True

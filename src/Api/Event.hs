@@ -10,8 +10,7 @@
 module Api.Event where
 
 import           Api.ReadEvent               (getEvent)
-import           AppContext                  (AppT (..),
-                                              userHasRole)
+import           AppContext                  (AppT (..), userHasRole)
 import           Control.Lens
 import           Control.Lens.Regex.Text
 import           Control.Monad.Except        (MonadIO, liftIO)
@@ -45,14 +44,8 @@ eventApi = Proxy
 -- | The server that runs the EventAPI
 eventServer :: MonadIO m => AuthorizedUser -> ServerT EventAPI (AppT m)
 eventServer u = createEvent u
-    -- listEvents
-    -- :<|> getEvent
-    -- :<|> updateEvent
 
-getIdFromCategory
-  :: MonadIO m
-  => Text
-  -> AppT m Int64
+getIdFromCategory :: MonadIO m => Text -> AppT m Int64
 getIdFromCategory c = do
   case has [regex|newcat-|] c of
     True -> do
@@ -73,11 +66,15 @@ getIdFromCategory c = do
             Nothing -> do
               currentTime <- liftIO $ getCurrentTime
               traceM $ ("Category creation: " ++ (show $ CategoryName m))
-              newCategory <-
-                runDb
-                  (insert
-                    (Category currentTime currentTime (CategoryName m) Nothing Nothing)
+              newCategory <- runDb
+                (insert
+                  (Category currentTime
+                            currentTime
+                            (CategoryName m)
+                            Nothing
+                            Nothing
                   )
+                )
               pure $ fromSqlKey newCategory
     False -> do
       let cids = unhash c
@@ -91,16 +88,13 @@ getIdFromCategory c = do
           traceM $ ("CID in non-empty branch: " ++ show cid)
           pure $ fromIntegral cid
 
-findOrCreateCategories
-  :: MonadIO m
-  => [Text]
-  -> AppT m [Int64]
+findOrCreateCategories :: MonadIO m => [Text] -> AppT m [Int64]
 findOrCreateCategories cs = mapM getIdFromCategory cs
 
 -- | Creates a event in the database.
 createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m EventDisplay
 createEvent u (NewEvent b tm t cs) = do
-  userHasRole u Admin
+  userHasRole u Contributor
   increment "createEvent"
   logDebugNS "web" ((pack $ show $ authUserId u) <> " creating an event")
   e <- existingEvent t
@@ -139,21 +133,7 @@ existingEvent t = do
   pure maybeEvent
 
 existingCategory
-  :: MonadIO m
-  => CategoryName
-  -> AppT m (Maybe (Entity Category))
+  :: MonadIO m => CategoryName -> AppT m (Maybe (Entity Category))
 existingCategory n = do
   maybeCategory <- runDb (getBy $ UniqueName n)
   pure maybeCategory
-
--- -- | Returns a event by id or throws a 404 error.
--- updateEvent :: MonadIO m => Int64 -> EventUpdate -> AppT m (Entity Event)
--- updateEvent i e = do
---   increment "updateEvent"
---   logDebugNS "web" "updateEvent"
---   let k = toSqlKey i
---   runDb (update k e)
---   updated <- runDb (getEntity k)
---   case updated of
---     Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchEvent" "There is no such event.")
---     Just ue -> pure ue

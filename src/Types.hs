@@ -90,6 +90,7 @@ data CategoryTree = CategoryTree {
 instance ToJSON CategoryTree
 instance FromJSON CategoryTree
 
+
 instance RawSql CategoryTree where
   rawSqlCols _ _ =
     ( 8
@@ -155,6 +156,13 @@ data NewEvent = NewEvent {
 instance ToJSON NewEvent
 instance FromJSON NewEvent
 
+data NewCategory = NewCategory {
+    name     :: !CategoryName
+  , parentId :: !(Maybe Text)
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON NewCategory
+instance FromJSON NewCategory
+
 data UserRegistration = UserRegistration {
     emailAddress :: UserEmail
   , name         :: UserName
@@ -187,6 +195,12 @@ instance ToJSON AuthorizedUser
 instance FromJSON AuthorizedUser
 instance SAS.ToJWT AuthorizedUser
 instance SAS.FromJWT AuthorizedUser
+
+data CategoryExists = CategoryExists {
+  exists :: !Bool
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON CategoryExists
+instance FromJSON CategoryExists
 
 newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)

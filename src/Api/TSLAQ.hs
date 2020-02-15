@@ -8,6 +8,7 @@
 
 module Api.TSLAQ where
 
+import           Api.Category
 import           Api.Event
 import           Api.Images
 import           Api.Login
@@ -46,7 +47,8 @@ import           Types                  (AuthorizedUser (..))
 type TSLAQAPI auths
   = (SAS.Auth auths AuthorizedUser :> ProtectedAPI) :<|> PublicAPI
 
-type ProtectedAPI = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI :<|> ImageAPI
+type ProtectedAPI
+  = UserAPI :<|> EventAPI :<|> MetricsAPI :<|> LogoutAPI :<|> ImageAPI :<|> CategoryAPI
 
 type PublicAPI
   = ReadEventAPI :<|> LoginAPI :<|> PricesAPI :<|> RegisterAPI :<|> ReadCategoryAPI
@@ -72,7 +74,12 @@ tslaqServer cs jwts = protectedServer :<|> publicServer cs jwts
 protectedServer
   :: MonadIO m => AuthResult AuthorizedUser -> ServerT ProtectedAPI (AppT m)
 protectedServer (SAS.Authenticated u) =
-  userServer u :<|> eventServer u :<|> metricsServer u :<|> logoutServer u :<|> imageServer u
+  userServer u
+    :<|> eventServer u
+    :<|> metricsServer u
+    :<|> logoutServer u
+    :<|> imageServer u
+    :<|> categoryServer u
 protectedServer SAS.BadPassword = throwAll $ encodeJSONError
   (JSONError 401 "BadPassword" "You entered the wrong password.")
 protectedServer SAS.NoSuchUser = throwAll
