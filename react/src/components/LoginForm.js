@@ -99,7 +99,7 @@ const LoginForm = ({ setVisible }) => {
           </Form.Item>
           <Form.Item>
             <Button size='small' type='primary' htmlType='submit'>
-              Log in
+              Log In
             </Button>
           </Form.Item>
           <Form.Item>

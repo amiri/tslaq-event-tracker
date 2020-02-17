@@ -17,11 +17,10 @@ const Auth = props => {
     history.push('/');
   };
 
-  console.log('location in auth: ', location);
   const isLogin = /login/.test(location.pathname) ? true : false;
   return (
     <Modal
-      title={isLogin ? 'Login' : 'Register'}
+      title={isLogin ? 'Log In' : 'Register'}
       destroyOnClose={true}
       visible={visible}
       onCancel={handleClose}

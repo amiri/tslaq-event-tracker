@@ -98,7 +98,7 @@ const NavBar = props => {
                   type='link'
                   onClick={() => openLoginModal({ history })}
                 >
-                  Log in
+                  Log In
                 </Button>
                 <Button
                   size='small'

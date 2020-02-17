@@ -440,7 +440,6 @@ export const getCategoriesByParent = allCategories => {
 
 export const transformOpt = (obj, groupName, groupId, dict) => {
   return Object.keys(obj).reduce((os, k) => {
-    // console.log('in transformOpt reduce k is ', k);
     if (k === 'direct') {
       os.push(
         obj[k]
@@ -457,8 +456,6 @@ export const transformOpt = (obj, groupName, groupId, dict) => {
         </Option>,
       );
     } else {
-      // console.log('in transformOpt obj k is: ', obj[k]);
-      // console.log('in transformOpt dict[k] is: ', dict[k]);
       os.push(
         <OptGroup label={k} key={`${k}-group`}>
           {transformOpt(obj[k], k, dict[k], dict)}
