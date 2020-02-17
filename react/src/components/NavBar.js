@@ -6,12 +6,12 @@ import { Row, Col, Button } from 'antd';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import moment from 'moment';
 import { mapValues } from 'lodash';
-import EventsDetail from './EventsDetail';
 import {
   encryptIds,
   updateQueryParams,
   openLoginModal,
   openRegisterModal,
+  openViewModal,
 } from './utils/Chart';
 import NavBarForm from './NavBarForm';
 
@@ -36,6 +36,12 @@ const NavBar = props => {
     ChartContext,
   );
   const { filteredEvents } = useContext(EventsContext);
+
+  const updateSearchSubcategories = answer => {
+    setConfig({ ...config, searchSubcategories: answer });
+    const params = { searchSubcategories: answer };
+    updateQueryParams({ params, history, location });
+  };
 
   const updateCategories = categories => {
     setConfig({ ...config, categories });
@@ -63,18 +69,13 @@ const NavBar = props => {
     updateQueryParams({ params, history, location });
   };
 
-  const viewEvents = () => {
+  const viewEvents = ({history}) => {
     const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
-    history.push({
-      pathname: '/event/',
-      search: `?id=${id}`,
-      state: { visible: true },
-    });
+    openViewModal({ id, history });
   };
 
   return (
     <Router>
-      <Route path='/event' render={props => <EventsDetail {...props} />} />
       <div>
         <Row type='flex' justify='start'>
           <Col span={1} style={colStyle}>
@@ -119,6 +120,7 @@ const NavBar = props => {
               updateCategories={updateCategories}
               updateRange={updateRange}
               updateSearchCondition={updateSearchCondition}
+              updateSearchSubcategories={updateSearchSubcategories}
               viewEvents={viewEvents}
             />
           </Col>

@@ -277,7 +277,7 @@ export const crypto = new SimpleCrypto(encryptionSecret);
 
 export const openViewModal = ({ id, history }) => {
   history.push({
-    pathname: '/event/',
+    pathname: '/event',
     search: `?id=${id}`,
     state: { visible: true },
   });
@@ -285,7 +285,7 @@ export const openViewModal = ({ id, history }) => {
 
 export const openNewEventModal = ({ eventDate, history }) => {
   history.push({
-    pathname: '/new/',
+    pathname: '/new',
     state: { visible: true, eventDate },
   });
 };

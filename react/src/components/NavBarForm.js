@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Formik } from 'formik';
-import { Form, Select, Button, Radio, DatePicker } from 'antd';
+import { Form, Switch, Select, Button, Radio, DatePicker } from 'antd';
 import { openCategoryModal } from './utils/Chart';
 import { isEmpty } from 'lodash';
 const { RangePicker } = DatePicker;
@@ -18,6 +18,7 @@ const NavBarForm = ({
   updateSearchCondition,
   viewEvents,
   valuePerOptionName,
+  updateSearchSubcategories,
 }) => {
   const newCategory = sessionStorage.getItem('newCategoryChoice')
     ? sessionStorage.getItem('newCategoryChoice')
@@ -36,6 +37,7 @@ const NavBarForm = ({
         categories: config.categories,
         searchCondition: config.searchCondition,
         dateRange: config.dateRange,
+        searchSubcategories: config.searchSubcategories,
       }}
     >
       {({ isSubmitting }) => (
@@ -93,6 +95,14 @@ const NavBarForm = ({
                 </Radio>
               </Radio.Group>
             </div>
+          </Form.Item>
+          <Form.Item label='Search Subcategories'>
+            <Switch
+                size='small'
+                checked={JSON.parse(config.searchSubcategories)}
+                value={JSON.parse(config.searchSubcategories)}
+                onChange={updateSearchSubcategories}
+            />
           </Form.Item>
           <Form.Item>
             <RangePicker

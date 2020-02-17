@@ -12,6 +12,7 @@ import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import NewEvent from './components/NewEvent';
 import NewCategory from './components/NewCategory';
+import EventsDetail from './components/EventsDetail';
 import Auth from './components/Auth';
 import './App.css';
 import { Layout } from 'antd';

@@ -18,8 +18,7 @@ const s = {
   dateRange: {},
   categories: [],
   searchCondition: 'and',
-  // brushDomain: [],
-  // zoomDomain: [],
+  searchSubcategories: false,
 };
 
 const ChartContextProvider = props => {
@@ -42,17 +41,11 @@ const ChartContextProvider = props => {
   useEffect(() => {
     if (!isEmpty(allCategories)) {
       const [nested, nsFull, ns] = nestCategories(allCategories);
-      // console.log('in reduce nsFull: ', nsFull);
-      // console.log('in reduce ns: ', nsFull);
       const reverseNsFull = Object.fromEntries(
         Object.entries(nsFull).map(([k, v]) => [v, k]),
       );
-      // console.log('in reduce reverseNsFull: ', reverseNsFull);
       const renamed = renameKeys(nsFull, nested);
       const categoryOptions = Object.keys(renamed).reduce((os, k) => {
-        // console.log('in reduce k is ', k);
-        // console.log('in reduce renamed k is ', renamed[k]);
-        // console.log('reduce renamed groupId is ', reverseNsFull[k]);
         os.push(
           <OptGroup label={k} key={k}>
             {transformOpt(renamed[k], k, reverseNsFull[k], reverseNsFull)}
@@ -67,9 +60,6 @@ const ChartContextProvider = props => {
       setValuePerOptionName(ns);
     }
   }, [allCategories]);
-  // console.log('allCategories: ', allCategories);
-  // console.log('categoryOptions: ', categoryOptions);
-  // console.log('valuePerOptionName: ', valuePerOptionName);
 
   async function getCategories() {
     await window.api.getCategories().then(res =>
@@ -91,6 +81,7 @@ const ChartContextProvider = props => {
     }, 3600000);
     return () => clearTimeout(timer);
   });
+
   return (
     <ChartContext.Provider
       value={{

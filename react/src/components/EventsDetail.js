@@ -17,10 +17,12 @@ const EventsDetail = props => {
   useEffect(() => {
     setVisible(location.state.visible);
   }, [location]);
+
   const handleClose = () => {
     setVisible(false);
     history.push('/');
   };
+
   const eventsToDisplay = !isEmpty(eventIds)
     ? events.filter(e => includes(eventIds, e.id))
     : events;

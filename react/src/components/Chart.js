@@ -67,6 +67,7 @@ const Chart = props => {
     dateRange,
     categories,
     searchCondition,
+    searchSubcategories
   } = config;
 
   const priceList =
@@ -88,16 +89,21 @@ const Chart = props => {
       es
         ? es.reduce((obj, e) => {
             !isEmpty(e.categories)
-              ? e.categories.map(c =>
-                  obj[c.id]
-                    ? obj[c.id].add(e.id)
-                    : (obj[c.id] = new Set([e.id])),
-                )
+              ? e.categories.map(c => {
+                  if (JSON.parse(searchSubcategories)) {
+                    const cats = [c.id, ...(c.parents ? c.parents : [])];
+                    cats.map(cat => obj[cat] ? obj[cat].add(e.id) : obj[cat] = new Set([e.id]));
+                  } else {
+                      obj[c.id]
+                        ? obj[c.id].add(e.id)
+                        : obj[c.id] = new Set([e.id]);
+                  }
+                })
               : null;
             return obj;
           }, {})
         : null,
-    [es, categories],
+    [es, categories, searchSubcategories],
   );
 
   const esFiltered = useMemo(
