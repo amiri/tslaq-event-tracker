@@ -229,6 +229,7 @@ const Chart = props => {
             zoomDomain={zoomDomain}
             resolution={resolution}
             history={history}
+            location={location}
           />
           <Context
             width={width}

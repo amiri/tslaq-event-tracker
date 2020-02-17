@@ -19,6 +19,7 @@ const NavBarForm = ({
   viewEvents,
   valuePerOptionName,
   updateSearchSubcategories,
+  location,
 }) => {
   const newCategory = sessionStorage.getItem('newCategoryChoice')
     ? sessionStorage.getItem('newCategoryChoice')
@@ -54,8 +55,8 @@ const NavBarForm = ({
               style={{
                 width: '100%',
                 marginRight: '1em',
-                minWidth: '32em',
-                maxWidth: '48em',
+                minWidth: '24em',
+                maxWidth: '32em',
               }}
               allowClear={true}
               mode='multiple'
@@ -66,7 +67,7 @@ const NavBarForm = ({
               }}
               onSelect={e => {
                 if (/^parent-/.test(e.toString())) {
-                  openCategoryModal({ history, option: e });
+                  openCategoryModal({ history, option: e, location });
                 }
               }}
               placeholder='Safety, Model 3'
@@ -96,12 +97,14 @@ const NavBarForm = ({
               </Radio.Group>
             </div>
           </Form.Item>
-          <Form.Item label='Search Subcategories'>
+          <Form.Item>
             <Switch
               size='small'
               checked={JSON.parse(config.searchSubcategories)}
               value={JSON.parse(config.searchSubcategories)}
               onChange={updateSearchSubcategories}
+              checkedChildren='Search subcategories'
+              unCheckedChildren='Specified only'
             />
           </Form.Item>
           <Form.Item>

@@ -32,6 +32,7 @@ const Focus = ({
   events,
   resolution,
   history,
+  location,
 }) => {
   d3.select('.focus-svg')
     .on('touchstart', noZoom)
@@ -63,7 +64,7 @@ const Focus = ({
 
     const eventDate = xScale.invert(d.pageX);
 
-    openNewEventModal({ eventDate, history });
+    openNewEventModal({ eventDate, history, location });
   }
   function noZoom() {
     d3.event.preventDefault();

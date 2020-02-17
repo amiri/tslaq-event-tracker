@@ -82,7 +82,7 @@ const NavBar = props => {
             <div className='logo'></div>
           </Col>
 
-          <Col span={2} style={colStyle}>
+          <Col span={3} style={colStyle}>
             {user ? (
               <Button
                 size='small'
@@ -117,6 +117,7 @@ const NavBar = props => {
               config={config}
               categoryOptions={categoryOptions}
               history={history}
+              location={location}
               updateCategories={updateCategories}
               updateRange={updateRange}
               updateSearchCondition={updateSearchCondition}

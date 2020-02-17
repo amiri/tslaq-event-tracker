@@ -283,25 +283,24 @@ export const openViewModal = ({ id, history }) => {
   });
 };
 
-export const openNewEventModal = ({ eventDate, history }) => {
-  console.log('eventDate in openNewEventModal: ', eventDate);
+export const openNewEventModal = ({ eventDate, history, location }) => {
   history.push({
     pathname: '/new',
-    state: { visible: true, eventDate },
+    state: { ...location.state, visible: true, eventDate },
   });
 };
 
-export const openNewCategoryModal = ({ history, option }) => {
+export const openNewCategoryModal = ({ history, option, location }) => {
   history.push({
     pathname: '/new/category',
-    state: { visible: true, option },
+    state: { ...location.state, visible: true, option },
   });
 };
 
-export const openCategoryModal = ({ history, option }) => {
+export const openCategoryModal = ({ history, option, location }) => {
   history.push({
     pathname: '/category',
-    state: { visible: true, option },
+    state: { ...location.state, visible: true, option },
   });
 };
 

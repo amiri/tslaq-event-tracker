@@ -22,7 +22,6 @@ const transformApiError = () => {
 
 const LoginForm = ({ setVisible, destination, history }) => {
   const { dispatch } = react.useContext(AuthContext);
-  console.log('history in login: ', history);
   return (
     <Formik
       initialValues={{ email: '', password: '' }}
@@ -46,7 +45,6 @@ const LoginForm = ({ setVisible, destination, history }) => {
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');
-            console.error('Login error: ', apiError);
             dispatch({
               type: 'LOGIN_FAILURE',
               payload: apiError,

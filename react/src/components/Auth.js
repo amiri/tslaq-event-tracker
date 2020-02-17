@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Route, Redirect, useLocation } from 'react-router-dom';
 import { AuthModalContext } from '../contexts/AuthModalContext';
 import { AuthContext } from '../contexts/AuthContext';
 import LoginForm from './LoginForm';
@@ -9,8 +9,7 @@ import { Modal } from 'antd';
 const Auth = props => {
   const { visible, setVisible } = useContext(AuthModalContext);
   const { history, location } = props;
-  console.log('Next dest after auth: ', location.state.from);
-  const destination = location.state.from ?  location.state.from : '/';
+  const destination = location.state.from ? location.state.from : '/';
 
   useEffect(() => {
     setVisible(location.state.visible);
@@ -31,9 +30,17 @@ const Auth = props => {
       footer={false}
     >
       {isLogin ? (
-        <LoginForm setVisible={setVisible} destination={destination} history={history} />
+        <LoginForm
+          setVisible={setVisible}
+          destination={destination}
+          history={history}
+        />
       ) : (
-        <RegisterForm setVisible={setVisible} destination={destination} history={history} />
+        <RegisterForm
+          setVisible={setVisible}
+          destination={destination}
+          history={history}
+        />
       )}
     </Modal>
   );
@@ -44,11 +51,8 @@ export const UserRequired = ({
   render: Render = null,
   ...rest
 }) => {
+  const location = useLocation();
   const { user } = useContext(AuthContext);
-  console.log('location before render/redirect: ', location);
-  console.log('history before render/redirect: ', history);
-  console.log('location.state before render/redirect: ', location.state);
-  console.log('rest before render/redirect: ', rest);
   return (
     <Route
       {...rest}
@@ -63,7 +67,7 @@ export const UserRequired = ({
           <Redirect
             to={{
               pathname: '/login',
-              state: { from: location, visible: true, },
+              state: { from: location, visible: true },
             }}
           />
         )

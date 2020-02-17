@@ -33,6 +33,7 @@ const NewEvent = props => {
         event={{ time: eventDate }}
         setVisible={setVisible}
         history={history}
+        location={location}
       />
     </Modal>
   );

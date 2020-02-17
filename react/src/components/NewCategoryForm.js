@@ -21,7 +21,9 @@ const CategorySchema = Yup.object().shape({
 
 const transformApiError = ({ data }) => {
   if (data.title === 'CategoryConflict') {
-    return { categories: data.detail };
+    return { name: data.detail };
+  } else if (data.title === 'InsufficientAuthorization') {
+    return { name: data.detail };
   }
 };
 
@@ -43,15 +45,15 @@ const NewCategoryForm = ({ setVisible, parentId, dispatch, history }) => {
             });
             actions.setSubmitting(false);
             alerts.success(`Category ${values.name} created`);
+            sessionStorage.setItem('newCategoryChoice', values.name);
+            setVisible(false);
+            history.goBack();
           })
           .catch(apiError => {
             actions.setSubmitting(false);
             const transformedError = transformApiError(apiError);
             actions.setErrors(transformedError);
           });
-        sessionStorage.setItem('newCategoryChoice', values.name);
-        setVisible(false);
-        history.goBack();
       }}
       validateOnBlur={false}
       validateOnChange={false}

@@ -40,6 +40,7 @@ const EventForm = ({
   categoryOptions: children,
   valuePerOptionName,
   history,
+  location,
 }) => {
   const { dispatch } = useContext(EventsContext);
 
@@ -145,7 +146,7 @@ const EventForm = ({
               placeholder='Safety, Model 3'
               onSelect={e => {
                 if (/^parent-/.test(e.toString())) {
-                  openNewCategoryModal({ history, option: e });
+                  openNewCategoryModal({ history, option: e, location });
                 }
               }}
               value={compact([
