@@ -1,5 +1,7 @@
 import React, { useEffect, useContext } from 'react';
+import { Route, Redirect } from 'react-router-dom';
 import { AuthModalContext } from '../contexts/AuthModalContext';
+import { AuthContext } from '../contexts/AuthContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { Modal } from 'antd';
@@ -7,6 +9,8 @@ import { Modal } from 'antd';
 const Auth = props => {
   const { visible, setVisible } = useContext(AuthModalContext);
   const { history, location } = props;
+  console.log('Next dest after auth: ', location.state.from);
+  const destination = location.state.from ?  location.state.from : '/';
 
   useEffect(() => {
     setVisible(location.state.visible);
@@ -27,11 +31,44 @@ const Auth = props => {
       footer={false}
     >
       {isLogin ? (
-        <LoginForm setVisible={setVisible} />
+        <LoginForm setVisible={setVisible} destination={destination} history={history} />
       ) : (
-        <RegisterForm setVisible={setVisible} />
+        <RegisterForm setVisible={setVisible} destination={destination} history={history} />
       )}
     </Modal>
+  );
+};
+
+export const UserRequired = ({
+  component: Component = null,
+  render: Render = null,
+  ...rest
+}) => {
+  const { user } = useContext(AuthContext);
+  console.log('location before render/redirect: ', location);
+  console.log('history before render/redirect: ', history);
+  console.log('location.state before render/redirect: ', location.state);
+  console.log('rest before render/redirect: ', rest);
+  return (
+    <Route
+      {...rest}
+      render={props =>
+        user ? (
+          Render ? (
+            Render(props)
+          ) : Component ? (
+            <Component {...props} />
+          ) : null
+        ) : (
+          <Redirect
+            to={{
+              pathname: '/login',
+              state: { from: location, visible: true, },
+            }}
+          />
+        )
+      }
+    />
   );
 };
 

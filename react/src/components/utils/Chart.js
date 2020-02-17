@@ -284,6 +284,7 @@ export const openViewModal = ({ id, history }) => {
 };
 
 export const openNewEventModal = ({ eventDate, history }) => {
+  console.log('eventDate in openNewEventModal: ', eventDate);
   history.push({
     pathname: '/new',
     state: { visible: true, eventDate },

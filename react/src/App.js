@@ -12,8 +12,7 @@ import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import NewEvent from './components/NewEvent';
 import NewCategory from './components/NewCategory';
-import EventsDetail from './components/EventsDetail';
-import Auth from './components/Auth';
+import Auth, { UserRequired } from './components/Auth';
 import './App.css';
 import { Layout } from 'antd';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
@@ -35,15 +34,21 @@ const App = () => {
                   <Router>
                     <Layout style={{ height: '100%', width: '100%' }}>
                       <Header style={{ backgroundColor: '#f0f2f5' }}>
-                        <Route path='/' component={NavBar} />
+                        <Route
+                          path='/'
+                          render={props => <NavBar {...props} />}
+                        />
                       </Header>
                       <Content style={{ height: '100%', width: '100%' }}>
-                        <Route path='/' component={Chart} />
                         <Route
+                          path='/'
+                          render={props => <Chart {...props} />}
+                        />
+                        <UserRequired
                           path='/new'
                           render={props => <NewEvent {...props} />}
                         />
-                        <Route
+                        <UserRequired
                           path='/new/category'
                           render={props => <NewCategory {...props} />}
                         />
@@ -55,7 +60,7 @@ const App = () => {
                           path='/register'
                           render={props => <Auth {...props} />}
                         />
-                        <Route
+                        <UserRequired
                           path='/category'
                           render={props => <NewCategory {...props} />}
                         />

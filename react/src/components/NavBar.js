@@ -3,7 +3,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import { ChartContext } from '../contexts/ChartContext';
 import { EventsContext } from '../contexts/EventsContext';
 import { Row, Col, Button } from 'antd';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import moment from 'moment';
 import { mapValues } from 'lodash';
 import {
@@ -69,7 +69,7 @@ const NavBar = props => {
     updateQueryParams({ params, history, location });
   };
 
-  const viewEvents = ({history}) => {
+  const viewEvents = ({ history }) => {
     const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
     openViewModal({ id, history });
   };
@@ -89,7 +89,7 @@ const NavBar = props => {
                 type='link'
                 onClick={() => logout(dispatch, history)}
               >
-                Log out
+                Log Out
               </Button>
             ) : (
               <>

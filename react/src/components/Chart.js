@@ -67,7 +67,7 @@ const Chart = props => {
     dateRange,
     categories,
     searchCondition,
-    searchSubcategories
+    searchSubcategories,
   } = config;
 
   const priceList =
@@ -92,11 +92,15 @@ const Chart = props => {
               ? e.categories.map(c => {
                   if (JSON.parse(searchSubcategories)) {
                     const cats = [c.id, ...(c.parents ? c.parents : [])];
-                    cats.map(cat => obj[cat] ? obj[cat].add(e.id) : obj[cat] = new Set([e.id]));
+                    cats.map(cat =>
+                      obj[cat]
+                        ? obj[cat].add(e.id)
+                        : (obj[cat] = new Set([e.id])),
+                    );
                   } else {
-                      obj[c.id]
-                        ? obj[c.id].add(e.id)
-                        : obj[c.id] = new Set([e.id]);
+                    obj[c.id]
+                      ? obj[c.id].add(e.id)
+                      : (obj[c.id] = new Set([e.id]));
                   }
                 })
               : null;

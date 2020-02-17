@@ -4,7 +4,6 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import * as alerts from '../alerts';
-import { Link } from 'react-router-dom';
 
 const RegisterSchema = Yup.object().shape({
   email: Yup.string()
@@ -27,7 +26,7 @@ const transformApiError = ({ statusText }) => {
   };
 };
 
-const RegisterForm = ({ setVisible }) => {
+const RegisterForm = ({ setVisible, destination, history }) => {
   const { dispatch } = react.useContext(AuthContext);
   return (
     <Formik
@@ -49,6 +48,7 @@ const RegisterForm = ({ setVisible }) => {
             actions.setSubmitting(false);
             alerts.success(`Welcome, ${u.authUserName}.`);
             setVisible(false);
+            history.push(destination);
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');

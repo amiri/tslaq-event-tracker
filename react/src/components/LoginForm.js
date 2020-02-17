@@ -20,8 +20,9 @@ const transformApiError = () => {
   };
 };
 
-const LoginForm = ({ setVisible }) => {
+const LoginForm = ({ setVisible, destination, history }) => {
   const { dispatch } = react.useContext(AuthContext);
+  console.log('history in login: ', history);
   return (
     <Formik
       initialValues={{ email: '', password: '' }}
@@ -41,6 +42,7 @@ const LoginForm = ({ setVisible }) => {
             actions.setSubmitting(false);
             alerts.success(`Welcome, ${u.authUserName}.`);
             setVisible(false);
+            history.push(destination);
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Formik } from 'formik';
-import { Form, Switch, Select, Button, Radio, DatePicker } from 'antd';
+import { Spin, Form, Switch, Select, Button, Radio, DatePicker } from 'antd';
 import { openCategoryModal } from './utils/Chart';
 import { isEmpty } from 'lodash';
 const { RangePicker } = DatePicker;
@@ -98,10 +98,10 @@ const NavBarForm = ({
           </Form.Item>
           <Form.Item label='Search Subcategories'>
             <Switch
-                size='small'
-                checked={JSON.parse(config.searchSubcategories)}
-                value={JSON.parse(config.searchSubcategories)}
-                onChange={updateSearchSubcategories}
+              size='small'
+              checked={JSON.parse(config.searchSubcategories)}
+              value={JSON.parse(config.searchSubcategories)}
+              onChange={updateSearchSubcategories}
             />
           </Form.Item>
           <Form.Item>
