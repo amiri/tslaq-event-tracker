@@ -2,18 +2,18 @@ import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { ChartContext } from '../contexts/ChartContext';
 import { EventsContext } from '../contexts/EventsContext';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
-import { Row, Col, Button, Typography } from 'antd';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { DatePicker, Select, Radio } from 'antd';
+import { Row, Col, Button } from 'antd';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import moment from 'moment';
-import { isEmpty, mapValues } from 'lodash';
+import { mapValues } from 'lodash';
 import EventsDetail from './EventsDetail';
-import { encryptIds, updateQueryParams } from './utils/Chart';
-
-const { RangePicker } = DatePicker;
-const { Text } = Typography;
+import {
+  encryptIds,
+  updateQueryParams,
+  openLoginModal,
+  openRegisterModal,
+} from './utils/Chart';
+import NavBarForm from './NavBarForm';
 
 const logout = async (dispatch, history) => {
   sessionStorage.removeItem('user');
@@ -29,16 +29,12 @@ const colStyle = {
   alignItems: 'center',
 };
 
-const radioStyle = {
-  display: 'block',
-};
-
-const { Option } = Select;
-
 const NavBar = props => {
   const { user, dispatch } = useContext(AuthContext);
   const { history, location } = props;
-  const { config, setConfig, categoryOptions } = useContext(ChartContext);
+  const { config, setConfig, categoryOptions, valuePerOptionName } = useContext(
+    ChartContext,
+  );
   const { filteredEvents } = useContext(EventsContext);
 
   const updateCategories = categories => {
@@ -81,77 +77,50 @@ const NavBar = props => {
       <Route path='/event' render={props => <EventsDetail {...props} />} />
       <div>
         <Row type='flex' justify='start'>
-          <Col style={colStyle}>
+          <Col span={1} style={colStyle}>
             <div className='logo'></div>
           </Col>
-          <Col style={colStyle}>
+
+          <Col span={2} style={colStyle}>
             {user ? (
               <Button
                 size='small'
                 type='link'
                 onClick={() => logout(dispatch, history)}
               >
-                Logout
+                Log out
               </Button>
             ) : (
-              <Switch>
-                <Route exact path='/' component={LoginForm} />
-                <Route path='/login' component={LoginForm} />
-                <Route path='/register' component={RegisterForm} />
-              </Switch>
+              <>
+                <Button
+                  size='small'
+                  type='link'
+                  onClick={() => openLoginModal({ history })}
+                >
+                  Log in
+                </Button>
+                <Button
+                  size='small'
+                  type='link'
+                  onClick={() => openRegisterModal({ history })}
+                >
+                  Register
+                </Button>
+              </>
             )}
           </Col>
-          <Col span={4} style={{ ...colStyle, marginLeft: 'auto', order: 2 }}>
-            <Text strong={true} style={{ marginRight: '1em' }}>
-              Categories:
-            </Text>
-            <Select
-              style={{ width: '100%', marginRight: '1em' }}
-              allowClear={true}
-              mode='multiple'
-              placeholder='Safety, Model 3'
-              onChange={values => updateCategories(values)}
-            >
-              {categoryOptions}
-            </Select>
-          </Col>
-          <Col style={{ ...colStyle, order: 3 }}>
-            <Radio.Group
-              size='small'
-              onChange={updateSearchCondition}
-              value={config.searchCondition}
-            >
-              <Radio size='small' style={radioStyle} value='and'>
-                and
-              </Radio>
-              <Radio size='small' style={radioStyle} value='or'>
-                or
-              </Radio>
-            </Radio.Group>
-          </Col>
-          <Col style={{ ...colStyle, order: 4 }}>
-            <Text strong={true} style={{ marginRight: '1em' }}>
-              Date Range:
-            </Text>
-            <RangePicker
-              size='small'
-              allowClear={true}
-              onChange={dates => updateRange(dates)}
-              value={
-                !isEmpty(config.dateRange)
-                  ? [config.dateRange.startDate, config.dateRange.endDate]
-                  : null
-              }
+
+          <Col span={20} style={colStyle}>
+            <NavBarForm
+              valuePerOptionName={valuePerOptionName}
+              config={config}
+              categoryOptions={categoryOptions}
+              history={history}
+              updateCategories={updateCategories}
+              updateRange={updateRange}
+              updateSearchCondition={updateSearchCondition}
+              viewEvents={viewEvents}
             />
-          </Col>
-          <Col style={{ ...colStyle, marginLeft: '1em', order: 5 }}>
-            <Button
-              type='primary'
-              size='small'
-              onClick={() => viewEvents({ history })}
-            >
-              View events
-            </Button>
           </Col>
         </Row>
       </div>

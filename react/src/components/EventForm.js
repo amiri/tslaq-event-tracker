@@ -4,7 +4,7 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { compact, isArray, difference, includes, } from 'lodash';
+import { compact, isArray } from 'lodash';
 import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
 import { openNewCategoryModal } from './utils/Chart';
@@ -38,7 +38,6 @@ const EventForm = ({
   setVisible,
   event,
   categoryOptions: children,
-  valuePerOptionFullName,
   valuePerOptionName,
   history,
 }) => {
@@ -146,10 +145,17 @@ const EventForm = ({
               placeholder='Safety, Model 3'
               onSelect={e => {
                 if (/^parent-/.test(e.toString())) {
-                   openNewCategoryModal({ history, option: e });
+                  openNewCategoryModal({ history, option: e });
                 }
               }}
-              value={compact([...values.categories, sessionStorage.getItem('newCategoryChoice') ? valuePerOptionName[sessionStorage.getItem('newCategoryChoice')] : null])}
+              value={compact([
+                ...values.categories,
+                sessionStorage.getItem('newCategoryChoice')
+                  ? valuePerOptionName[
+                      sessionStorage.getItem('newCategoryChoice')
+                    ]
+                  : null,
+              ])}
               filterOption={(i, o) => {
                 return isArray(o.props.children)
                   ? false
@@ -157,7 +163,10 @@ const EventForm = ({
                       0;
               }}
               onChange={e => {
-                setFieldValue('categories', e.filter(o => !/^parent-/.test(o.toString())));
+                setFieldValue(
+                  'categories',
+                  e.filter(o => !/^parent-/.test(o.toString())),
+                );
                 sessionStorage.removeItem('newCategoryChoice');
               }}
               onBlur={handleBlur}

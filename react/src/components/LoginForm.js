@@ -20,7 +20,7 @@ const transformApiError = () => {
   };
 };
 
-const LoginForm = () => {
+const LoginForm = ({ setVisible }) => {
   const { dispatch } = react.useContext(AuthContext);
   return (
     <Formik
@@ -40,6 +40,7 @@ const LoginForm = () => {
             });
             actions.setSubmitting(false);
             alerts.success(`Welcome, ${u.authUserName}.`);
+            setVisible(false);
           })
           .catch(apiError => {
             sessionStorage.removeItem('user');
@@ -65,7 +66,7 @@ const LoginForm = () => {
         handleSubmit,
         isSubmitting,
       }) => (
-        <Form layout='inline' onSubmit={handleSubmit}>
+        <Form layout='vertical' onSubmit={handleSubmit}>
           <Form.Item
             validateStatus={errors && errors.email ? 'error' : ''}
             help={errors && errors.email ? errors.email : ''}
@@ -102,7 +103,9 @@ const LoginForm = () => {
             </Button>
           </Form.Item>
           <Form.Item>
-            <Link to={{ pathname: '/register' }}>Register</Link>
+            <Link to={{ pathname: '/register', state: { visible: true } }}>
+              Register
+            </Link>
           </Form.Item>
           {isSubmitting && (
             <Form.Item>

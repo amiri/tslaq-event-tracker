@@ -6,7 +6,7 @@ import { Modal } from 'antd';
 
 const NewEvent = props => {
   const { visible, setVisible } = useContext(NewEventModalContext);
-  const { categoryOptions, valuePerOptionName, valuePerOptionFullName } = useContext(ChartContext);
+  const { categoryOptions, valuePerOptionName } = useContext(ChartContext);
   const { history, location } = props;
   const eventDate = location.state.eventDate;
 
@@ -29,7 +29,6 @@ const NewEvent = props => {
     >
       <EventForm
         categoryOptions={categoryOptions}
-        valuePerOptionFullName={valuePerOptionFullName}
         valuePerOptionName={valuePerOptionName}
         event={{ time: eventDate }}
         setVisible={setVisible}

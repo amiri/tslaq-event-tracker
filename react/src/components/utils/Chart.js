@@ -9,7 +9,6 @@ import {
   mapKeys,
   isObject,
   isNil,
-  merge,
   isEqual,
   omit,
   isEmpty,
@@ -298,6 +297,20 @@ export const openNewCategoryModal = ({ history, option }) => {
   });
 };
 
+export const openLoginModal = ({ history }) => {
+  history.push({
+    pathname: '/login',
+    state: { visible: true },
+  });
+};
+
+export const openRegisterModal = ({ history }) => {
+  history.push({
+    pathname: '/register',
+    state: { visible: true },
+  });
+};
+
 export const safeEncrypt = ({ ids }) =>
   ids
     .replace(/\+/g, '-')
@@ -320,8 +333,8 @@ export const decryptIds = ({ ids }) => {
 };
 
 export const updateQueryParams = ({ params, history, location }) => {
-  const c = QueryString.parse(location.search);
-  const updated = merge({}, c, params);
+  const c = QueryString.parse(location.search, { arrayFormat: 'index' });
+  const updated = Object.assign({}, c, params);
   if (!isEqual(c, updated)) {
     history.push({
       pathname: location.pathname,
@@ -335,7 +348,7 @@ export const updateQueryParams = ({ params, history, location }) => {
 };
 
 export const getQueryConfig = ({ location }) => {
-  const q = QueryString.parse(location.search);
+  const q = QueryString.parse(location.search, { arrayFormat: 'index' });
   const pickedDates = omitBy(pick(q, ['startDate', 'endDate']), isEmpty);
   const dateRange = mapValues(pickedDates, v => {
     return moment.tz(`${v} 00:00:00`, 'America/New_York');
@@ -420,7 +433,7 @@ export const getCategoriesByParent = allCategories => {
 
 export const transformOpt = (obj, groupName, groupId, dict) => {
   return Object.keys(obj).reduce((os, k) => {
-          // console.log('in transformOpt reduce k is ', k);
+    // console.log('in transformOpt reduce k is ', k);
     if (k === 'direct') {
       os.push(
         obj[k]
@@ -428,15 +441,21 @@ export const transformOpt = (obj, groupName, groupId, dict) => {
           .map(o => makeOption(o)),
       );
       os.push(
-        <Option key={`parent-${groupId}`} label={`New ${groupName} sub-category`} value={`parent-${groupId}`}><Icon type='plus' /> {`New ${groupName} sub-category`}</Option>
+        <Option
+          key={`parent-${groupId}`}
+          label={`New ${groupName} sub-category`}
+          value={`parent-${groupId}`}
+        >
+          <Icon type='plus' /> {`New ${groupName} sub-category`}
+        </Option>,
       );
     } else {
-        // console.log('in transformOpt obj k is: ', obj[k]);
-        // console.log('in transformOpt dict[k] is: ', dict[k]);
+      // console.log('in transformOpt obj k is: ', obj[k]);
+      // console.log('in transformOpt dict[k] is: ', dict[k]);
       os.push(
         <OptGroup label={k} key={`${k}-group`}>
           {transformOpt(obj[k], k, dict[k], dict)}
-        </OptGroup>
+        </OptGroup>,
       );
     }
     return os;

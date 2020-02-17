@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as Yup from 'yup';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
 import { Input, Form, Button } from 'antd';
-import { isEmpty } from 'lodash';
 
-const categoryExists = async (value) => {
-    const res = await window.api.getCategoriesNameByName(value);
-    return res.data.exists;
+const categoryExists = async value => {
+  const res = await window.api.getCategoriesNameByName(value);
+  return res.data.exists;
 };
 
 const CategorySchema = Yup.object().shape({
-    parentId: Yup.string(),
-    name: Yup.string().required('You must provide a name').test('unique', 'There is already a category by that name', async (value) => {
-        const e = await categoryExists(value);
-        return !e;
+  parentId: Yup.string(),
+  name: Yup.string()
+    .required('You must provide a name')
+    .test('unique', 'There is already a category by that name', async value => {
+      const e = await categoryExists(value);
+      return !e;
     }),
 });
 
@@ -24,7 +25,7 @@ const transformApiError = ({ data }) => {
   }
 };
 
-const NewCategoryForm = ({ valuePerOptionFullName, setVisible, parentId, dispatch, history, location }) => {
+const NewCategoryForm = ({ setVisible, parentId, dispatch, history }) => {
   return (
     <Formik
       initialValues={{
@@ -32,18 +33,22 @@ const NewCategoryForm = ({ valuePerOptionFullName, setVisible, parentId, dispatc
         name: '',
       }}
       onSubmit={async (values, actions) => {
-        await window.api.postCategories(values).then(res => res.data).then(data => {
+        await window.api
+          .postCategories(values)
+          .then(res => res.data)
+          .then(data => {
             dispatch({
-                type: 'POST_CATEGORIES',
-                payload: data,
+              type: 'POST_CATEGORIES',
+              payload: data,
             });
             actions.setSubmitting(false);
             alerts.success(`Category ${values.name} created`);
-        }).catch(apiError => {
+          })
+          .catch(apiError => {
             actions.setSubmitting(false);
             const transformedError = transformApiError(apiError);
             actions.setErrors(transformedError);
-        });
+          });
         sessionStorage.setItem('newCategoryChoice', values.name);
         setVisible(false);
         history.goBack();
@@ -52,16 +57,25 @@ const NewCategoryForm = ({ valuePerOptionFullName, setVisible, parentId, dispatc
       validateOnChange={false}
       validationSchema={CategorySchema}
     >
-      {({values, errors, handleBlur, handleChange, handleSubmit, isSubmitting})=> (
+      {({ values, errors, handleBlur, handleChange, handleSubmit }) => (
         <Form onSubmit={handleSubmit}>
           <Form.Item
             validateStatus={errors && errors.name ? 'error' : ''}
-            help={errors && errors.name ? errors.name  : ''}
+            help={errors && errors.name ? errors.name : ''}
           >
-          <Input type='text' size='small' onChange={handleChange} onBlur={handleBlur} value={values.name} name='name' />
+            <Input
+              type='text'
+              size='small'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.name}
+              name='name'
+            />
           </Form.Item>
           <Form.Item>
-          <Button size='small' type='primary' htmlType='submit'>Create</Button>
+            <Button size='small' type='primary' htmlType='submit'>
+              Create
+            </Button>
           </Form.Item>
         </Form>
       )}

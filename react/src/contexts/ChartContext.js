@@ -1,12 +1,11 @@
 import React, { createContext, useState, useEffect, useReducer } from 'react';
 import { categoriesReducer } from '../reducers/CategoriesReducer';
 import { Select } from 'antd';
-import { isEmpty, mapKeys, mapValues } from 'lodash';
+import { isEmpty } from 'lodash';
 import {
   renameKeys,
   transformOpt,
   nestCategories,
-  getCategoriesByParent,
 } from '../components/utils/Chart';
 
 const { OptGroup } = Select;
@@ -39,9 +38,6 @@ const ChartContextProvider = props => {
   // Lookup value for option name
   const [valuePerOptionName, setValuePerOptionName] = useState({});
 
-  // Lookup value for option full name
-  const [valuePerOptionFullName, setValuePerOptionFullName] = useState({});
-
   // Load category options when categories change
   useEffect(() => {
     if (!isEmpty(allCategories)) {
@@ -51,13 +47,12 @@ const ChartContextProvider = props => {
       const reverseNsFull = Object.fromEntries(
         Object.entries(nsFull).map(([k, v]) => [v, k]),
       );
-      const lowerCaseNsFull = mapKeys(reverseNsFull, (v,k) => k.toLowerCase());
       // console.log('in reduce reverseNsFull: ', reverseNsFull);
       const renamed = renameKeys(nsFull, nested);
       const categoryOptions = Object.keys(renamed).reduce((os, k) => {
-          // console.log('in reduce k is ', k);
-          // console.log('in reduce renamed k is ', renamed[k]);
-          // console.log('reduce renamed groupId is ', reverseNsFull[k]);
+        // console.log('in reduce k is ', k);
+        // console.log('in reduce renamed k is ', renamed[k]);
+        // console.log('reduce renamed groupId is ', reverseNsFull[k]);
         os.push(
           <OptGroup label={k} key={k}>
             {transformOpt(renamed[k], k, reverseNsFull[k], reverseNsFull)}
@@ -70,12 +65,10 @@ const ChartContextProvider = props => {
       // SET lookups
       setFullNamePerOptionValue(nsFull);
       setValuePerOptionName(ns);
-      setValuePerOptionFullName(lowerCaseNsFull);
     }
   }, [allCategories]);
   // console.log('allCategories: ', allCategories);
   // console.log('categoryOptions: ', categoryOptions);
-  // console.log('valuePerOptionFullName: ', valuePerOptionFullName);
   // console.log('valuePerOptionName: ', valuePerOptionName);
 
   async function getCategories() {
@@ -105,7 +98,6 @@ const ChartContextProvider = props => {
         setConfig,
         allCategories,
         categoryOptions,
-        valuePerOptionFullName,
         valuePerOptionName,
         fullNamePerOptionValue,
         dispatch,

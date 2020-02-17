@@ -4,7 +4,7 @@ export const categoriesReducer = (state, action) => {
       return action.payload;
     }
     case 'POST_CATEGORIES': {
-        return action.payload;
+      return action.payload;
     }
     default: {
       return state;

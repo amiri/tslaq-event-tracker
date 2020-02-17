@@ -6,7 +6,9 @@ import NewCategoryForm from './NewCategoryForm';
 
 const NewCategory = props => {
   const { visible, setVisible } = useContext(NewCategoryModalContext);
-  const { valuePerOptionName, dispatch, fullNamePerOptionValue } = useContext(ChartContext);
+  const { valuePerOptionName, dispatch, fullNamePerOptionValue } = useContext(
+    ChartContext,
+  );
   const { history, location } = props;
   const option = location.state.option;
 
@@ -21,7 +23,9 @@ const NewCategory = props => {
 
   const [_, parentId] = option.split('-');
   const subName = fullNamePerOptionValue[parentId];
-  const title = parentId ? `New ${subName} Subcategory` : 'New Top-Level Category';
+  const title = parentId
+    ? `New ${subName} Subcategory`
+    : 'New Top-Level Category';
 
   return (
     <Modal
