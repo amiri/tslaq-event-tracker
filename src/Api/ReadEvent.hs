@@ -8,21 +8,21 @@
 
 module Api.ReadEvent where
 
-import           AppContext                  (AppT (..))
-import           Control.Monad.Except        (MonadIO)
-import           Control.Monad.Logger        (logDebugNS)
-import           Control.Monad.Metrics       (increment)
+import           AppContext            (AppT (..))
+import           Control.Monad.Except  (MonadIO)
+import           Control.Monad.Logger  (logDebugNS)
+import           Control.Monad.Metrics (increment)
 -- import           Data.Int                    (Int64)
-import qualified Data.Map.Strict             as Map
-import           Data.Maybe                  (catMaybes)
-import           Data.Text                   (Text)
+import           Api.ReadCategory      (getCategories)
+import qualified Data.Map.Strict       as Map
+import           Data.Maybe            (catMaybes)
+import           Data.Text             (Text)
 import           Database.Esqueleto
-import           Database.Persist.Postgresql (Entity (..), toSqlKey)
 import           Errors
 import           Models
 import           Servant
-import           Servant.Auth.Server         as SAS
-import           Types                       hiding (CategoryId)
+import           Servant.Auth.Server   as SAS
+import           Types                 hiding (CategoryId)
 
 type ReadEventAPI
   = "events" :> Get '[JSON] [EventDisplay] :<|> "events" :> Capture "id" Text :> Get '[JSON] EventDisplay
@@ -39,11 +39,14 @@ keyValuesToMap :: (Ord k) => [(k, a)] -> Map.Map k [a]
 keyValuesToMap = Map.fromListWith (++) . map (\(k, v) -> (k, [v]))
 
 eventsAndCategoriesToDisplay
-  :: [(EventProcess, [Maybe (Entity Category)])] -> [EventDisplay]
-eventsAndCategoriesToDisplay = map toEventDisplay
+  :: [CategoryTree]
+  -> [(EventProcess, [Maybe (Entity Category)])]
+  -> [EventDisplay]
+eventsAndCategoriesToDisplay trees es = map (toEventDisplay trees) es
 
-toEventDisplay :: (EventProcess, [Maybe (Entity Category)]) -> EventDisplay
-toEventDisplay ((EventProcess b ct i t tt ut a ai), cs) = EventDisplay
+toEventDisplay
+  :: [CategoryTree] -> (EventProcess, [Maybe (Entity Category)]) -> EventDisplay
+toEventDisplay trees ((EventProcess b ct i t tt ut a ai), cs) = EventDisplay
   { body       = b
   , createTime = ct
   , id         = i
@@ -52,22 +55,14 @@ toEventDisplay ((EventProcess b ct i t tt ut a ai), cs) = EventDisplay
   , updateTime = ut
   , author     = a
   , authorId   = ai
-  , categories = (flattenCategories (catMaybes cs))
+  , categories = (flattenCategories (catMaybes cs) trees)
   }
 
-toCategoryDisplay :: Entity Category -> CategoryDisplay
-toCategoryDisplay c = CategoryDisplay
-  { name       = (categoryName $ entityVal c)
-  , createTime = (categoryCreateTime $ entityVal c)
-  , id         = hashId $ fromSqlKey (entityKey c)
-  , details    = categoryDetails $ entityVal c
-  , updateTime = (categoryUpdateTime $ entityVal c)
-  }
-
-flattenCategories :: [Entity Category] -> Maybe [CategoryDisplay]
-flattenCategories cs =
-  let tcs = map (\c -> toCategoryDisplay c) cs
-  in  if length tcs > 0 then Just (tcs) else Nothing
+flattenCategories :: [Entity Category] -> [CategoryTree] -> Maybe [CategoryTree]
+flattenCategories cs trees =
+  let cats = map (\c -> hashId $ fromSqlKey $ entityKey c) cs
+      ts   = filter (\CategoryTree { id = tid } -> tid `elem` cats) trees
+  in  if length ts > 0 then Just (ts) else Nothing
 
 toEventProcess
   :: [(Entity Event, Entity User, Maybe (Entity Category))]
@@ -88,9 +83,12 @@ toEventProcess = map
   )
 
 transformEventsAndCategories
-  :: [(Entity Event, Entity User, Maybe (Entity Category))] -> [EventDisplay]
-transformEventsAndCategories =
-  eventsAndCategoriesToDisplay . Map.toList . keyValuesToMap . toEventProcess
+  :: [CategoryTree]
+  -> [(Entity Event, Entity User, Maybe (Entity Category))]
+  -> [EventDisplay]
+transformEventsAndCategories trees ecs =
+  let es = Map.toList $ keyValuesToMap $ toEventProcess ecs
+  in  eventsAndCategoriesToDisplay trees es
 
 getEvents
   :: MonadIO m
@@ -123,8 +121,9 @@ listEvents :: MonadIO m => AppT m [EventDisplay]
 listEvents = do
   increment "listEvents"
   logDebugNS "web" "listEvents"
-  ecs <- getEvents Nothing
-  let tes = transformEventsAndCategories ecs
+  ecs   <- getEvents Nothing
+  trees <- getCategories
+  let tes = transformEventsAndCategories trees ecs
   pure tes
 
 -- | Returns a event by id or throws a 404 error.
@@ -132,8 +131,9 @@ getEvent :: MonadIO m => Text -> AppT m EventDisplay
 getEvent i = do
   increment "getEvent"
   logDebugNS "web" "getEvent"
-  ecs <- getEvents (Just i)
-  let te = transformEventsAndCategories ecs
+  ecs   <- getEvents (Just i)
+  trees <- getCategories
+  let te = transformEventsAndCategories trees ecs
   if length te > 0
     then pure (head te)
     else throwError $ encodeJSONError

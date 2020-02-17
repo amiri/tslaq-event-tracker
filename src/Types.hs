@@ -72,7 +72,7 @@ data EventDisplay = EventDisplay {
   , updateTime :: !UTCTime
   , author     :: !UserName
   , authorId   :: !Text
-  , categories :: !(Maybe [CategoryDisplay])
+  , categories :: !(Maybe [CategoryTree])
   } deriving (Show, Eq, Generic, Read)
 instance ToJSON EventDisplay
 instance FromJSON EventDisplay

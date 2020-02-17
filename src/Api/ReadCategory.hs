@@ -9,25 +9,23 @@
 
 module Api.ReadCategory where
 
-import           AppContext                  (AppT (..), ctxPool)
-import           Control.Monad.Except        (MonadIO)
-import           Control.Monad.Logger        (logDebugNS)
-import           Control.Monad.Metrics       (increment)
-import           Control.Monad.Reader        (ReaderT, asks, liftIO)
+import           AppContext            (AppT (..), ctxPool)
+import           Control.Monad.Except  (MonadIO)
+import           Control.Monad.Logger  (logDebugNS)
+import           Control.Monad.Metrics (increment)
+import           Control.Monad.Reader  (ReaderT, asks, liftIO)
 -- import           Data.Int                    (Int64)
-import           Api.ReadEvent               (toCategoryDisplay)
-import           Data.Text                   (Text)
+import           Data.Text             (Text)
 import           Database.Esqueleto
-import           Database.Persist.Postgresql (toSqlKey)
 import           Errors
 import           Models
 import           Servant
-import           Servant.Auth.Server         as SAS
+import           Servant.Auth.Server   as SAS
 import           Text.RawString.QQ
 import           Types
 
 type ReadCategoryAPI
-  = "categories" :> Get '[JSON] [CategoryTree] :<|> "categories" :> Capture "id" Text :> Get '[JSON] CategoryDisplay :<|> "categories" :> "name" :> Capture "name" Text :> Get '[JSON] CategoryExists
+  = "categories" :> Get '[JSON] [CategoryTree] :<|> "categories" :> Capture "id" Text :> Get '[JSON] CategoryTree :<|> "categories" :> "name" :> Capture "name" Text :> Get '[JSON] CategoryExists
 
 
 readCategoryApi :: Proxy ReadCategoryAPI
@@ -100,16 +98,16 @@ getCategories = do
   pool <- asks ctxPool
   liftIO $ runSqlPersistMPool getCategoriesWithParents pool
 
--- TBD: getCategory should return a single CategoryTree
-getCategory :: MonadIO m => Text -> AppT m CategoryDisplay
+getCategory :: MonadIO m => Text -> AppT m CategoryTree
 getCategory i = do
   increment "getCategory"
   logDebugNS "web" "getCategory"
-  maybeCategory <- runDb (getEntity (toSqlKey (unhashId i) :: Key Category))
-  case maybeCategory of
-    Nothing -> throwError $ encodeJSONError
+  cats <- getCategories
+  let cat = filter (\CategoryTree { id = tid } -> tid == i) cats
+  case cat of
+    [] -> throwError $ encodeJSONError
       (JSONError 404 "NoSuchCategory" "There is no such category.")
-    Just c -> pure $ toCategoryDisplay c
+    cs -> pure $ head cs
 
 categoryNameExists :: MonadIO m => Text -> AppT m CategoryExists
 categoryNameExists n = do
