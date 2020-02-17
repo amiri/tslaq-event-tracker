@@ -297,6 +297,13 @@ export const openNewCategoryModal = ({ history, option }) => {
   });
 };
 
+export const openCategoryModal = ({ history, option }) => {
+  history.push({
+    pathname: '/category',
+    state: { visible: true, option },
+  });
+};
+
 export const openLoginModal = ({ history }) => {
   history.push({
     pathname: '/login',

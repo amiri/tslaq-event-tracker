@@ -54,6 +54,10 @@ const App = () => {
                           path='/register'
                           render={props => <Auth {...props} />}
                         />
+                        <Route
+                          path='/category'
+                          render={props => <NewCategory {...props} />}
+                        />
                       </Content>
                     </Layout>
                   </Router>

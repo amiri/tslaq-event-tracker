@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Formik } from 'formik';
 import { Form, Select, Button, Radio, DatePicker } from 'antd';
-import { openNewCategoryModal } from './utils/Chart';
+import { openCategoryModal } from './utils/Chart';
 import { isEmpty } from 'lodash';
 const { RangePicker } = DatePicker;
 
@@ -64,7 +64,7 @@ const NavBarForm = ({
               }}
               onSelect={e => {
                 if (/^parent-/.test(e.toString())) {
-                  openNewCategoryModal({ history, option: e });
+                  openCategoryModal({ history, option: e });
                 }
               }}
               placeholder='Safety, Model 3'
