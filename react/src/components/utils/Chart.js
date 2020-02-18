@@ -489,3 +489,13 @@ export const nestCategories = allCategories => {
   }, {});
   return [opts, nsFull, ns];
 };
+
+const seq = d3.scaleSequential(d3.interpolateSpectral);
+
+export const getColorScale = allCategories => {
+  const range = allCategories.map((_, i) => seq(i / allCategories.length));
+  return d3
+    .scaleOrdinal()
+    .range(range)
+    .domain(allCategories.map(c => c.fullName));
+};

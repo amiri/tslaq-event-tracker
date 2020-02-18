@@ -13,7 +13,7 @@ require('moment-timezone');
 const { Title, Text } = Typography;
 const EventsDetail = props => {
   const { visible, setVisible } = useContext(NewEventModalContext);
-  const { history, location, events = [] } = props;
+  const { history, location, events = [], colorScale } = props;
   const params = QueryString.parse(location.search);
   const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];
   useEffect(() => {
@@ -36,16 +36,32 @@ const EventsDetail = props => {
       <div key={e.id}>
         <Title level={3}>{e.title}</Title>
         <br />
-        <Text strong>{moment.utc(e.time).tz('America/New_York').format("dddd, MMMM D, YYYY, h:mm:ss A zz")}</Text>
+        <Text strong>
+          {moment
+            .utc(e.time)
+            .tz('America/New_York')
+            .format('dddd, MMMM D, YYYY, h:mm:ss A zz')}
+        </Text>
         <br />
         <p className='byline'>
           <em>
-            {e.author} at {moment.utc(e.createTime).tz('America/New_York').format("dddd, MMMM D, YYYY, h:mm:ss A zz")}
+            {e.author} at{' '}
+            {moment
+              .utc(e.createTime)
+              .tz('America/New_York')
+              .format('dddd, MMMM D, YYYY, h:mm:ss A zz')}
           </em>
         </p>
         <div className='tag-list'>
-            {!isNil(e.categories) ? e.categories.map(c => (<Tag>{c.name}</Tag>)) : null}
+          {!isNil(e.categories)
+            ? e.categories.map(c => (
+                <Tag key={c.id} color={colorScale(c.fullName)}>
+                  {c.fullName}
+                </Tag>
+              ))
+            : null}
         </div>
+        <br />
         <Slate editor={editor} value={JSON.parse(e.body)}>
           <Editable
             readOnly

@@ -33,12 +33,11 @@ const Focus = ({
   resolution,
   history,
   location,
+  colorScale,
 }) => {
   d3.select('.focus-svg')
     .on('touchstart', noZoom)
     .on('touchmove', noZoom);
-  // History
-  // const [selectedEvents, setSelectedEvents] = useState({});
 
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
@@ -47,15 +46,6 @@ const Focus = ({
   // Scales
   const xScale = getXScale({ xExtent, width });
   const yScale = getYScale({ yExtent, height });
-
-  const colors = d3
-    .scaleOrdinal()
-    .range(
-      d3.schemeSpectral[
-        config.categories.length < 10 ? 10 : config.categories.length
-      ],
-    )
-    .domain(config.categories);
 
   const [hover, setHover] = useState(null);
 
@@ -112,11 +102,7 @@ const Focus = ({
           rawAnnotations[i - 1] && y === rawAnnotations[i - 1].y
             ? y + radius + 5
             : y;
-        const circleClasses = compact([
-          'note-circle',
-          ...cs.map(c => c.id),
-          // selectedEvents[a.id] === true ? 'selected' : null,
-        ]);
+        const circleClasses = compact(['note-circle', ...cs.map(c => c.id)]);
         return (
           <g key={i}>
             <AnnotationCallout
@@ -129,7 +115,7 @@ const Focus = ({
               className={hover === i ? '' : 'hidden'}
             />
             <circle
-              fill={isEmpty(cs) ? 'black' : colors(cs[0].name)}
+              fill={isEmpty(cs) ? 'black' : colorScale(cs[0].fullName)}
               r={radius}
               cx={x}
               cy={thisY}

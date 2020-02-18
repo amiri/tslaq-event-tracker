@@ -10,6 +10,7 @@ import {
   updateQueryParams,
   sameDateRange,
   getQueryConfig,
+  getColorScale,
 } from './utils/Chart';
 import {
   omit,
@@ -29,7 +30,7 @@ import { margin } from './utils/Chart';
 const Chart = props => {
   const { events, setFilteredEvents } = useContext(EventsContext);
   const { prices } = useContext(PricesContext);
-  const { config, setConfig } = useContext(ChartContext);
+  const { config, setConfig, allCategories } = useContext(ChartContext);
   const { history, location } = props;
   const queryConfig = getQueryConfig({ location });
 
@@ -197,13 +198,15 @@ const Chart = props => {
     const l = params[0] < margin.left ? margin.left : params[0];
     const r =
       params[1] > width - margin.right ? width - margin.right : params[1];
-    const checkedR = ((r - l) < 5) ? l + 5 : r;
+    const checkedR = r - l < 5 ? l + 5 : r;
     if (eventType === 'wheel' || eventType === 'mousemove') {
       if (!isEqual([l, checkedR], brushDomain)) {
         setBrushDomain([l, checkedR]);
       }
     }
   };
+
+  const colorScale = getColorScale(allCategories);
 
   return (
     <div
@@ -231,6 +234,7 @@ const Chart = props => {
             resolution={resolution}
             history={history}
             location={location}
+            colorScale={colorScale}
           />
           <Context
             width={width}
@@ -244,7 +248,13 @@ const Chart = props => {
       )}
       <Route
         path='/event'
-        render={props => <EventsDetail {...props} events={esFiltered} />}
+        render={props => (
+          <EventsDetail
+            {...props}
+            events={esFiltered}
+            colorScale={colorScale}
+          />
+        )}
       />
     </div>
   );
