@@ -18,6 +18,7 @@ import {
   openNewEventModal,
   encryptIds,
   margin,
+  synopsis,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
 import { isNil, isEmpty, compact } from 'lodash';
@@ -76,8 +77,9 @@ const Focus = ({
             const title = `${e.eventTime
               .tz('America/New_York')
               .format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
+            const body = synopsis(JSON.parse(e.body)[0].children[0].text);
             return {
-              note: { title, label: e.body },
+              note: { title, label: body },
               x: xScale(e.eventTime.toDate()),
               y: yScale(p),
               categories: e.categories,

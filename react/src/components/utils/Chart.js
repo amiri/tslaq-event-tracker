@@ -499,3 +499,7 @@ export const getColorScale = allCategories => {
     .range(range)
     .domain(allCategories.map(c => c.fullName));
 };
+
+export const synopsis = text => {
+    return text.length == 0 ? '' : text.length < 24 ? text : `${text.substring(0, 24)}\u2026`;
+};
