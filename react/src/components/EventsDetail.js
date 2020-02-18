@@ -2,13 +2,15 @@ import React, { useMemo, useEffect, useContext } from 'react';
 import { NewEventModalContext } from '../contexts/NewEventModalContext';
 import { includes, isNil, isEmpty } from 'lodash';
 import * as QueryString from 'query-string';
-import { Modal, Divider, Typography } from 'antd';
+import { Tag, Modal, Divider, Typography } from 'antd';
 import { decryptIds } from './utils/Chart';
 import { createEditor } from 'slate';
 import { Slate, Editable, withReact } from 'slate-react';
 import { renderLeaf, renderElement } from './Qeditor/Render';
+import moment from 'moment';
+require('moment-timezone');
 
-const { Text } = Typography;
+const { Title, Text } = Typography;
 const EventsDetail = props => {
   const { visible, setVisible } = useContext(NewEventModalContext);
   const { history, location, events = [] } = props;
@@ -32,16 +34,18 @@ const EventsDetail = props => {
   const eventDisplays = eventsToDisplay.map(e => {
     return (
       <div key={e.id}>
-        <Text strong>{e.title}</Text>
+        <Title level={3}>{e.title}</Title>
         <br />
-        <Text>{e.time}</Text>
+        <Text strong>{moment.utc(e.time).tz('America/New_York').format("dddd, MMMM D, YYYY, h:mm:ss A zz")}</Text>
         <br />
         <p className='byline'>
           <em>
-            {e.author}, {e.createTime}
+            {e.author} at {moment.utc(e.createTime).tz('America/New_York').format("dddd, MMMM D, YYYY, h:mm:ss A zz")}
           </em>
         </p>
-        <br />
+        <div className='tag-list'>
+            {!isNil(e.categories) ? e.categories.map(c => (<Tag>{c.name}</Tag>)) : null}
+        </div>
         <Slate editor={editor} value={JSON.parse(e.body)}>
           <Editable
             readOnly
@@ -56,7 +60,7 @@ const EventsDetail = props => {
 
   return (
     <Modal
-      title='Events'
+      title={<Title level={2}>Events</Title>}
       visible={visible}
       onOk={handleClose}
       onCancel={handleClose}
