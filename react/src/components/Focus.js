@@ -165,27 +165,6 @@ const Focus = ({
   const svgRef = useRef(null);
   const { timeZone } = config;
 
-  // Select circles
-  // function selectCircles() {
-  //   const extent = d3.event.selection;
-  //   const selections = {};
-  //   annotations.map(a => {
-  //     const { cx, cy, id } = a.props.children[1].props;
-  //     const selected = isSelected({ coords: extent, cx, cy });
-  //     selections[id] = selected;
-  //   });
-  //   setSelectedEvents(selections);
-  // }
-
-  // Select Circle Brush
-  // const brush = d3
-  //   .brush()
-  //   .extent([
-  //     [0, 0],
-  //     [width, height],
-  //   ])
-  //   .on('brush', selectCircles);
-
   // Prices
   useEffect(() => {
     const svg = d3.select(svgRef.current);

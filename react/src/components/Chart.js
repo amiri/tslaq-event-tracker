@@ -197,9 +197,10 @@ const Chart = props => {
     const l = params[0] < margin.left ? margin.left : params[0];
     const r =
       params[1] > width - margin.right ? width - margin.right : params[1];
+    const checkedR = ((r - l) < 5) ? l + 5 : r;
     if (eventType === 'wheel' || eventType === 'mousemove') {
-      if (!isEqual([l, r], brushDomain)) {
-        setBrushDomain([l, r]);
+      if (!isEqual([l, checkedR], brushDomain)) {
+        setBrushDomain([l, checkedR]);
       }
     }
   };
