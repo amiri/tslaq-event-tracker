@@ -10,30 +10,35 @@
 module Api.Event where
 
 import           Api.ReadEvent               (getEvent)
-import           AppContext                  (AppT (..), userHasRole, checkAuthor)
+import           AppContext                  (AppT (..), checkAuthor,
+                                              userHasRole)
 import           Control.Lens
 import           Control.Lens.Regex.Text
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
 import           Data.Int                    (Int64)
-import           Data.List.NonEmpty          (NonEmpty, toList)
-import Data.Maybe (catMaybes)
-import           Data.Text                   (Text(..), pack)
-import           Data.Time.Clock             (getCurrentTime, UTCTime(..))
-import           Database.Persist.Postgresql ((=.), Update(..), Entity (..), fromSqlKey, updateGet, getEntity, getBy,
-                                              insert, insertEntity, toSqlKey)
+import           Data.List.NonEmpty          (toList)
+import           Data.Maybe                  (catMaybes)
+import           Data.Text                   (Text, pack)
+import           Data.Time.Clock             (UTCTime (..), getCurrentTime)
+import           Database.Persist.Postgresql (deleteWhere, Entity (..), Update (..),
+                                              fromSqlKey, getBy, getEntity,
+                                              insert, insertEntity, toSqlKey,
+                                              updateGet, (=.), (==.))
 import           Debug.Trace
 import           Errors
-import           Models                      (EntityField( EventBody, EventTitle, EventTime), Category (..), Event (..),
-                                              EventCategory (..), Key,
-                                              Unique (..), User, runDb)
+import           Models                      (Category (..), EntityField (EventBody, EventTime, EventTitle, EventCategoryEventId),
+                                              Event (..), EventCategory (..),
+                                              Key, Unique (..), User, runDb)
 import           Servant
-import           Types                       (EventColumn(..), AuthorizedUser (..),
-                                              CategoryName (..), EventDisplay,
-                                              EventBody(..), EventTitle(..), NewEvent (..),
+import           Types                       (AuthorizedUser (..),
+                                              CategoryName (..),
+                                              EditedEvent (..),
+                                              EventColumn (..), EventDisplay,
+                                              EventTitle (..), NewEvent (..),
                                               UserRoleName (..), hashId, unhash,
-                                              unhashId, EditedEvent(..))
+                                              unhashId)
 
 type EventAPI
   = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] EventDisplay :<|> "events" :> Capture "id" Text :> ReqBody '[JSON] EditedEvent :> Put '[JSON] EventDisplay
@@ -94,32 +99,46 @@ findOrCreateCategories cs = mapM getIdFromCategory cs
 
 createUpdate :: EventColumn a -> Maybe (Update Event)
 createUpdate (BodyColumn b) = case b of
-    Just t -> Just (Models.EventBody =. t)
-    Nothing -> Nothing
+  Just t  -> Just (Models.EventBody =. t)
+  Nothing -> Nothing
 createUpdate (TimeColumn tm) = case tm of
-    Just (UTCTime d dt) -> Just (Models.EventTime =. UTCTime d dt)
-    Nothing -> Nothing
+  Just (UTCTime d dt) -> Just (Models.EventTime =. UTCTime d dt)
+  Nothing             -> Nothing
 createUpdate (TitleColumn t) = case t of
-    Just t' -> Just (Models.EventTitle =. t')
-    Nothing -> Nothing
+  Just t' -> Just (Models.EventTitle =. t')
+  Nothing -> Nothing
+createUpdate (CategoryColumn _) = Nothing
 
-editEvent :: MonadIO m => AuthorizedUser -> Text -> EditedEvent -> AppT m EventDisplay
+editEvent
+  :: MonadIO m => AuthorizedUser -> Text -> EditedEvent -> AppT m EventDisplay
 editEvent u i e = do
   userHasRole u Contributor
   checkAuthor u e
   increment "editEvent"
-  logDebugNS "web" ((pack $ show $ authUserId u) <> " editing event " <> (pack $ show i))
+  logDebugNS
+    "web"
+    ((pack $ show $ authUserId u) <> " editing event " <> (pack $ show i))
   traceM $ show e
   let EditedEvent { body = b, time = tm, title = t, categories = cs } = e
   traceM $ show tm
-  let updates = catMaybes $ map createUpdate [BodyColumn b, TimeColumn tm, TitleColumn t]
+  let updates = catMaybes
+        $ map createUpdate [BodyColumn b, TimeColumn tm, TitleColumn t]
   existing <- runDb (getEntity (toSqlKey (unhashId i) :: Key Event))
   case existing of
-    Nothing -> throwError $ encodeJSONError (JSONError 404 "NoSuchEvent" "There is no such event.")
+    Nothing -> throwError $ encodeJSONError
+      (JSONError 404 "NoSuchEvent" "There is no such event.")
     Just evt -> do
-      updated <- runDb (updateGet (entityKey evt) updates)  
-      traceM $ show updated
-      getEvent i
+      _ <- runDb (updateGet (entityKey evt) updates)
+      case cs of
+        Nothing -> do
+          getEvent i
+        Just cs' -> do
+          cats <- findOrCreateCategories (toList cs')
+          _ <- runDb $ deleteWhere [EventCategoryEventId ==. (entityKey evt)]
+          mapM_
+            (\c' -> runDb $ insert $ EventCategory (entityKey evt) (toSqlKey c'))
+            cats
+          getEvent i
 
 -- | Creates a event in the database.
 createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m EventDisplay

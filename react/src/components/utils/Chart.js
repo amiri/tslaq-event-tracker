@@ -522,17 +522,17 @@ export const getEventEdits = ({ updates, event }) => {
     body: JSON.parse(event.body),
     categories: event.categories.map(c => c.id),
   });
-  const update = Object.assign({}, updates, {
-    ...(has(updates, 'categories') && {
-      categories: compact(updates.categories),
-    }),
-  });
-  const diffs = difference(update, eventWithCatMap);
-  console.log(diffs);
+  // console.log('eventWithCatMap: ', eventWithCatMap);
+  // console.log('updates: ', updates);
+  const diffs = difference(updates, eventWithCatMap);
+  // console.log('diffs: ', diffs);
   const result = Object.assign({}, diffs, {
     authorId: event.authorId,
     ...(has(diffs, 'body') && { body: JSON.stringify(updates.body) }),
+    ...(has(diffs, 'categories') && {
+      categories: compact(updates.categories),
+    }),
   });
-  console.log('result in getEventEdits: ', result);
+  // console.log('result: ', result);
   return result;
 };

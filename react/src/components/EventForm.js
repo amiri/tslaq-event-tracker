@@ -28,7 +28,7 @@ const transformApiError = ({ data }) => {
   if (data.title === 'EventConflict') {
     return { title: data.detail };
   }
-  if (data.title === 'CategoryConflict') {
+  if (/Categor/.test(data.title)) {
     return { categories: data.detail };
   }
 };
@@ -50,7 +50,7 @@ const EventForm = ({
     </Option>
   );
 
-  const editMode = !isNil(event) ? true : false;
+  const editMode = !isNil(event.id) ? true : false;
   // console.log('EventForm: event before Formik: ', event);
   // console.log('EventForm: event before Formik: ', event);
 
@@ -81,27 +81,27 @@ const EventForm = ({
               title: values.title,
               categories: values.categories,
             };
-        console.log('EventForm: onSubmit eventData: ', eventData);
+        // console.log('EventForm: onSubmit eventData: ', eventData);
         if (editMode) {
           await window.api
             .putEventsById(event.id, eventData)
             .then(res => res.data)
             .then(data => {
-              console.log('EventForm: onSubmit server response: ', data);
-              // dispatch({
-              //   type: 'POST_EVENT',
-              //   payload: data,
-              // });
-              // actions.setSubmitting(false);
-              // alerts.success(`Event ${data.title} created`);
+              // console.log('EventForm: onSubmit server response: ', data);
+              dispatch({
+                type: 'UPDATE_EVENT',
+                payload: data,
+              });
+              actions.setSubmitting(false);
+              alerts.success(`Event ${data.title} modified`);
             })
             .catch(apiError => {
-              console.log('EventForm: onSubmit error: ', apiError);
-              // actions.setSubmitting(false);
-              // const transformedError = transformApiError(apiError);
-              // actions.setErrors(transformedError);
+              // console.log('EventForm: onSubmit error: ', apiError);
+              actions.setSubmitting(false);
+              const transformedError = transformApiError(apiError);
+              actions.setErrors(transformedError);
             });
-          // setVisible(false);
+          setVisible(false);
         } else {
           await window.api
             .postEvents(eventData)
@@ -139,11 +139,7 @@ const EventForm = ({
             validateStatus={errors && errors.time ? 'error' : ''}
             help={errors && errors.time ? errors.time : ''}
           >
-            <DatePicker
-              size='small'
-              showTime
-              value={moment(values.time)}
-            />
+            <DatePicker size='small' showTime value={moment(values.time)} />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.title ? 'error' : ''}
