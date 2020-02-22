@@ -111,7 +111,7 @@ const NavBar = props => {
             )}
           </Col>
 
-          <Col span={20} style={colStyle}>
+          <Col span={18} style={colStyle}>
             <NavBarForm
               valuePerOptionName={valuePerOptionName}
               config={config}
@@ -124,6 +124,12 @@ const NavBar = props => {
               updateSearchSubcategories={updateSearchSubcategories}
               viewEvents={viewEvents}
             />
+          </Col>
+          <Col span={2} style={colStyle}>
+            <>
+              <Button size='small' type='link' onClick={() => exportEvents()}>Export</Button>
+      {user ? (<Button size='small' type='link' onClick={() => importEvents()}>Import</Button>) : null}
+            </>
           </Col>
         </Row>
       </div>
