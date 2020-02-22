@@ -339,7 +339,7 @@ connStr sfx =
     <> " user=test password=test port=5432"
 
 checkAuthor :: Monad m => AuthorizedUser -> EditedEvent -> AppT m ()
-checkAuthor u e = if authUserId u == authorId e || userHasRole u Admin
+checkAuthor u e = if (userRoleCheck u Admin || authUserId u == authorId (e :: EditedEvent))
   then pure ()
   else throwError $ encodeJSONError
     (JSONError 401
@@ -347,8 +347,11 @@ checkAuthor u e = if authUserId u == authorId e || userHasRole u Admin
                "You are not the author of this item."
     )
 
+userRoleCheck :: AuthorizedUser -> UserRoleName -> Bool
+userRoleCheck u r = r `elem` (authUserRoles u)
+
 userHasRole :: Monad m => AuthorizedUser -> UserRoleName -> AppT m ()
-userHasRole u r = if r `elem` (authUserRoles u)
+userHasRole u r = if userRoleCheck u r 
   then pure ()
   else throwError $ encodeJSONError
     (JSONError 401

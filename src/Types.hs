@@ -147,6 +147,8 @@ data CategoryDisplay = CategoryDisplay {
 instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
 
+data EventColumn a = BodyColumn (Maybe EventBody) | TimeColumn (Maybe UTCTime) | TitleColumn (Maybe EventTitle) | CategoryColumn (Maybe (NonEmpty Text))
+
 data EditedEvent = EditedEvent {
     authorId   :: !Text
   , body       :: !(Maybe EventBody)
