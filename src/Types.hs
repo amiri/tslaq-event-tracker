@@ -147,6 +147,16 @@ data CategoryDisplay = CategoryDisplay {
 instance ToJSON CategoryDisplay
 instance FromJSON CategoryDisplay
 
+data EditedEvent = EditedEvent {
+    authorId   :: !Text
+  , body       :: !(Maybe EventBody)
+  , time       :: !(Maybe UTCTime)
+  , title      :: !(Maybe EventTitle)
+  , categories :: !(Maybe (NonEmpty Text))
+  } deriving (Show, Eq, Generic, Read)
+instance ToJSON EditedEvent
+instance FromJSON EditedEvent
+
 data NewEvent = NewEvent {
     body       :: !EventBody
   , time       :: !UTCTime

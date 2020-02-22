@@ -338,9 +338,18 @@ connStr sfx =
     <> sfx
     <> " user=test password=test port=5432"
 
+checkAuthor :: Monad m => AuthorizedUser -> EditedEvent -> AppT m ()
+checkAuthor u e = if authUserId u == authorId e || userHasRole u Admin
+  then pure ()
+  else throwError $ encodeJSONError
+    (JSONError 401
+               "WrongAuthor"
+               "You are not the author of this item."
+    )
+
 userHasRole :: Monad m => AuthorizedUser -> UserRoleName -> AppT m ()
 userHasRole u r = if r `elem` (authUserRoles u)
-  then return ()
+  then pure ()
   else throwError $ encodeJSONError
     (JSONError 401
                "InsufficientAuthorization"

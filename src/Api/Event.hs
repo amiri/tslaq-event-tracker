@@ -32,10 +32,10 @@ import           Types                       (AuthorizedUser (..),
                                               CategoryName (..), EventDisplay,
                                               EventTitle, NewEvent (..),
                                               UserRoleName (..), hashId, unhash,
-                                              unhashId)
+                                              unhashId, EditedEvent(..))
 
 type EventAPI
-  = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] EventDisplay
+  = "events" :> ReqBody '[JSON] NewEvent :> Post '[JSON] EventDisplay :<|> "events" :> Capture "id" Text :> ReqBody '[JSON] EditedEvent :> Put '[JSON] EventDisplay
     -- :<|> "events" :> Capture "id" Int64 :> ReqBody '[JSON] UserUpdate :> Put '[JSON] (Entity Event)
 
 eventApi :: Proxy EventAPI
@@ -43,7 +43,7 @@ eventApi = Proxy
 
 -- | The server that runs the EventAPI
 eventServer :: MonadIO m => AuthorizedUser -> ServerT EventAPI (AppT m)
-eventServer u = createEvent u
+eventServer u = createEvent u :<|> editEvent u
 
 getIdFromCategory :: MonadIO m => Text -> AppT m Int64
 getIdFromCategory c = do
@@ -91,6 +91,17 @@ getIdFromCategory c = do
 findOrCreateCategories :: MonadIO m => [Text] -> AppT m [Int64]
 findOrCreateCategories cs = mapM getIdFromCategory cs
 
+editEvent :: MonadIO m => AuthorizedUser -> Text -> EditedEvent -> AppT m EventDisplay
+editEvent u i e = do
+  userHasRole u Contributor
+  checkAuthor u e
+  increment "editEvent"
+  logDebugNS "web" ((pack $ show $ authUserId u) <> " editing event " <> (pack $ show i))
+  traceM $ show e
+  getEvent i
+  -- e <- existingEvent t
+  -- pure undefined
+
 -- | Creates a event in the database.
 createEvent :: MonadIO m => AuthorizedUser -> NewEvent -> AppT m EventDisplay
 createEvent u (NewEvent b tm t cs) = do
@@ -119,6 +130,7 @@ createEvent u (NewEvent b tm t cs) = do
       let eventId = fromSqlKey . entityKey $ newEvent :: Int64
       traceM $ ("EventId: " ++ show eventId)
       cats <- findOrCreateCategories (toList cs)
+      traceM $ ("Category input: " ++ show cs)
       traceM $ ("Categories: " ++ show cats)
       let hashedId = hashId $ fromIntegral eventId
       traceM $ ("HashedId: " ++ show hashedId)

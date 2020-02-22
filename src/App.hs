@@ -46,7 +46,7 @@ import           Network.Wai.Handler.Warp              (run)
 import           Network.Wai.Metrics                   (metrics,
                                                         registerNamedWaiMetrics,
                                                         registerWaiMetrics)
-import           Network.Wai.Middleware.Cors           (cors, corsOrigins,
+import           Network.Wai.Middleware.Cors           (cors, corsMethods, corsOrigins,
                                                         corsRequestHeaders,
                                                         simpleCorsResourcePolicy)
 import           Network.Wai.Middleware.Servant.Errors (errorMw)
@@ -89,6 +89,7 @@ initialize ctx = do
   corsPolicy = simpleCorsResourcePolicy
     { corsOrigins        = Just (["http://localhost:7777"], True)
     , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
+    , corsMethods = ["GET","HEAD","POST","PUT"]
     }
 
 -- | Allocates resources for 'AppContext'
