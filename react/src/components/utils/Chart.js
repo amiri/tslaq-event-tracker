@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import SimpleCrypto from 'simple-crypto-js';
 import * as QueryString from 'query-string';
 import {
+  compact,
   transform,
   isArray,
   mapKeys,
@@ -283,6 +284,14 @@ export const openViewModal = ({ id, history }) => {
   });
 };
 
+export const openEditEventModal = ({ id, eventId, history, location }) => {
+  history.push({
+    pathname: '/event/edit',
+    search: `?id=${id}`,
+    state: { ...location.state, visible: true, eventId },
+  });
+};
+
 export const openNewEventModal = ({ eventDate, history, location }) => {
   history.push({
     pathname: '/new',
@@ -501,5 +510,29 @@ export const getColorScale = allCategories => {
 };
 
 export const synopsis = text => {
-    return text.length == 0 ? '' : text.length < 24 ? text : `${text.substring(0, 24)}\u2026`;
+  return text.length == 0
+    ? ''
+    : text.length < 24
+    ? text
+    : `${text.substring(0, 24)}\u2026`;
+};
+
+export const getEventEdits = ({ updates, event }) => {
+  const eventWithCatMap = Object.assign({}, event, {
+    body: JSON.parse(event.body),
+    categories: event.categories.map(c => c.id),
+  });
+  const update = Object.assign({}, updates, {
+    ...(has(updates, 'categories') && {
+      categories: compact(updates.categories),
+    }),
+  });
+  const diffs = difference(update, eventWithCatMap);
+  console.log(diffs);
+  const result = Object.assign({}, diffs, {
+    authorId: event.authorId,
+    ...(has(diffs, 'body') && { body: JSON.stringify(updates.body) }),
+  });
+  console.log('result in getEventEdits: ', result);
+  return result;
 };

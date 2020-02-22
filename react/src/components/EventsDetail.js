@@ -1,9 +1,10 @@
 import React, { useMemo, useEffect, useContext } from 'react';
 import { NewEventModalContext } from '../contexts/NewEventModalContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { includes, isNil, isEmpty } from 'lodash';
 import * as QueryString from 'query-string';
-import { Tag, Modal, Divider, Typography } from 'antd';
-import { decryptIds } from './utils/Chart';
+import { Button, Tag, Modal, Divider, Typography } from 'antd';
+import { decryptIds, openEditEventModal } from './utils/Chart';
 import { createEditor } from 'slate';
 import { Slate, Editable, withReact } from 'slate-react';
 import { renderLeaf, renderElement } from './Qeditor/Render';
@@ -13,11 +14,12 @@ require('moment-timezone');
 const { Title, Text } = Typography;
 const EventsDetail = props => {
   const { visible, setVisible } = useContext(NewEventModalContext);
+  const { user } = useContext(AuthContext);
   const { history, location, events = [], colorScale } = props;
   const params = QueryString.parse(location.search);
   const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];
   useEffect(() => {
-    setVisible(location.state.visible);
+    setVisible(location.state ? location.state.visible : true);
   }, [location]);
 
   const handleClose = () => {
@@ -32,6 +34,7 @@ const EventsDetail = props => {
   const editor = useMemo(() => withReact(createEditor()), []);
 
   const eventDisplays = eventsToDisplay.map(e => {
+    const updated = !moment.utc(e.createTime).isSame(moment.utc(e.updateTime));
     return (
       <div key={e.id}>
         <Title level={3}>{e.title}</Title>
@@ -45,11 +48,17 @@ const EventsDetail = props => {
         <br />
         <p className='byline'>
           <em>
-            {e.author} at{' '}
+            Created by {e.author} at{' '}
             {moment
               .utc(e.createTime)
               .tz('America/New_York')
               .format('dddd, MMMM D, YYYY, h:mm:ss A zz')}
+            <br />
+            {updated &&
+              `Updated at {moment
+              .utc(e.updateTime)
+              .tz('America/New_York')
+              .format('dddd, MMMM D, YYYY, h:mm:ss A zz')}`}
           </em>
         </p>
         <div className='tag-list'>
@@ -69,6 +78,23 @@ const EventsDetail = props => {
             renderLeaf={renderLeaf}
           />
         </Slate>
+        {user && user.authUserId === e.authorId && (
+          <div style={{ float: 'right', padding: '0 0 1em 1em' }}>
+            <Button
+              size='small'
+              onClick={() =>
+                openEditEventModal({
+                  history,
+                  location,
+                  eventId: e.id,
+                  id: params.id,
+                })
+              }
+            >
+              Edit
+            </Button>
+          </div>
+        )}
         <Divider />
       </div>
     );

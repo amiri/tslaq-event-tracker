@@ -57,5 +57,9 @@ div.logo {
   margin-right: 1em;
 }
 .byline {
-    font-size: small;
+    font-size: smaller;
+}
+
+.annotation-note, .annotation.callout {
+    z-index: 99;
 }

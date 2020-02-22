@@ -76,7 +76,7 @@ const Focus = ({
             const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
             const title = `${e.eventTime
               .tz('America/New_York')
-              .format('ddd, MMM DD YYYY, h:mm:ss a z')}: ${e.title}`;
+              .format('dddd, MMM DD, YYYY, h:mm:ss A z')}: ${e.title}`;
             const body = synopsis(JSON.parse(e.body)[0].children[0].text);
             return {
               note: { title, label: body },

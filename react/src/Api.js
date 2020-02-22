@@ -53,6 +53,18 @@ class Api {
     });
   }
 
+  putEventsById(id, body) {
+    return axios({
+      url: '/events/' + encodeURIComponent(id) + '',
+      baseURL: 'http://localhost:8888',
+      method: 'put',
+      data: body,
+      responseType: 'json',
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    });
+  }
+
   getMetrics() {
     return axios({
       url: '/metrics',

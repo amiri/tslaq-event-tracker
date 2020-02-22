@@ -4,10 +4,10 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { compact, isArray } from 'lodash';
+import { has, isNil, compact, isArray } from 'lodash';
 import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
-import { openNewCategoryModal } from './utils/Chart';
+import { openNewCategoryModal, getEventEdits } from './utils/Chart';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -50,44 +50,77 @@ const EventForm = ({
     </Option>
   );
 
+  const editMode = !isNil(event) ? true : false;
+  // console.log('EventForm: event before Formik: ', event);
+  // console.log('EventForm: event before Formik: ', event);
+
   return (
     <Formik
+      enableReinitialize={true}
       initialValues={{
-        body: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'Start here.' }],
-          },
-        ],
-        time: '',
-        title: '',
-        categories: [],
-        ...event,
+        body: has(event, 'body')
+          ? JSON.parse(event.body)
+          : [
+              {
+                type: 'paragraph',
+                children: [{ text: 'Start here.' }],
+              },
+            ],
+        time: has(event, 'time') ? event.time : '',
+        title: has(event, 'title') ? event.title : '',
+        categories: has(event, 'categories')
+          ? event.categories.map(c => c.id)
+          : [],
       }}
       onSubmit={async (values, actions) => {
-        const eventData = {
-          body: JSON.stringify(values.body),
-          time: values.time,
-          title: values.title,
-          categories: values.categories,
-        };
-        await window.api
-          .postEvents(eventData)
-          .then(res => res.data)
-          .then(data => {
-            dispatch({
-              type: 'POST_EVENT',
-              payload: data,
+        const eventData = editMode
+          ? getEventEdits({ updates: values, event })
+          : {
+              body: JSON.stringify(values.body),
+              time: values.time,
+              title: values.title,
+              categories: values.categories,
+            };
+        console.log('EventForm: onSubmit eventData: ', eventData);
+        if (editMode) {
+          await window.api
+            .putEventsById(event.id, eventData)
+            .then(res => res.data)
+            .then(data => {
+              console.log('EventForm: onSubmit server response: ', data);
+              // dispatch({
+              //   type: 'POST_EVENT',
+              //   payload: data,
+              // });
+              // actions.setSubmitting(false);
+              // alerts.success(`Event ${data.title} created`);
+            })
+            .catch(apiError => {
+              console.log('EventForm: onSubmit error: ', apiError);
+              // actions.setSubmitting(false);
+              // const transformedError = transformApiError(apiError);
+              // actions.setErrors(transformedError);
             });
-            actions.setSubmitting(false);
-            alerts.success(`Event ${data.title} created`);
-          })
-          .catch(apiError => {
-            actions.setSubmitting(false);
-            const transformedError = transformApiError(apiError);
-            actions.setErrors(transformedError);
-          });
-        setVisible(false);
+          // setVisible(false);
+        } else {
+          await window.api
+            .postEvents(eventData)
+            .then(res => res.data)
+            .then(data => {
+              dispatch({
+                type: 'POST_EVENT',
+                payload: data,
+              });
+              actions.setSubmitting(false);
+              alerts.success(`Event ${data.title} created`);
+            })
+            .catch(apiError => {
+              actions.setSubmitting(false);
+              const transformedError = transformApiError(apiError);
+              actions.setErrors(transformedError);
+            });
+          setVisible(false);
+        }
       }}
       validateOnBlur={false}
       validateOnChange={false}
@@ -109,7 +142,7 @@ const EventForm = ({
             <DatePicker
               size='small'
               showTime
-              defaultValue={moment(values.time)}
+              value={moment(values.time)}
             />
           </Form.Item>
           <Form.Item
@@ -179,7 +212,7 @@ const EventForm = ({
           </Form.Item>
           <Form.Item>
             <Button size='small' type='primary' htmlType='submit'>
-              Create
+              {editMode ? `Edit` : `Create`}
             </Button>
           </Form.Item>
           {isSubmitting && (

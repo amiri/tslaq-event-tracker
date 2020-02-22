@@ -11,7 +11,7 @@ const NewEvent = props => {
   const eventDate = location.state.eventDate;
 
   useEffect(() => {
-    setVisible(location.state.visible);
+    setVisible(location.state ? location.state.visible : true);
   }, []);
 
   const handleClose = () => {
