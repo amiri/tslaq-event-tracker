@@ -2,5 +2,5 @@
 source 'https://supermarket.chef.io'
 
 metadata
-cookbook 'nginx'
-cookbook 'acme'
+cookbook 'nginx', '~> 10.0.2'
+cookbook 'acme', '~> 4.1.1'

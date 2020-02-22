@@ -9,8 +9,8 @@
 
   },
   "dependencies": {
-    "nginx": ">= 0.0.0",
-    "acme": ">= 0.0.0"
+    "nginx": ">= 10.0.2",
+    "acme": ">= 4.1.1"
   },
   "providing": {
 
