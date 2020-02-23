@@ -80,9 +80,9 @@ register cs jwts (UserRegistration e n p) = do
           (User currentTime currentTime e n (BCrypt . decodeUtf8 $ pw'))
         )
       let k = entityKey newUser
-      contributorRole <- runDb (getBy $ UniqueRole (RoleName "Contributor"))
-      let contrib = fromJust contributorRole
-      _ <- runDb $ insert (UserRole k (entityKey contrib))
+      normalRole <- runDb (getBy $ UniqueRole (RoleName "Normal"))
+      let norm = fromJust normalRole
+      _ <- runDb $ insert (UserRole k (entityKey norm))
       logDebugNS
         "web"
         (  "Registered user "

@@ -8,20 +8,21 @@
 
 module Api.Login where
 
-import           AppContext            (AppT (..))
-import           Control.Monad.Except  (MonadError (..), MonadIO, liftIO)
-import           Control.Monad.Logger  (MonadLogger (..), logDebugNS)
-import           Control.Monad.Metrics (increment)
-import           Data.Maybe            (catMaybes)
-import           Data.Text             (Text, pack)
+import           AppContext                (AppT (..))
+import           Control.Monad.Except      (MonadError (..), MonadIO, liftIO)
+import           Control.Monad.Logger      (MonadLogger (..), logDebugNS)
+import           Control.Monad.Metrics     (increment)
+import           Data.Containers.ListUtils (nubOrd)
+import           Data.Maybe                (catMaybes)
+import           Data.Text                 (Text, pack)
 import           Database.Esqueleto
 import           Errors
 import           Models
 import           Servant
-import           Servant.Auth.Server   as SAS
-import           Types                 (AuthorizedUser (..), RoleName (..),
-                                        UserEmail, UserLogin (..),
-                                        UserRoleName (..), hashId)
+import           Servant.Auth.Server       as SAS
+import           Types                     (AuthorizedUser (..), RoleName (..),
+                                            UserEmail, UserLogin (..),
+                                            UserRoleName (..), hashId)
 
 type LoginAPI
   = "login" :> ReqBody '[JSON] UserLogin :> Post '[JSON] (Headers '[ Header "Set-Cookie" SetCookie, Header "Set-Cookie" SetCookie] AuthorizedUser)
@@ -111,12 +112,14 @@ validateLogin e _ = do
     [] -> pure Nothing
     _  -> do
       let (users, roles) = unzip userWithRoles
-      let ((Entity uk uv), rs) =
-            ( (head users)
-            , ( map (\r' -> toUserRoleName $ roleName $ entityVal r')
-              $ catMaybes roles
-              )
+      let
+        ((Entity uk uv), rs) =
+          ( (head users)
+          , ( nubOrd
+            $ map (\r' -> toUserRoleName $ roleName $ entityVal r')
+            $ catMaybes roles
             )
+          )
       pure
         (Just
           (AuthorizedUser { authUserName  = userName uv

@@ -13,9 +13,9 @@ const sendPageView = ({ location, user }) => {
         ...location.state.analytics.options,
       }),
     };
-    // console.log('sendPageView options: ', options);
-    // console.log('sendPageView location: ', location);
-    // console.log('sendPageView user: ', user);
+    console.log('sendPageView options: ', options);
+    console.log('sendPageView location: ', location);
+    console.log('sendPageView user: ', user);
     ReactGA.set(options);
     ReactGA.pageview(location.pathname);
   }

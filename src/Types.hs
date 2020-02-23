@@ -29,7 +29,7 @@ data PriceUrl = PriceUrl {
 instance ToJSON PriceUrl
 instance FromJSON PriceUrl
 
-data UserRoleName = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read)
+data UserRoleName = Normal | Contributor | Admin deriving (Show, Eq, Generic, Read, Ord)
 instance ToJSON UserRoleName
 instance FromJSON UserRoleName
 

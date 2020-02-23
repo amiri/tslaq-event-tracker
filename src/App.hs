@@ -87,7 +87,7 @@ initialize ctx = do
     )
     ctx where
   corsPolicy = simpleCorsResourcePolicy
-    { corsOrigins        = Just (["http://localhost:7777"], True)
+    { corsOrigins        = Just (["http://localhost:7777","https://www.tslaq-event-tracker.org","https://prices.tslaq-event-tracker.org", "https://images.tslaq-event-tracker.org"], True)
     , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
     , corsMethods = ["GET","HEAD","POST","PUT"]
     }
