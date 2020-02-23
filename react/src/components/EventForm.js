@@ -8,6 +8,7 @@ import { has, isNil, compact, isArray } from 'lodash';
 import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
 import { openNewCategoryModal, getEventEdits } from './utils/Chart';
+import ReactGA from 'react-ga';
 
 const EventSchema = Yup.object().shape({
   body: Yup.string().required('You must enter the text of the event.'),
@@ -73,6 +74,11 @@ const EventForm = ({
           : [],
       }}
       onSubmit={async (values, actions) => {
+        ReactGA.event({
+          category: 'Form',
+          action: editMode ? 'EditEvent' : 'NewEvent',
+          transport: 'beacon',
+        });
         const eventData = editMode
           ? getEventEdits({ updates: values, event })
           : {

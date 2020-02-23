@@ -22,6 +22,7 @@ import {
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
 import { isNil, isEmpty, compact } from 'lodash';
+import ReactGA from 'react-ga';
 
 const Focus = ({
   width,
@@ -54,6 +55,11 @@ const Focus = ({
     if (d.defaultPrevented) return; // zoomed
 
     const eventDate = xScale.invert(d.pageX);
+    ReactGA.event({
+      category: 'Modal',
+      action: 'OpenNewEvent',
+      transport: 'beacon',
+    });
 
     openNewEventModal({ eventDate, history, location });
   }
@@ -127,9 +133,14 @@ const Focus = ({
               onFocus={() => setHover(i)}
               onMouseOut={() => setHover(null)}
               onBlur={() => setHover(null)}
-              onClick={() =>
-                openViewModal({ id: encryptIds({ ids: [a.id] }), history })
-              }
+              onClick={() => {
+                ReactGA.event({
+                  category: 'Modal',
+                  action: 'OpenEventsDetail',
+                  transport: 'beacon',
+                });
+                openViewModal({ id: encryptIds({ ids: [a.id] }), history });
+              }}
             />
           </g>
         );

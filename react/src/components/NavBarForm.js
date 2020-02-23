@@ -4,6 +4,7 @@ import { Spin, Form, Switch, Select, Button, Radio, DatePicker } from 'antd';
 import { openCategoryModal } from './utils/Chart';
 import { isEmpty } from 'lodash';
 const { RangePicker } = DatePicker;
+import ReactGA from 'react-ga';
 
 const radioStyle = {
   display: 'block',
@@ -45,6 +46,11 @@ const NavBarForm = ({
         <Form
           layout='inline'
           onSubmit={e => {
+            ReactGA.event({
+              category: 'Form',
+              action: 'ViewEvents',
+              transport: 'beacon',
+            });
             e.preventDefault();
             viewEvents({ history });
           }}

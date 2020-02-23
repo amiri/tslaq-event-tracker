@@ -14,6 +14,7 @@ import {
   openViewModal,
 } from './utils/Chart';
 import NavBarForm from './NavBarForm';
+import ReactGA from 'react-ga';
 
 const logout = async (dispatch, history) => {
   sessionStorage.removeItem('user');
@@ -106,7 +107,14 @@ const NavBar = props => {
                 <Button
                   size='small'
                   type='link'
-                  onClick={() => openRegisterModal({ history })}
+                  onClick={() => {
+                    ReactGA.event({
+                      category: 'Modal',
+                      action: 'OpenRegister',
+                      transport: 'beacon',
+                    });
+                    openRegisterModal({ history });
+                  }}
                 >
                   Register
                 </Button>
@@ -131,12 +139,34 @@ const NavBar = props => {
           <Col span={2} style={colStyle}>
             <>
               {filteredEvents.length > 0 ? (
-                <Button size='small' type='link' onClick={() => exportEvents()}>
+                <Button
+                  size='small'
+                  type='link'
+                  onClick={() => {
+                    ReactGA.event({
+                      category: 'Modal',
+                      action: 'OpenExport',
+                      transport: 'beacon',
+                    });
+                    exportEvents();
+                  }}
+                >
                   Export
                 </Button>
               ) : null}
               {user ? (
-                <Button size='small' type='link' onClick={() => importEvents()}>
+                <Button
+                  size='small'
+                  type='link'
+                  onClick={() => {
+                    ReactGA.event({
+                      category: 'Modal',
+                      action: 'OpenImport',
+                      transport: 'beacon',
+                    });
+                    importEvents();
+                  }}
+                >
                   Import
                 </Button>
               ) : null}

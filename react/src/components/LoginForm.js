@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import * as alerts from '../alerts';
 import { Link } from 'react-router-dom';
+import ReactGA from 'react-ga';
 
 const SignupSchema = Yup.object().shape({
   email: Yup.string()
@@ -26,6 +27,11 @@ const LoginForm = ({ setVisible, destination, history }) => {
     <Formik
       initialValues={{ email: '', password: '' }}
       onSubmit={async (values, actions) => {
+        ReactGA.event({
+          category: 'Form',
+          action: 'Login',
+          transport: 'beacon',
+        });
         const loginData = {
           emailAddress: values.email,
           password: values.password,

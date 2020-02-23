@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
 import { Input, Form, Button } from 'antd';
+import ReactGA from 'react-ga';
 
 const categoryExists = async value => {
   const res = await window.api.getCategoriesNameByName(value);
@@ -35,6 +36,11 @@ const NewCategoryForm = ({ setVisible, parentId, dispatch, history }) => {
         name: '',
       }}
       onSubmit={async (values, actions) => {
+        ReactGA.event({
+          category: 'Form',
+          action: 'NewCategory',
+          transport: 'beacon',
+        });
         await window.api
           .postCategories(values)
           .then(res => res.data)

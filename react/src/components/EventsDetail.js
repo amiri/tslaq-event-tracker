@@ -10,6 +10,7 @@ import { Slate, Editable, withReact } from 'slate-react';
 import { renderLeaf, renderElement } from './Qeditor/Render';
 import moment from 'moment';
 require('moment-timezone');
+import ReactGA from 'react-ga';
 
 const { Title, Text } = Typography;
 const EventsDetail = props => {
@@ -82,14 +83,19 @@ const EventsDetail = props => {
           <div style={{ float: 'right', padding: '0 0 1em 1em' }}>
             <Button
               size='small'
-              onClick={() =>
+              onClick={() => {
+                ReactGA.event({
+                  category: 'Modal',
+                  action: 'OpenEditEvent',
+                  transport: 'beacon',
+                });
                 openEditEventModal({
                   history,
                   location,
                   eventId: e.id,
                   id: params.id,
-                })
-              }
+                });
+              }}
             >
               Edit
             </Button>

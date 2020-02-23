@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { AuthContext } from '../contexts/AuthContext';
 import * as alerts from '../alerts';
+import ReactGA from 'react-ga';
 
 const RegisterSchema = Yup.object().shape({
   email: Yup.string()
@@ -32,6 +33,11 @@ const RegisterForm = ({ setVisible, destination, history }) => {
     <Formik
       initialValues={{ email: '', password: '', name: '' }}
       onSubmit={async (values, actions) => {
+        ReactGA.event({
+          category: 'Form',
+          action: 'Register',
+          transport: 'beacon',
+        });
         const registerData = {
           emailAddress: values.email,
           password: values.password,

@@ -47,6 +47,7 @@
     "d3-scale-chromatic": "^1.5.0",
     "emotion": "^10.0.27",
     "formik": "^1.5.8",
+    "history": "^4.10.1",
     "image-extensions": "^1.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
@@ -57,6 +58,7 @@
     "react": ">=16.10.1",
     "react-annotation": "^2.2.1",
     "react-dom": "^16.10.1",
+    "react-ga": "^2.7.0",
     "react-router-dom": "^5.1.1",
     "react-twitter-embed": "^3.0.3",
     "simple-crypto-js": "^2.2.0",
@@ -64,6 +66,7 @@
     "slate-history": "^0.57.1",
     "slate-react": "^0.57.1",
     "trim-right": "^1.0.1",
+    "tti-polyfill": "^0.2.2",
     "yup": "^0.27.0"
   }
 }

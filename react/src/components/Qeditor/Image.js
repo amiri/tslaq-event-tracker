@@ -8,6 +8,7 @@ import { isUrl } from './Utils';
 import imageExtensions from 'image-extensions';
 import * as Yup from 'yup';
 import { isNil, compact } from 'lodash';
+import ReactGA from 'react-ga';
 
 const ImageUploadSchema = Yup.object().shape({
   url: Yup.string()
@@ -62,6 +63,11 @@ const ImageUploadForm = ({ editor, setVisible }) => {
       validationSchema={ImageUploadSchema}
       /* eslint-disable-next-line no-unused-vars */
       onSubmit={async (values, actions) => {
+        ReactGA.event({
+          category: 'Qeditor',
+          action: 'ImageUpload',
+          transport: 'beacon',
+        });
         const urls = await Promise.all(
           values.upload.map(async f => {
             const date = Date.now();
