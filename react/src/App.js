@@ -29,15 +29,15 @@ ReactGA.initialize(trackingId);
 
 const handleObservations = list => {
   list.getEntries().forEach(entry => {
-    console.log('handleObservations typeof entry: ', typeof entry);
-    console.log('handleObservations entry: ', entry);
+    // console.log('handleObservations typeof entry: ', typeof entry);
+    // console.log('handleObservations entry: ', entry);
     const timed = {
       category: entry.entryType,
       variable: entry.name,
       value:
         entry.entryType === 'resource' ? entry.duration : entry.domInteractive,
     };
-    console.log('handleObservations timed: ', timed);
+    // console.log('handleObservations timed: ', timed);
     ReactGA.timing(timed);
   });
 };
