@@ -4,7 +4,7 @@
     "recipe[postfix::default]",
     "recipe[tslaq-event-tracker]",
     "recipe[nginx_wrapper::default]",
-    "recipe[acme]"
+    "recipe[acme_wrapper::default]"
   ],
   "set_fqdn": "tslaq-event-tracker.org",
   "postfix": {
