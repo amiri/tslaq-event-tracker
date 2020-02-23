@@ -65,7 +65,7 @@ remote_file "#{app_dir}/etc/passwords/basic_auth" do
   subscribes :create_if_missing, "directory[#{app_dir}/etc/passwords]", :immediately
 end
 
-file '#{app_dir}/logs/api.log' do
+file "#{app_dir}/logs/api.log" do
   mode 0755
   owner 'syslog'
   group 'tslaq'
@@ -97,14 +97,13 @@ execute "chown-react-code" do
   subscribes :run, "execute[copy-react-code]", :immediately
 end
 
-cookbook_file "/etc/rsyslog.d/tslaq-event-tracker-api.conf"
+cookbook_file "/etc/rsyslog.d/tslaq-event-tracker-api.conf" do
   source 'tslaq-event-tracker-api.conf'
   owner 'root'
   group 'root'
   mode '0755'
   action :create
 end
-
 
 systemd_unit "tslaq-event-tracker-api.service" do
   content <<-EOM.gsub(/^\s+/, "")
