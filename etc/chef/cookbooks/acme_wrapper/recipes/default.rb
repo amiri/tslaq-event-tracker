@@ -6,10 +6,10 @@
 
 include_recipe 'acme::default'
 
-patched_gem_path = '/tmp/acme-client-2.0.5'
+patched_gem_path = '/tmp/acme-client-2.0.5.gem'
 
 cookbook_file "#{patched_gem_path}" do
-    source 'acme-client-2.0.5.gem'
+  source 'acme-client-2.0.5.gem'
   owner 'root'
   group 'root'
   mode '0755'
