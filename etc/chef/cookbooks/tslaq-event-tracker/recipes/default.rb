@@ -65,6 +65,12 @@ remote_file "#{app_dir}/etc/passwords/basic_auth" do
   subscribes :create_if_missing, "directory[#{app_dir}/etc/passwords]", :immediately
 end
 
+file '#{app_dir}/logs/api.log' do
+  mode 0755
+  owner 'syslog'
+  group 'tslaq'
+end
+
 remote_file "#{app_dir}/etc/certs/rds-combined-ca-bundle.pem" do
   source "https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem"
   owner "tslaq"
@@ -91,6 +97,15 @@ execute "chown-react-code" do
   subscribes :run, "execute[copy-react-code]", :immediately
 end
 
+cookbook_file "/etc/rsyslog.d/tslaq-event-tracker-api.conf"
+  source 'tslaq-event-tracker-api.conf'
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+
 systemd_unit "tslaq-event-tracker-api.service" do
   content <<-EOM.gsub(/^\s+/, "")
   [Unit]
@@ -101,8 +116,8 @@ systemd_unit "tslaq-event-tracker-api.service" do
   User=tslaq
   WorkingDirectory=#{app_dir}
   ExecStart=#{app_dir}/bin/tslaq-event-tracker
-  StandardOutput=#{app_dir}/logs/api.log
-  StandardError=#{app_dir}/logs/api.log
+  StandardOutput=syslog
+  StandardError=syslog
   SyslogIdentifier=tslaq-event-tracker-api
   Restart=always
 
@@ -111,5 +126,4 @@ systemd_unit "tslaq-event-tracker-api.service" do
   EOM
 
   action [:create, :enable, :reload_or_try_restart]
-
 end
