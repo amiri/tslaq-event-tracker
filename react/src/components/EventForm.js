@@ -32,6 +32,14 @@ const transformApiError = ({ data }) => {
   if (/Categor/.test(data.title)) {
     return { categories: data.detail };
   }
+  if (data.title === 'WrongAuthor') {
+    return {
+        title: data.detail,
+        body: data.detail,
+        time: data.detail,
+        categories: data.detail,
+    }
+  }
 };
 
 const { Option } = Select;
