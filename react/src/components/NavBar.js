@@ -29,6 +29,9 @@ const colStyle = {
   alignItems: 'center',
 };
 
+const exportEvents = () => {};
+const importEvents = () => {};
+
 const NavBar = props => {
   const { user, dispatch } = useContext(AuthContext);
   const { history, location } = props;
@@ -127,8 +130,16 @@ const NavBar = props => {
           </Col>
           <Col span={2} style={colStyle}>
             <>
-              <Button size='small' type='link' onClick={() => exportEvents()}>Export</Button>
-      {user ? (<Button size='small' type='link' onClick={() => importEvents()}>Import</Button>) : null}
+              {filteredEvents.length > 0 ? (
+                <Button size='small' type='link' onClick={() => exportEvents()}>
+                  Export
+                </Button>
+              ) : null}
+              {user ? (
+                <Button size='small' type='link' onClick={() => importEvents()}>
+                  Import
+                </Button>
+              ) : null}
             </>
           </Col>
         </Row>
