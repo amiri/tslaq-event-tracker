@@ -6,7 +6,6 @@ import           AppContext            (AppT (..))
 import           Control.Monad.Except  (MonadIO, liftIO)
 import           Data.ByteString.Char8 (ByteString, pack)
 import           Data.Text             (Text, unpack)
-import           Debug.Trace
 import           Errors
 import           Mail.Hailgun
 import           Servant               (throwError)
