@@ -23,6 +23,7 @@ import           AppContext                            (AppContext (..),
                                                         getCookieSettings,
                                                         getJWTSettings,
                                                         getJwtKey,
+                                                        getMailGunKey,
                                                         getPgConnectInfo,
                                                         getPgConnectString,
                                                         makePool, s3Service,
@@ -46,7 +47,8 @@ import           Network.Wai.Handler.Warp              (run)
 import           Network.Wai.Metrics                   (metrics,
                                                         registerNamedWaiMetrics,
                                                         registerWaiMetrics)
-import           Network.Wai.Middleware.Cors           (cors, corsMethods, corsOrigins,
+import           Network.Wai.Middleware.Cors           (cors, corsMethods,
+                                                        corsOrigins,
                                                         corsRequestHeaders,
                                                         simpleCorsResourcePolicy)
 import           Network.Wai.Middleware.Servant.Errors (errorMw)
@@ -87,9 +89,16 @@ initialize ctx = do
     )
     ctx where
   corsPolicy = simpleCorsResourcePolicy
-    { corsOrigins        = Just (["http://localhost:7777","https://www.tslaq-event-tracker.org","https://prices.tslaq-event-tracker.org", "https://images.tslaq-event-tracker.org"], True)
+    { corsOrigins        = Just
+                             ( [ "http://localhost:7777"
+                               , "https://www.tslaq-event-tracker.org"
+                               , "https://prices.tslaq-event-tracker.org"
+                               , "https://images.tslaq-event-tracker.org"
+                               ]
+                             , True
+                             )
     , corsRequestHeaders = ["Authorization", "Content-Type", "X-XSRF-TOKEN"]
-    , corsMethods = ["GET","HEAD","POST","PUT"]
+    , corsMethods        = ["GET", "HEAD", "POST", "PUT"]
     }
 
 -- | Allocates resources for 'AppContext'
@@ -117,6 +126,8 @@ acquireAppContext = do
                                                   secretsSession
   let cfsk       = fromJust cloudFrontSigningKey
   let authConfig = getAuthConfig j env
+  mailGunKey <- getMailGunKey "tslaq-mailgun-key" secretsSession
+  let m = fromJust mailGunKey
   pure AppContext { ctxPool                 = pool
                   , ctxEnv                  = env
                   , ctxMetrics              = metr
@@ -129,6 +140,7 @@ acquireAppContext = do
                   , ctxJWTSettings          = getJWTSettings j
                   , ctxCookieSettings       = getCookieSettings env
                   , ctxCloudFrontSigningKey = cfsk
+                  , ctxMailGunKey           = m
                   }
 
 -- | Takes care of cleaning up 'AppContext' resources

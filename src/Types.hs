@@ -214,6 +214,8 @@ data CategoryExists = CategoryExists {
 instance ToJSON CategoryExists
 instance FromJSON CategoryExists
 
+newtype MailGunDomain = MailGunDomain Text deriving (Eq, Show, Read)
+newtype MailGunKey = MailGunKey Text deriving (Eq, Show, Read)
 newtype BCrypt = BCrypt { unBCrypt :: Text} deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserEmail = UserEmail Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)
 newtype UserName = UserName Text deriving (Eq, PersistField, PersistFieldSql, FromJSON, ToJSON, Show, Read)

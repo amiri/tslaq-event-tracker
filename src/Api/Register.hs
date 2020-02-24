@@ -10,17 +10,21 @@
 module Api.Register where
 
 import           Api.Login                   (setLoginCookies, validateLogin)
-import           AppContext                  (AppT (..))
+import           AppContext                  (AppContext (..), AppT (..),
+                                              mailGunDomain)
 import           Control.Monad.Except        (MonadIO, liftIO)
 import           Control.Monad.Logger        (logDebugNS)
 import           Control.Monad.Metrics       (increment)
+import           Control.Monad.Reader        (asks)
+import           Data.ByteString.Char8       (ByteString)
 import           Data.Maybe                  (fromJust)
 import           Data.Text                   (pack)
-import           Data.Text.Encoding          (decodeUtf8)
+import           Data.Text.Encoding          (decodeUtf8, encodeUtf8)
 import           Data.Time.Clock             (getCurrentTime)
 import           Database.Persist.Postgresql (Entity (..), getBy, insert,
                                               insertEntity)
 import           Errors
+import           Mail
 import           Models                      (Unique (..), User (User),
                                               UserRole (..), runDb)
 import           Servant
@@ -65,6 +69,7 @@ register
            AuthorizedUser
        )
 register cs jwts (UserRegistration e n p) = do
+  apiKey <- asks ctxMailGunKey
   increment "register"
   logDebugNS "web" ("register " <> (pack $ show n) <> ": " <> (pack $ show e))
   u <- existingUser e
@@ -92,8 +97,19 @@ register cs jwts (UserRegistration e n p) = do
         <> " "
         <> (pack $ show e)
         )
+      email mailGunDomain
+            apiKey
+            "Welcome to $TSLAQ Event Tracker"
+            messageContent
+            e
       maybeUser <- validateLogin e p
       setLoginCookies maybeUser cs jwts
+
+
+messageContent :: ByteString
+messageContent =
+  encodeUtf8
+    "Your account has been created, but you are not yet authorized to create or edit events.\n\nPlease DM or PM @amiribarksdale on Twitter for 'social proof' authorization. You will be required to provide the email address and the username you registered with.\n\nCYAZ"
 
 existingUser :: MonadIO m => UserEmail -> AppT m (Maybe (Entity User))
 existingUser e = do

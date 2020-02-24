@@ -98,6 +98,10 @@ imageBucket = "tslaq-images"
 awsRegion :: Region
 awsRegion = NorthVirginia
 
+mailGunDomain :: MailGunDomain
+mailGunDomain =
+  MailGunDomain "https://api.mailgun.net/v3/www.tslaq-event-tracker.org"
+
 getCredentials :: Bool -> Environment -> Credentials
 getCredentials b e = do
   case b of
@@ -134,6 +138,14 @@ getPgConnectInfo s = withAWS $ do
   let k' =
         decode (LE.encodeUtf8 $ fromStrict $ fromJust k) :: Maybe PGConnectInfo
   pure k'
+
+getMailGunKey :: Text -> SMSession -> IO (Maybe MailGunKey)
+getMailGunKey s = withAWS $ do
+  res <- send (getSecretValue s)
+  let k = res ^. gsvrsSecretString
+  case k of
+    Just t  -> pure $ Just (MailGunKey t)
+    Nothing -> pure Nothing
 
 getJwtKey :: Text -> SMSession -> IO (Maybe JWK)
 getJwtKey s = withAWS $ do
@@ -205,6 +217,7 @@ data AppContext
     , ctxJWTSettings          :: !(JWTSettings)
     , ctxCookieSettings       :: !(CookieSettings)
     , ctxCloudFrontSigningKey :: !CloudFrontSigningKey
+    , ctxMailGunKey           :: !(MailGunKey)
     -- , ctxLatestJSFile     :: !Text
     -- , ctxLatestPricesFile :: !Text
     }
@@ -339,19 +352,17 @@ connStr sfx =
     <> " user=test password=test port=5432"
 
 checkAuthor :: Monad m => AuthorizedUser -> EditedEvent -> AppT m ()
-checkAuthor u e = if (userRoleCheck u Admin || authUserId u == authorId (e :: EditedEvent))
-  then pure ()
-  else throwError $ encodeJSONError
-    (JSONError 401
-               "WrongAuthor"
-               "You are not the author of this item."
-    )
+checkAuthor u e =
+  if (userRoleCheck u Admin || authUserId u == authorId (e :: EditedEvent))
+    then pure ()
+    else throwError $ encodeJSONError
+      (JSONError 401 "WrongAuthor" "You are not the author of this item.")
 
 userRoleCheck :: AuthorizedUser -> UserRoleName -> Bool
 userRoleCheck u r = r `elem` (authUserRoles u)
 
 userHasRole :: Monad m => AuthorizedUser -> UserRoleName -> AppT m ()
-userHasRole u r = if userRoleCheck u r 
+userHasRole u r = if userRoleCheck u r
   then pure ()
   else throwError $ encodeJSONError
     (JSONError 401
