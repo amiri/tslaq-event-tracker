@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Formik } from 'formik';
 import { Spin, Form, Switch, Select, Button, Radio, DatePicker } from 'antd';
-import { openCategoryModal } from './utils/Chart';
+import { openCategoryModal, optionAddNewCategory } from './utils/Chart';
 import { isEmpty } from 'lodash';
 const { RangePicker } = DatePicker;
 import ReactGA from 'react-ga';
@@ -84,7 +84,7 @@ const NavBarForm = ({
                 updateCategories(settable);
               }}
             >
-              {categoryOptions}
+              {[optionAddNewCategory, ...categoryOptions]}
             </Select>
           </Form.Item>
           <Form.Item>

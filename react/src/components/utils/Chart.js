@@ -522,10 +522,7 @@ export const getEventEdits = ({ updates, event }) => {
     body: JSON.parse(event.body),
     categories: event.categories.map(c => c.id),
   });
-  // console.log('eventWithCatMap: ', eventWithCatMap);
-  // console.log('updates: ', updates);
   const diffs = difference(updates, eventWithCatMap);
-  // console.log('diffs: ', diffs);
   const result = Object.assign({}, diffs, {
     authorId: event.authorId,
     ...(has(diffs, 'body') && { body: JSON.stringify(updates.body) }),
@@ -533,6 +530,11 @@ export const getEventEdits = ({ updates, event }) => {
       categories: compact(updates.categories),
     }),
   });
-  // console.log('result: ', result);
   return result;
 };
+
+export const optionAddNewCategory = (
+<Option key='parent-' value='parent-' label='Add new top-level category'>
+  <Icon type='plus' /> New top-level category
+</Option>
+);

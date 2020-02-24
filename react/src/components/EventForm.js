@@ -7,7 +7,7 @@ import { Formik } from 'formik';
 import { has, isNil, compact, isArray } from 'lodash';
 import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
-import { openNewCategoryModal, getEventEdits } from './utils/Chart';
+import { optionAddNewCategory, openNewCategoryModal, getEventEdits } from './utils/Chart';
 import ReactGA from 'react-ga';
 
 const EventSchema = Yup.object().shape({
@@ -53,11 +53,6 @@ const EventForm = ({
 }) => {
   const { dispatch } = useContext(EventsContext);
 
-  const optionAddNewCategory = (
-    <Option key='parent-' value='parent-' label='Add new top-level category'>
-      <Icon type='plus' /> New top-level category
-    </Option>
-  );
 
   const editMode = !isNil(event.id) ? true : false;
   // console.log('EventForm: event before Formik: ', event);
