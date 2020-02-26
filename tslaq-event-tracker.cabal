@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 04166bcc6185ead678d27d97e615363504c152a4e0b0358fd947669723be973e
+-- hash: 23f4506d14da6c0591ebe7da3bea97f0da402f0417b1fbe28f576bc2fb9730b8
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -74,7 +74,6 @@ library
     , esqueleto
     , fast-logger
     , foreign-store
-    , hailgun
     , hashids
     , hostname
     , hslogger
@@ -114,6 +113,7 @@ library
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , wreq
     , x509
     , x509-store
   default-language: Haskell2010
@@ -146,7 +146,6 @@ executable tslaq-event-tracker-exe
     , esqueleto
     , fast-logger
     , foreign-store
-    , hailgun
     , hashids
     , hostname
     , hslogger
@@ -187,6 +186,7 @@ executable tslaq-event-tracker-exe
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , wreq
     , x509
     , x509-store
   default-language: Haskell2010
@@ -221,7 +221,6 @@ test-suite tslaq-event-tracker-test
     , esqueleto
     , fast-logger
     , foreign-store
-    , hailgun
     , hashids
     , hostname
     , hslogger
@@ -267,6 +266,7 @@ test-suite tslaq-event-tracker-test
     , wai-extra
     , wai-middleware-metrics
     , warp
+    , wreq
     , x509
     , x509-store
   default-language: Haskell2010

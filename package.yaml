@@ -32,7 +32,6 @@ dependencies:
   - esqueleto
   - fast-logger
   - foreign-store
-  - hailgun
   - hashids
   - hostname
   - hslogger
@@ -72,6 +71,7 @@ dependencies:
   - wai-extra
   - wai-middleware-metrics
   - warp
+  - wreq
   - x509
   - x509-store
 
