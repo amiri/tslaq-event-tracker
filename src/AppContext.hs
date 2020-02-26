@@ -32,6 +32,7 @@ import           Crypto.JOSE.JWK             (JWK, KeyMaterialGenParam (..),
 import           Data.Aeson                  (FromJSON, ToJSON, decode,
                                               parseJSON, withObject, (.:))
 import qualified Data.ByteString             as BS
+import           Data.ByteString.Char8 (pack)
 import qualified Data.ByteString.Lazy        as LBS
 import           Data.Maybe                  (fromJust, fromMaybe)
 import           Data.Monoid                 ((<>))
@@ -97,6 +98,9 @@ imageBucket = "tslaq-images"
 
 awsRegion :: Region
 awsRegion = NorthVirginia
+
+mailGunReplyTo :: BS.ByteString
+mailGunReplyTo = pack "$TSLAQ Event Tracker <tslaq@tslaq-event-tracker.org>"
 
 mailGunDomain :: MailGunDomain
 mailGunDomain =
