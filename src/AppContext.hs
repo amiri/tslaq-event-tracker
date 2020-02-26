@@ -100,7 +100,7 @@ awsRegion = NorthVirginia
 
 mailGunDomain :: MailGunDomain
 mailGunDomain =
-  MailGunDomain "https://api.mailgun.net/v3/www.tslaq-event-tracker.org"
+  MailGunDomain "https://api.mailgun.net/v3/www.tslaq-event-tracker.org/messages"
 
 getCredentials :: Bool -> Environment -> Credentials
 getCredentials b e = do

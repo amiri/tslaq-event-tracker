@@ -109,7 +109,7 @@ register cs jwts (UserRegistration e n p) = do
 messageContent :: ByteString
 messageContent =
   encodeUtf8
-    "Your account has been created, but you are not yet authorized to create or edit events.\n\nPlease DM or PM @amiribarksdale on Twitter for 'social proof' authorization. You will be required to provide the email address and the username you registered with.\n\nCYAZ"
+    "Your account has been created, but you are not yet authorized to create or edit events.\n\nPlease DM or PM @amiribarksdale on Twitter for \"social proof\" authorization. You will be required to provide the email address and the username you registered with.\n\nCYAZ"
 
 existingUser :: MonadIO m => UserEmail -> AppT m (Maybe (Entity User))
 existingUser e = do
