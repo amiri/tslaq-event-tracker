@@ -22,7 +22,7 @@ email
   -> AppT m ()
 email (MailGunDomain domain) (MailGunKey apiKey) subject message (UserEmail to)
   = do
-    let replyTo = "tslaq@tslaq-event-tracker.org"
+    let replyTo = "$TSLAQ Event Tracker <tslaq@tslaq-event-tracker.org>"
     let context = HailgunContext (unpack domain) (unpack apiKey) Nothing
     let msg = hailgunMessage
           subject
