@@ -10,6 +10,7 @@ import           Errors
 import           Mail.Hailgun
 import           Servant               (throwError)
 import           Types
+import Debug.Trace
 
 email
   :: MonadIO m
@@ -29,15 +30,17 @@ email (MailGunDomain domain) (MailGunKey apiKey) subject message (UserEmail to)
           replyTo
           (emptyMessageRecipients { recipientsTo = [(pack $ unpack to)] })
           []
-    -- traceM $ show msg
+    traceM $ ("Hailgun message: " ++ (show msg))
     case msg of
       Left err ->
         throwError $ encodeJSONError (JSONError 502 "EmailCreationError" err)
       Right msg' -> do
         result <- liftIO $ sendEmail context msg'
-        -- traceM $ show result
+        traceM $ ("Hailgun sending result: " ++ (show result))
         case result of
-          Left err' ->
+          Left err' -> do
+            traceM $ ("Hailgun error: " ++ (show err'))
+            traceM $ ("Hailgun error 2: " ++ (show (herMessage err')))
             throwError $ encodeJSONError
               (JSONError 502 "EmailSendError" (herMessage err'))
           Right _ -> pure ()
