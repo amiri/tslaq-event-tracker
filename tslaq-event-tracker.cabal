@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d9e8670b62c8a72fef591607f43454ba657de66c299c15184ab4d2f90618095
+-- hash: 04166bcc6185ead678d27d97e615363504c152a4e0b0358fd947669723be973e
 
 name:           tslaq-event-tracker
 version:        0.1.0.0
@@ -70,6 +70,7 @@ library
     , directory
     , ekg
     , ekg-core
+    , email-validate
     , esqueleto
     , fast-logger
     , foreign-store
@@ -141,6 +142,7 @@ executable tslaq-event-tracker-exe
     , directory
     , ekg
     , ekg-core
+    , email-validate
     , esqueleto
     , fast-logger
     , foreign-store
@@ -215,6 +217,7 @@ test-suite tslaq-event-tracker-test
     , directory
     , ekg
     , ekg-core
+    , email-validate
     , esqueleto
     , fast-logger
     , foreign-store

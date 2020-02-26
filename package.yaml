@@ -28,6 +28,7 @@ dependencies:
   - directory
   - ekg
   - ekg-core
+  - email-validate
   - esqueleto
   - fast-logger
   - foreign-store
