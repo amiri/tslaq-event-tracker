@@ -27,12 +27,13 @@ email (MailGunDomain domain) (MailGunKey apiKey) subject message (UserEmail to)
     let msg = hailgunMessage
           subject
           (TextOnly message)
-          replyTo
+          (pack replyTo)
           (emptyMessageRecipients { recipientsTo = [(pack $ unpack to)] })
           []
     traceM $ ("Hailgun message: " ++ (show msg))
     case msg of
-      Left err ->
+      Left err -> do
+        traceM $ ("Hailgun creation error: " ++ (show err))
         throwError $ encodeJSONError (JSONError 502 "EmailCreationError" err)
       Right msg' -> do
         result <- liftIO $ sendEmail context msg'
