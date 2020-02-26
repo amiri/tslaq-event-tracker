@@ -5,6 +5,14 @@ import { Formik } from 'formik';
 import { Input, Form, Button } from 'antd';
 import ReactGA from 'react-ga';
 
+const transformApiError = ({ data }) => {
+  if (data.title === 'CategoryConflict') {
+    return { name: data.detail };
+  } else if (data.title === 'InsufficientAuthorization') {
+    return { name: data.detail };
+  }
+};
+
 const categoryExists = async value => {
   const res = await window.api.getCategoriesNameByName(value);
   return res.data.exists;
@@ -19,14 +27,6 @@ const CategorySchema = Yup.object().shape({
       return !e;
     }),
 });
-
-const transformApiError = ({ data }) => {
-  if (data.title === 'CategoryConflict') {
-    return { name: data.detail };
-  } else if (data.title === 'InsufficientAuthorization') {
-    return { name: data.detail };
-  }
-};
 
 const NewCategoryForm = ({ setVisible, parentId, dispatch, history }) => {
   return (

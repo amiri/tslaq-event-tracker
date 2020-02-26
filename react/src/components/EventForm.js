@@ -5,19 +5,14 @@ import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
 import { has, isNil, compact, isArray } from 'lodash';
-import { Form, Icon, Input, Select, Button, Spin, DatePicker } from 'antd';
+import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
-import { optionAddNewCategory, openNewCategoryModal, getEventEdits } from './utils/Chart';
+import {
+  optionAddNewCategory,
+  openNewCategoryModal,
+  getEventEdits,
+} from './utils/Chart';
 import ReactGA from 'react-ga';
-
-const EventSchema = Yup.object().shape({
-  body: Yup.string().required('You must enter the text of the event.'),
-  time: Yup.date().required('You must enter the event date and time.'),
-  title: Yup.string().required('You must enter the title of the event.'),
-  categories: Yup.array()
-    .required('You must choose at least one category.')
-    .of(Yup.string().min(1)),
-});
 
 const transformApiError = ({ data }) => {
   if (
@@ -34,15 +29,23 @@ const transformApiError = ({ data }) => {
   }
   if (data.title === 'WrongAuthor') {
     return {
-        title: data.detail,
-        body: data.detail,
-        time: data.detail,
-        categories: data.detail,
-    }
+      title: data.detail,
+      body: data.detail,
+      time: data.detail,
+      categories: data.detail,
+    };
   }
 };
 
-const { Option } = Select;
+const EventSchema = Yup.object().shape({
+  body: Yup.string().required('You must enter the text of the event.'),
+  time: Yup.date().required('You must enter the event date and time.'),
+  title: Yup.string().required('You must enter the title of the event.'),
+  categories: Yup.array()
+    .required('You must choose at least one category.')
+    .of(Yup.string().min(1)),
+});
+
 const EventForm = ({
   setVisible,
   event,
@@ -52,7 +55,6 @@ const EventForm = ({
   location,
 }) => {
   const { dispatch } = useContext(EventsContext);
-
 
   const editMode = !isNil(event.id) ? true : false;
   // console.log('EventForm: event before Formik: ', event);

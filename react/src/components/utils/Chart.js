@@ -327,6 +327,13 @@ export const openRegisterModal = ({ history }) => {
   });
 };
 
+export const openImportModal = ({ history }) => {
+  history.push({
+    pathname: '/import',
+    state: { visible: true },
+  });
+};
+
 export const safeEncrypt = ({ ids }) =>
   ids
     .replace(/\+/g, '-')
@@ -534,7 +541,7 @@ export const getEventEdits = ({ updates, event }) => {
 };
 
 export const optionAddNewCategory = (
-<Option key='parent-' value='parent-' label='Add new top-level category'>
-  <Icon type='plus' /> New top-level category
-</Option>
+  <Option key='parent-' value='parent-' label='Add new top-level category'>
+    <Icon type='plus' /> New top-level category
+  </Option>
 );

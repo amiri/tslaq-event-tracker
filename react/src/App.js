@@ -8,11 +8,13 @@ import ChartContextProvider from './contexts/ChartContext';
 import NewEventModalContextProvider from './contexts/NewEventModalContext';
 import EditEventModalContextProvider from './contexts/EditEventModalContext';
 import NewCategoryModalContextProvider from './contexts/NewCategoryModalContext';
+import ImportModalContextProvider from './contexts/ImportModalContext';
 import AuthModalContextProvider from './contexts/AuthModalContext';
 import NavBar from './components/NavBar';
 import Chart from './components/Chart';
 import NewEvent from './components/NewEvent';
 import EditEvent from './components/EditEvent';
+import Import from './components/Import';
 import NewCategory from './components/NewCategory';
 import Auth, { UserRequired } from './components/Auth';
 import './App.css';
@@ -55,50 +57,56 @@ const App = () => {
             <NewEventModalContextProvider>
               <EditEventModalContextProvider>
                 <NewCategoryModalContextProvider>
-                  <AuthModalContextProvider>
-                    <Router>
-                      <Analytics trackingId={trackingId}>
-                        <Layout style={{ height: '100%', width: '100%' }}>
-                          <Header style={{ backgroundColor: '#f0f2f5' }}>
-                            <Route
-                              path='/'
-                              render={props => <NavBar {...props} />}
-                            />
-                          </Header>
-                          <Content style={{ height: '100%', width: '100%' }}>
-                            <Route
-                              path='/'
-                              render={props => <Chart {...props} />}
-                            />
-                            <UserRequired
-                              path='/new'
-                              render={props => <NewEvent {...props} />}
-                            />
-                            <UserRequired
-                              path='/new/category'
-                              render={props => <NewCategory {...props} />}
-                            />
-                            <Route
-                              path='/login'
-                              render={props => <Auth {...props} />}
-                            />
-                            <Route
-                              path='/register'
-                              render={props => <Auth {...props} />}
-                            />
-                            <UserRequired
-                              path='/category'
-                              render={props => <NewCategory {...props} />}
-                            />
-                            <UserRequired
-                              path='/event/edit'
-                              render={props => <EditEvent {...props} />}
-                            />
-                          </Content>
-                        </Layout>
-                      </Analytics>
-                    </Router>
-                  </AuthModalContextProvider>
+                  <ImportModalContextProvider>
+                    <AuthModalContextProvider>
+                      <Router>
+                        <Analytics trackingId={trackingId}>
+                          <Layout style={{ height: '100%', width: '100%' }}>
+                            <Header style={{ backgroundColor: '#f0f2f5' }}>
+                              <Route
+                                path='/'
+                                render={props => <NavBar {...props} />}
+                              />
+                            </Header>
+                            <Content style={{ height: '100%', width: '100%' }}>
+                              <Route
+                                path='/'
+                                render={props => <Chart {...props} />}
+                              />
+                              <UserRequired
+                                path='/new'
+                                render={props => <NewEvent {...props} />}
+                              />
+                              <UserRequired
+                                path='/new/category'
+                                render={props => <NewCategory {...props} />}
+                              />
+                              <Route
+                                path='/login'
+                                render={props => <Auth {...props} />}
+                              />
+                              <Route
+                                path='/register'
+                                render={props => <Auth {...props} />}
+                              />
+                              <UserRequired
+                                path='/category'
+                                render={props => <NewCategory {...props} />}
+                              />
+                              <UserRequired
+                                path='/event/edit'
+                                render={props => <EditEvent {...props} />}
+                              />
+                              <UserRequired
+                                path='/import'
+                                render={props => <Import {...props} />}
+                              />
+                            </Content>
+                          </Layout>
+                        </Analytics>
+                      </Router>
+                    </AuthModalContextProvider>
+                  </ImportModalContextProvider>
                 </NewCategoryModalContextProvider>
               </EditEventModalContextProvider>
             </NewEventModalContextProvider>

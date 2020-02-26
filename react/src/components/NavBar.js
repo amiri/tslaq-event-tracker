@@ -12,6 +12,7 @@ import {
   openLoginModal,
   openRegisterModal,
   openViewModal,
+  openImportModal,
 } from './utils/Chart';
 import NavBarForm from './NavBarForm';
 import ReactGA from 'react-ga';
@@ -30,8 +31,9 @@ const colStyle = {
   alignItems: 'center',
 };
 
-const exportEvents = () => {};
-const importEvents = () => {};
+const importEvents = ({ history }) => {
+  openImportModal({ history });
+};
 
 const NavBar = props => {
   const { user, dispatch } = useContext(AuthContext);
@@ -71,6 +73,10 @@ const NavBar = props => {
     setConfig({ ...config, searchCondition: e.target.value });
     const params = { searchCondition: e.target.value };
     updateQueryParams({ params, history, location });
+  };
+
+  const exportEvents = () => {
+    console.log('Create csv of all filteredEvents');
   };
 
   const viewEvents = ({ history }) => {
@@ -164,7 +170,7 @@ const NavBar = props => {
                       action: 'OpenImport',
                       transport: 'beacon',
                     });
-                    importEvents();
+                    importEvents({ history });
                   }}
                 >
                   Import

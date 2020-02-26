@@ -37,6 +37,9 @@ const ChartContextProvider = props => {
   // Lookup value for option name
   const [valuePerOptionName, setValuePerOptionName] = useState({});
 
+  // Lookup value for option full name
+  const [valuePerOptionFullName, setValuePerOptionFullName] = useState({});
+
   // Load category options when categories change
   useEffect(() => {
     if (!isEmpty(allCategories)) {
@@ -58,6 +61,7 @@ const ChartContextProvider = props => {
       // SET lookups
       setFullNamePerOptionValue(nsFull);
       setValuePerOptionName(ns);
+      setValuePerOptionFullName(reverseNsFull);
     }
   }, [allCategories]);
 
@@ -90,6 +94,7 @@ const ChartContextProvider = props => {
         allCategories,
         categoryOptions,
         valuePerOptionName,
+        valuePerOptionFullName,
         fullNamePerOptionValue,
         dispatch,
       }}
