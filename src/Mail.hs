@@ -6,6 +6,7 @@ import           AppContext            (AppT (..))
 import           Control.Monad.Except  (MonadIO, liftIO)
 import           Data.ByteString.Char8 (ByteString, pack)
 import           Data.Text             (Text, unpack)
+import           Data.Text.Encoding          (encodeUtf8)
 import           Errors
 import           Mail.Hailgun
 import           Servant               (throwError)
@@ -22,13 +23,16 @@ email
   -> AppT m ()
 email (MailGunDomain domain) (MailGunKey apiKey) subject message (UserEmail to)
   = do
-    let replyTo = "$TSLAQ Event Tracker <tslaq@tslaq-event-tracker.org>"
+    let replyTo = pack "$TSLAQ Event Tracker <tslaq@tslaq-event-tracker.org>"
+    let recipient = encodeUtf8 to
+    traceM $ ("Hailgun replyTo: " ++ (show replyTo))
+    traceM $ ("Hailgun recipient: " ++ (show recipient))
     let context = HailgunContext (unpack domain) (unpack apiKey) Nothing
     let msg = hailgunMessage
           subject
           (TextOnly message)
-          (pack replyTo)
-          (emptyMessageRecipients { recipientsTo = [(pack $ unpack to)] })
+          replyTo
+          (emptyMessageRecipients { recipientsTo = [recipient] })
           []
     traceM $ ("Hailgun message: " ++ (show msg))
     case msg of
