@@ -49,6 +49,7 @@
     "formik": "^1.5.8",
     "history": "^4.10.1",
     "image-extensions": "^1.1.0",
+    "js-file-download": "^0.4.10",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.26",

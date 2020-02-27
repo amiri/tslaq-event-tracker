@@ -96,13 +96,6 @@ packages:
   original:
     hackage: amazonka-s3-1.6.1
 - completed:
-    hackage: http-client-0.5.14@sha256:4880b27d6741e331454a1d4c887d96ce3d7d625322c8433983a4b1cd08538577,5348
-    pantry-tree:
-      size: 2457
-      sha256: 02bcffba9cad572fefb4640f5fc9be68e770b32ab73efcac649db20290994c6d
-  original:
-    hackage: http-client-0.5.14
-- completed:
     hackage: clock-0.7.2@sha256:c5c2514aead260101c7528d10bf0f41d9d1d7b919136e2dff77a57ec16740bd2,3820
     pantry-tree:
       size: 387
@@ -130,6 +123,13 @@ packages:
       sha256: 5e5f8d948ba577d4d838895ccb3533c6ef9876ef60884dae8342a77934cc2ec2
   original:
     hackage: pcre-light-0.4.1.0
+- completed:
+    hackage: http-client-0.6.4@sha256:a74b417345857d4250bdb6d4ac7fd4a89fd2ad8efab3164c1a2b843398d5c13a,5320
+    pantry-tree:
+      size: 2457
+      sha256: fe331314b0a8d9e8ce445405831b6e802ab99d57cab1f4d265910cfcd68d3153
+  original:
+    hackage: http-client-0.6.4
 snapshots:
 - completed:
     size: 525663

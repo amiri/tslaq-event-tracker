@@ -20,6 +20,7 @@ import {
   set,
   has,
 } from 'lodash';
+import { Node } from 'slate';
 
 import { Icon, Select } from 'antd';
 
@@ -545,3 +546,25 @@ export const optionAddNewCategory = (
     <Icon type='plus' /> New top-level category
   </Option>
 );
+
+const serializeBody = nodes => {
+  return nodes && nodes.length
+    ? nodes.map(n => Node.string(n)).join(' ')
+    : null;
+};
+
+export const convertJsonToCsv = rows => {
+  const replacer = (key, value) => (value === null ? '' : value);
+  const header = Object.keys(rows[0]);
+  let csv = rows.map(row => {
+    return header
+      .map(fieldName =>
+        fieldName === 'body'
+          ? serializeBody(JSON.parse(row[fieldName]))
+          : JSON.stringify(row[fieldName], replacer),
+      )
+      .join('\t');
+  });
+  csv.unshift(header.join('\t'));
+  return csv.join('\r\n');
+};

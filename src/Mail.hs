@@ -30,6 +30,7 @@ email (MailGunDomain domain) (MailGunKey apiKey) subject message (UserEmail to)
     let opts = defaults & auth ?~ basicAuth "api" (pack $ unpack apiKey)
     res <- liftIO $ postWith opts (unpack domain) ["subject" := subject, "text" := message, "from" := replyTo, "to" := recipient]
     traceM $ show (res ^? responseBody)
+    pure ()
 
     -- let context = HailgunContext (unpack domain) (unpack apiKey) Nothing
     -- let msg = hailgunMessage

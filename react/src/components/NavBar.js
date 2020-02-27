@@ -13,9 +13,11 @@ import {
   openRegisterModal,
   openViewModal,
   openImportModal,
+  convertJsonToCsv,
 } from './utils/Chart';
 import NavBarForm from './NavBarForm';
 import ReactGA from 'react-ga';
+const fileDownload = require('js-file-download');
 
 const logout = async (dispatch, history) => {
   sessionStorage.removeItem('user');
@@ -77,6 +79,8 @@ const NavBar = props => {
 
   const exportEvents = () => {
     console.log('Create csv of all filteredEvents');
+    const csv = convertJsonToCsv(filteredEvents);
+    fileDownload(csv, 'tslaq-event-tracker-export.csv');
   };
 
   const viewEvents = ({ history }) => {
