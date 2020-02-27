@@ -100,7 +100,7 @@ awsRegion :: Region
 awsRegion = NorthVirginia
 
 mailGunReplyTo :: BS.ByteString
-mailGunReplyTo = pack "tslaq@tslaq-event-tracker.org"
+mailGunReplyTo = pack "$TSLAQ Event Tracker <tslaq@tslaq-event-tracker.org>"
 
 mailGunDomain :: MailGunDomain
 mailGunDomain =
