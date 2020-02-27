@@ -100,14 +100,20 @@ register cs jwts (UserRegistration e n p) = do
       email mailGunDomain
             apiKey
             "Welcome to $TSLAQ Event Tracker"
-            messageContent
+            textEmailContent
+            htmlEmailContent
             e
       maybeUser <- validateLogin e p
       setLoginCookies maybeUser cs jwts
 
 
-messageContent :: ByteString
-messageContent =
+htmlEmailContent :: ByteString
+htmlEmailContent =
+  encodeUtf8
+    "<div><p>Your account has been created, but you are not yet authorized to create or edit events.</p><p>Please message <a href='https://twitter.com/amiribarksdale/'>@amiribarksdale</a> on Twitter for authorization. You will be required to provide the email address and the username you registered with.</p><p><em>CYAZ</em>"
+
+textEmailContent :: ByteString
+textEmailContent =
   encodeUtf8
     "Your account has been created, but you are not yet authorized to create or edit events.\n\nPlease DM or PM @amiribarksdale on Twitter for authorization. You will be required to provide the email address and the username you registered with.\n\nCYAZ"
 
