@@ -150,7 +150,12 @@ const EventForm = ({
             validateStatus={errors && errors.time ? 'error' : ''}
             help={errors && errors.time ? errors.time : ''}
           >
-            <DatePicker size='small' showTime defaultValue={moment(values.time)} />
+            <DatePicker
+                size='small'
+                showTime
+                defaultValue={moment(values.time)}
+                onChange={change => setFieldValue('time', change)}
+          />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.title ? 'error' : ''}
