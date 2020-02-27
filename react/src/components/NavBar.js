@@ -78,9 +78,17 @@ const NavBar = props => {
   };
 
   const exportEvents = () => {
-    console.log('Create csv of all filteredEvents');
     const csv = convertJsonToCsv(filteredEvents);
-    fileDownload(csv, 'tslaq-event-tracker-export.csv');
+    const cats = config.categories.join('+');
+    const dates = `${config.dateRange.startDate.format(
+      'YYYY-MM-DD',
+    )}-${config.dateRange.endDate.format('YYYY-MM-DD')}`;
+    const fileName = `tslaq-event-tracker-${cats}-${dates}-${
+      config.resolution
+    }-${config.searchCondition}-${
+      config.searchSubcategories
+    }-${Date.now()}.tsv`;
+    fileDownload(csv, fileName);
   };
 
   const viewEvents = ({ history }) => {

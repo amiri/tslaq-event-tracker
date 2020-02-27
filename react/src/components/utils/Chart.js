@@ -555,12 +555,16 @@ const serializeBody = nodes => {
 
 export const convertJsonToCsv = rows => {
   const replacer = (key, value) => (value === null ? '' : value);
-  const header = Object.keys(rows[0]);
+  const header = Object.keys(rows[0]).filter(
+    h => h !== 'authorId' && h !== 'id' && h !== 'eventTime',
+  );
   let csv = rows.map(row => {
     return header
       .map(fieldName =>
         fieldName === 'body'
           ? serializeBody(JSON.parse(row[fieldName]))
+          : fieldName === 'categories'
+          ? row[fieldName].map(c => c.fullName).join(',')
           : JSON.stringify(row[fieldName], replacer),
       )
       .join('\t');
