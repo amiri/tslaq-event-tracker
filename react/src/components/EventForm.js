@@ -151,11 +151,11 @@ const EventForm = ({
             help={errors && errors.time ? errors.time : ''}
           >
             <DatePicker
-                size='small'
-                showTime
-                defaultValue={moment(values.time)}
-                onChange={change => setFieldValue('time', change)}
-          />
+              size='small'
+              showTime
+              defaultValue={moment(values.time)}
+              onChange={change => setFieldValue('time', change)}
+            />
           </Form.Item>
           <Form.Item
             validateStatus={errors && errors.title ? 'error' : ''}

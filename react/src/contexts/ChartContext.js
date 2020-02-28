@@ -48,14 +48,16 @@ const ChartContextProvider = props => {
         Object.entries(nsFull).map(([k, v]) => [v, k]),
       );
       const renamed = renameKeys(nsFull, nested);
-      const categoryOptions = Object.keys(renamed).reduce((os, k) => {
-        os.push(
-          <OptGroup label={k} key={k}>
-            {transformOpt(renamed[k], k, reverseNsFull[k], reverseNsFull)}
-          </OptGroup>,
-        );
-        return os;
-      }, []);
+      const categoryOptions = Object.keys(renamed)
+        .sort()
+        .reduce((os, k) => {
+          os.push(
+            <OptGroup label={k} key={k}>
+              {transformOpt(renamed[k], k, reverseNsFull[k], reverseNsFull)}
+            </OptGroup>,
+          );
+          return os;
+        }, []);
       // SET options
       setCategoryOptions(categoryOptions);
       // SET lookups

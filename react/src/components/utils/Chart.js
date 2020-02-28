@@ -455,22 +455,31 @@ export const getCategoriesByParent = allCategories => {
     }, {});
 };
 
+const makeOptionAndNew = c => {
+  const parentIds = c.parents ? c.parents.join('-') : '';
+  const subcatKey = `parent-${parentIds}-${c.id}`;
+  return [
+    <Option
+      className='new-subcategory'
+      key={subcatKey}
+      label={`New ${c.name} sub-category`}
+      value={subcatKey}
+    >
+      <Icon type='plus' /> {`New ${c.name} sub-category`}
+    </Option>,
+    <Option key={c.id} value={c.id} label={c.name}>
+      {c.fullName}
+    </Option>,
+  ];
+};
+
 export const transformOpt = (obj, groupName, groupId, dict) => {
   return Object.keys(obj).reduce((os, k) => {
     if (k === 'direct') {
       os.push(
-        obj[k]
+        ...obj[k]
           .sort((a, b) => (a.fullName > b.fullName ? 1 : -1))
-          .map(o => makeOption(o)),
-      );
-      os.push(
-        <Option
-          key={`parent-${groupId}`}
-          label={`New ${groupName} sub-category`}
-          value={`parent-${groupId}`}
-        >
-          <Icon type='plus' /> {`New ${groupName} sub-category`}
-        </Option>,
+          .map(o => makeOptionAndNew(o)),
       );
     } else {
       os.push(
@@ -542,7 +551,12 @@ export const getEventEdits = ({ updates, event }) => {
 };
 
 export const optionAddNewCategory = (
-  <Option key='parent-' value='parent-' label='Add new top-level category'>
+  <Option
+    className='new-top-level-category'
+    key='parent-'
+    value='parent-'
+    label='Add new top-level category'
+  >
     <Icon type='plus' /> New top-level category
   </Option>
 );

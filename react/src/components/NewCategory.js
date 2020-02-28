@@ -21,7 +21,8 @@ const NewCategory = props => {
     history.goBack();
   };
 
-  const [_, parentId] = option.split('-');
+  const splits = option.split('-');
+  const parentId = splits[splits.length - 1];
   const subName = fullNamePerOptionValue[parentId];
   const title = parentId
     ? `New ${subName} Subcategory`

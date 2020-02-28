@@ -59,6 +59,16 @@ div.logo {
 .byline {
     font-size: smaller;
 }
+.new-top-level-category {
+    font-size: smaller;
+}
+.new-subcategory {
+    font-size: smaller;
+    float:right;
+}
+.ant-select-dropdown-menu-item {
+    font-size: smaller;
+}
 
 .annotation-note, .annotation.callout {
     z-index: 99;
