@@ -21,7 +21,7 @@ import {
   synopsis,
 } from './utils/Chart';
 import { AnnotationCallout } from 'react-annotation';
-import { isNil, isEmpty, compact } from 'lodash';
+import { isNil, isEmpty, compact, min, max } from 'lodash';
 import ReactGA from 'react-ga';
 
 const Focus = ({
@@ -41,12 +41,21 @@ const Focus = ({
     .on('touchstart', noZoom)
     .on('touchmove', noZoom);
 
+  // console.log(events);
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
+  const xExtent1 = d3.extent(events, e => e.time).map(x => moment(x));
+  const xExtent2 = [
+    min([xExtent[0], xExtent1[0]]),
+    max([xExtent[1], xExtent1[1]]),
+  ];
+  // console.log('xExtent: ', xExtent);
+  // console.log('xExtent1: ', xExtent1);
+  // console.log('xExtent2: ', xExtent2);
   const yExtent = d3.extent(ps, p => p.close);
 
   // Scales
-  const xScale = getXScale({ xExtent, width });
+  const xScale = getXScale({ xExtent: xExtent2, width });
   const yScale = getYScale({ yExtent, height });
 
   const [hover, setHover] = useState(null);
@@ -79,7 +88,7 @@ const Focus = ({
                 e.eventTime.clone().add(1, interval),
               ),
             );
-            const p = !isEmpty(priceMatch) ? priceMatch[0].close : 0;
+            const p = !isEmpty(priceMatch) ? priceMatch[0].close : 10;
             const title = `${e.eventTime
               .tz('America/New_York')
               .format('dddd, MMM DD, YYYY, h:mm:ss A z')}: ${e.title}`;

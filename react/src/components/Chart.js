@@ -243,6 +243,7 @@ const Chart = props => {
             config={config}
             brushF={onBrush}
             brushDomain={brushDomain}
+            events={esFiltered}
           />
         </div>
       )}

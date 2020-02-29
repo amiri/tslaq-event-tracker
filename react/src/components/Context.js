@@ -1,5 +1,7 @@
 import React, { useRef, useEffect } from 'react';
+import moment from 'moment';
 import * as d3 from 'd3';
+import { min, max } from 'lodash';
 import {
   getXScale,
   getYScale,
@@ -11,13 +13,29 @@ import {
   getInitialSelection,
 } from './utils/Chart';
 
-const Context = ({ config, width, height, ps, brushF, brushDomain }) => {
+const Context = ({
+  config,
+  width,
+  height,
+  ps,
+  brushF,
+  brushDomain,
+  events,
+}) => {
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
+  const xExtent1 = d3.extent(events, e => e.time).map(x => moment(x));
+  const xExtent2 = [
+    min([xExtent[0], xExtent1[0]]),
+    max([xExtent[1], xExtent1[1]]),
+  ];
+  console.log('xExtent: ', xExtent);
+  console.log('xExtent1: ', xExtent1);
+  console.log('xExtent2: ', xExtent2);
   const yExtent = d3.extent(ps, p => p.high);
 
   // Scales
-  const xScale = getXScale({ xExtent, width });
+  const xScale = getXScale({ xExtent: xExtent2, width });
   const yScale = getYScale({ yExtent, height });
 
   // Brush
