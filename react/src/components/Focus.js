@@ -90,8 +90,8 @@ const Focus = ({
             const interval = resolution === 'daily' ? 'day' : 'hour';
             const priceMatch = ps.filter(p =>
               moment(p.priceTime).isBetween(
-                e.eventTime.clone().subtract(1, interval),
-                e.eventTime.clone().add(1, interval),
+                e.eventTime.clone().subtract(2, interval),
+                e.eventTime.clone().add(2, interval),
               ),
             );
             const p = !isEmpty(priceMatch) ? priceMatch[0].close : 10;

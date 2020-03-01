@@ -29,9 +29,6 @@ const Context = ({
     min([xExtent[0], xExtent1[0]]),
     max([xExtent[1], xExtent1[1]]),
   ];
-  console.log('xExtent: ', xExtent);
-  console.log('xExtent1: ', xExtent1);
-  console.log('xExtent2: ', xExtent2);
   const yExtent = d3.extent(ps, p => p.high);
 
   // Scales
