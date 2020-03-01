@@ -136,7 +136,7 @@ const Focus = ({
               dy={y > yMidPoint ? -20 : 20}
               note={note}
               className={hover === i ? '' : 'hidden'}
-              subject={{radius}}
+              subject={{ radius }}
             />
             <circle
               fill={isEmpty(cs) ? 'black' : colorScale(cs[0].fullName)}
