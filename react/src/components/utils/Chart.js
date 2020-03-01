@@ -105,16 +105,15 @@ const yearFormatter = d => {
 };
 
 export const xBand = xExtent =>
-  d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1);
-// .filter(d => {
-//     const est = moment(d).tz('America/New_York');
-//     return (
-//       est.dayOfYear() === 1
-//         || est.date() === 1
-//         || est.day() === 1
-//         // || (est.day() !== 0 && est.day() !== 6)
-//     );
-// });
+  d3.timeDay.range(xExtent[0].toDate(), +xExtent[1].toDate() + 1).filter(d => {
+    const est = moment(d).tz('America/New_York');
+    return (
+      est.dayOfYear() === 1 ||
+      est.date() === 1 ||
+      est.day() === 1 ||
+      (est.day() !== 0 && est.day() !== 6)
+    );
+  });
 
 export const getTickVals = ({ xExtent, timeZone }) => {
   const duration = moment.duration(xExtent[1].diff(xExtent[0]));
@@ -586,8 +585,4 @@ export const convertJsonToCsv = rows => {
   });
   csv.unshift(header.join('\t'));
   return csv.join('\r\n');
-};
-
-export const closest = () => {
-  return null;
 };
