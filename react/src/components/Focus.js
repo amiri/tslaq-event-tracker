@@ -20,7 +20,7 @@ import {
   margin,
   synopsis,
 } from './utils/Chart';
-import { AnnotationCallout } from 'react-annotation';
+import { AnnotationCalloutCircle } from 'react-annotation';
 import { isNil, isEmpty, compact, min, max } from 'lodash';
 import ReactGA from 'react-ga';
 
@@ -57,6 +57,12 @@ const Focus = ({
   // Scales
   const xScale = getXScale({ xExtent: xExtent2, width });
   const yScale = getYScale({ yExtent, height });
+
+  const [xStart, xEnd] = xScale.range();
+  const xMidPoint = (xEnd - xStart) / 2;
+
+  const [yStart, yEnd] = yScale.range();
+  const yMidPoint = (yEnd - yStart) / 2;
 
   const [hover, setHover] = useState(null);
 
@@ -111,8 +117,8 @@ const Focus = ({
         const cs = isNil(categories) ? [] : categories;
         const radius = 5;
         note.wrap = 200;
-        note.orientation = null;
-        note.align = 'dynamic';
+        note.orientation = 'leftRight';
+        note.align = 'top';
         note.lineType = null;
         note.bgPadding = 10;
         const thisY =
@@ -122,14 +128,15 @@ const Focus = ({
         const circleClasses = compact(['note-circle', ...cs.map(c => c.id)]);
         return (
           <g key={i}>
-            <AnnotationCallout
+            <AnnotationCalloutCircle
               x={x}
               y={thisY}
-              dx={20}
+              dx={x > xMidPoint ? -20 : 20}
               color={'#444444'}
-              dy={20}
+              dy={y > yMidPoint ? -20 : 20}
               note={note}
               className={hover === i ? '' : 'hidden'}
+              subject={{radius}}
             />
             <circle
               fill={isEmpty(cs) ? 'black' : colorScale(cs[0].fullName)}
