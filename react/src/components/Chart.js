@@ -180,6 +180,7 @@ const Chart = props => {
   ]);
 
   const onBrush = ({ xScale, range }) => {
+    // console.log('onBrush');
     const newDomain = xScale ? range.map(xScale.invert, xScale) : null;
     const moments = newDomain
       ? newDomain.map(t => moment(t).tz('America/New_York'))
@@ -195,6 +196,7 @@ const Chart = props => {
   };
 
   const onZoom = ({ params, eventType }) => {
+    // console.log('onZoom');
     const l = params[0] < margin.left ? margin.left : params[0];
     const r =
       params[1] > width - margin.right ? width - margin.right : params[1];

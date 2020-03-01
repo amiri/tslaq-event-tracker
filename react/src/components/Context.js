@@ -38,6 +38,7 @@ const Context = ({
   // Brush
   function brushed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
+    // const brushType = d3.event && d3.event.sourceEvent && d3.event.sourceEvent.type ? d3.event.sourceEvent.type : '';
     const xRange = xScale.range();
 
     const s = d3.event.selection || xScale.range();
@@ -45,6 +46,8 @@ const Context = ({
       s[0] < xRange[0] ? xRange[0] : s[0],
       s[1] > xRange[1] ? xRange[1] : s[1],
     ];
+    // console.log('Context brush brushType: ', brushType);
+    // console.log('Context brush sel: ', sel);
     brushF({
       range: sel,
       xScale,
@@ -76,6 +79,7 @@ const Context = ({
   // Brush
   useEffect(() => {
     if (brushDomain[0] >= 0 && brushDomain[1] >= 0) {
+      // console.log('Context brushDomain moving to: ', brushDomain);
       const context = d3.select(contextRef.current);
       const contextBrush = context.selectAll('.brush');
       contextBrush.call(brush.move, brushDomain);

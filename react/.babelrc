@@ -3,6 +3,7 @@
         "modern-browsers"
     ],
     "plugins": [
+        "transform-remove-console",
         [
             "@babel/plugin-transform-runtime",
             {

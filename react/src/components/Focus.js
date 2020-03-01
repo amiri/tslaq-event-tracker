@@ -21,7 +21,7 @@ import {
   synopsis,
 } from './utils/Chart';
 import { AnnotationCalloutCircle } from 'react-annotation';
-import { isNil, isEmpty, compact, min, max } from 'lodash';
+import { isNil, isEmpty, compact } from 'lodash';
 import ReactGA from 'react-ga';
 
 const Focus = ({
@@ -44,18 +44,18 @@ const Focus = ({
   // console.log(events);
   // Extents
   const xExtent = d3.extent(ps, p => p.priceTime);
-  const xExtent1 = d3.extent(events, e => e.time).map(x => moment(x));
-  const xExtent2 = [
-    min([xExtent[0], xExtent1[0]]),
-    max([xExtent[1], xExtent1[1]]),
-  ];
+  // const xExtent1 = d3.extent(events, e => e.time).map(x => moment(x));
+  // const xExtent2 = [
+  //   min([xExtent[0], xExtent1[0]]),
+  //   max([xExtent[1], xExtent1[1]]),
+  // ];
   // console.log('xExtent: ', xExtent);
   // console.log('xExtent1: ', xExtent1);
   // console.log('xExtent2: ', xExtent2);
   const yExtent = d3.extent(ps, p => p.close);
 
   // Scales
-  const xScale = getXScale({ xExtent: xExtent2, width });
+  const xScale = getXScale({ xExtent, width });
   const yScale = getYScale({ yExtent, height });
 
   const [xStart, xEnd] = xScale.range();
@@ -166,10 +166,19 @@ const Focus = ({
   // Zoom
   function zoomed() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
+    // const zoomType = d3.event && d3.event.sourceEvent && d3.event.sourceEvent.type ? d3.event.sourceEvent.type : '';
     const t = d3.event.transform;
     const move = xScale.range().map(t.invertX, t);
+
+    const xRange = xScale.range();
+    const sel = [
+      move[0] < xRange[0] ? xRange[0] : move[0],
+      move[1] > xRange[1] ? xRange[1] : move[1],
+    ];
+    // console.log('Focus zoom zoomType: ', zoomType);
+    // console.log('Focus zoom move: ', sel);
     zoomF({
-      params: move,
+      params: sel,
       eventType: d3.event.sourceEvent ? d3.event.sourceEvent.type : null,
     });
   }
@@ -237,8 +246,9 @@ const Focus = ({
   // Zoom
   useEffect(() => {
     if (zoomDomain[0] >= 0 && zoomDomain[1] >= 0) {
-      const svg = d3.select(svgRef.current);
-      const focusZoom = svg.selectAll('.zoom');
+      // console.log('Focus scaling to: ', zoomDomain);
+      const focus = d3.select(svgRef.current);
+      const focusZoom = focus.selectAll('.zoom');
       focusZoom.call(
         zoom.transform,
         d3.zoomIdentity
