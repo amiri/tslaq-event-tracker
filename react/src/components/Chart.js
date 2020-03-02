@@ -20,6 +20,7 @@ import {
   includes,
   isNil,
   merge,
+  sortBy,
 } from 'lodash';
 import Focus from './Focus';
 import Context from './Context';
@@ -114,7 +115,7 @@ const Chart = props => {
   const esFiltered = useMemo(
     () =>
       es
-        ? es
+        ? sortBy(es, e => e.eventTime.toDate())
             .filter(e =>
               isEmpty(dateRange)
                 ? true
