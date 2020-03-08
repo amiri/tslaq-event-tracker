@@ -3,7 +3,6 @@
         "modern-browsers"
     ],
     "plugins": [
-        "transform-remove-console",
         [
             "@babel/plugin-transform-runtime",
             {
@@ -15,5 +14,10 @@
             }
         ],
         ["import", { "libraryName": "antd", "style": "css" }]
-    ]
+    ],
+    "env": {
+      "production": {
+        "plugins": ["transform-remove-console"]
+    }
+  }
 }

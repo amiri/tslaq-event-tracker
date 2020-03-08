@@ -47,5 +47,6 @@ const NewCategory = props => {
     </Modal>
   );
 };
+NewCategory.whyDidYouRender = true;
 
 export default NewCategory;

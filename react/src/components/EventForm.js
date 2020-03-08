@@ -4,7 +4,7 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { has, isNil, compact, isArray } from 'lodash';
+import { has, compact, isArray } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
 import {
@@ -13,6 +13,7 @@ import {
   getEventEdits,
 } from './utils/Chart';
 import ReactGA from 'react-ga';
+import * as QueryString from 'query-string';
 
 const transformApiError = ({ data }) => {
   if (
@@ -46,17 +47,21 @@ const EventSchema = Yup.object().shape({
     .of(Yup.string().min(1)),
 });
 
+const retrieveStoredEvent = () =>
+  JSON.parse(sessionStorage.getItem('eventEditing'));
+
 const EventForm = ({
   setVisible,
-  event,
+  event = retrieveStoredEvent(),
   categoryOptions: children,
   valuePerOptionName,
   history,
   location,
 }) => {
   const { dispatch } = useContext(EventsContext);
+  const params = QueryString.parse(location.search);
 
-  const editMode = !isNil(event.id) ? true : false;
+  const editMode = event || params.id ? true : false;
   // console.log('EventForm: event before Formik: ', event);
   // console.log('EventForm: event before Formik: ', event);
 
@@ -94,6 +99,7 @@ const EventForm = ({
             };
         // console.log('EventForm: onSubmit eventData: ', eventData);
         if (editMode) {
+          // console.log('editMode eventForm eventData: ', eventData);
           await window.api
             .putEventsById(event.id, eventData)
             .then(res => res.data)
@@ -113,6 +119,7 @@ const EventForm = ({
               actions.setErrors(transformedError);
             });
           setVisible(false);
+          history.goBack();
         } else {
           await window.api
             .postEvents(eventData)
@@ -130,7 +137,9 @@ const EventForm = ({
               const transformedError = transformApiError(apiError);
               actions.setErrors(transformedError);
             });
+          sessionStorage.removeItem('eventEditing');
           setVisible(false);
+          history.goBack();
         }
       }}
       validateOnBlur={false}
@@ -176,9 +185,12 @@ const EventForm = ({
             help={errors && errors.body ? errors.body : ''}
           >
             <Qeditor
-              onChange={change => setFieldValue('body', change)}
+              onChange={change => {
+                setFieldValue('body', change);
+              }}
               onBlur={handleBlur}
               body={values.body}
+              eventId={params.id}
             />
           </Form.Item>
           <Form.Item
@@ -237,5 +249,6 @@ const EventForm = ({
     />
   );
 };
+EventForm.whyDidYouRender = true;
 
 export default EventForm;

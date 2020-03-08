@@ -139,7 +139,7 @@ const Focus = ({
               subject={{ radius }}
             />
             <circle
-              fill={isEmpty(cs) ? 'black' : colorScale(cs[0].fullName)}
+              fill={isEmpty(cs) ? 'black' : colorScale()(cs[0].fullName)}
               r={radius}
               cx={x}
               cy={thisY}
@@ -283,5 +283,6 @@ const Focus = ({
     </svg>
   );
 };
+Focus.whyDidYouRender = true;
 
 export default Focus;

@@ -31,5 +31,6 @@ const Analytics = ({ children, trackingId }) => {
   }, [history, location, trackingId]);
   return children;
 };
+Analytics.whyDidYouRender = true;
 
 export default withRouter(Analytics);

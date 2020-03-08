@@ -36,5 +36,6 @@ const Import = props => {
     </Modal>
   );
 };
+Import.whyDidYouRender = true;
 
 export default Import;

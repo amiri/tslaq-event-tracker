@@ -8,7 +8,7 @@ import { Button } from 'antd';
 import { useSlate } from 'slate-react';
 
 const ButtonGroup = Button.Group;
-const Toolbar = () => {
+const Toolbar = ({ eventId }) => {
   const editor = useSlate();
   return (
     <div>
@@ -21,7 +21,7 @@ const Toolbar = () => {
       </ButtonGroup>
       <ButtonGroup>
         <LinkButton editor={editor} />
-        <ImageButton editor={editor} />
+        <ImageButton editor={editor} eventId={eventId} />
         <TwitterButton editor={editor} />
       </ButtonGroup>
     </div>

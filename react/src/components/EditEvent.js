@@ -20,12 +20,18 @@ const EditEvent = props => {
   const eventId = location.state ? location.state.eventId : eventIds[0];
   // console.log('EditEvent: eventId: ', eventId);
   const event = filteredEvents.find(e => e.id === eventId);
+  // console.log('setting eventEditing: ', JSON.stringify(event));
+  if (event) {
+    sessionStorage.setItem('eventEditing', JSON.stringify(event));
+  }
 
   useEffect(() => {
     setVisible(location.state ? location.state.visible : true);
   }, []);
 
   const handleClose = () => {
+    sessionStorage.removeItem('eventEditing');
+    sessionStorage.removeItem('imageUploads');
     setVisible(false);
     history.goBack();
   };
@@ -49,5 +55,6 @@ const EditEvent = props => {
     </Modal>
   );
 };
+EditEvent.whyDidYouRender = true;
 
 export default EditEvent;

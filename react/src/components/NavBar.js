@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { ChartContext } from '../contexts/ChartContext';
 import { EventsContext } from '../contexts/EventsContext';
@@ -91,10 +91,14 @@ const NavBar = props => {
     fileDownload(csv, fileName);
   };
 
-  const viewEvents = ({ history }) => {
+  // const viewEvents = ({ history }) => {
+  //   const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
+  //   openViewModal({ id, history });
+  // };
+  const viewEvents = useCallback(({history}) => {
     const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
     openViewModal({ id, history });
-  };
+  }, [filteredEvents]);
 
   return (
     <Router>
@@ -195,5 +199,6 @@ const NavBar = props => {
     </Router>
   );
 };
+NavBar.whyDidYouRender = true;
 
 export default NavBar;

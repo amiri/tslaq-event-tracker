@@ -285,6 +285,14 @@ export const openViewModal = ({ id, history }) => {
   });
 };
 
+export const openImageUploadModal = ({ history, id }) => {
+  history.push({
+    pathname: '/event/edit/image',
+    ...(id && { search: `?id=${id}` }),
+    state: { visible: true },
+  });
+};
+
 export const openEditEventModal = ({ id, eventId, history, location }) => {
   history.push({
     pathname: '/event/edit',
@@ -516,7 +524,7 @@ export const nestCategories = allCategories => {
   return [opts, nsFull, ns];
 };
 
-const seq = d3.scaleSequential(d3.interpolateSpectral);
+export const seq = d3.scaleSequential(d3.interpolateSpectral);
 
 export const getColorScale = allCategories => {
   const range = allCategories.map((_, i) => seq(i / allCategories.length));

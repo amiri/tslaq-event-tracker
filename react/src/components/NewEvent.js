@@ -38,5 +38,6 @@ const NewEvent = props => {
     </Modal>
   );
 };
+NewEvent.whyDidYouRender = true;
 
 export default NewEvent;

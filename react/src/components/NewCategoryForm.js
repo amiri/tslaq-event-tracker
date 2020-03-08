@@ -90,5 +90,6 @@ const NewCategoryForm = ({ setVisible, parentId, dispatch, history }) => {
     </Formik>
   );
 };
+NewCategoryForm.whyDidYouRender = true;
 
 export default NewCategoryForm;

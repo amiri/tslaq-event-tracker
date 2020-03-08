@@ -65,7 +65,7 @@ const EventsDetail = props => {
         <div className='tag-list'>
           {!isNil(e.categories)
             ? e.categories.map(c => (
-                <Tag key={c.id} color={colorScale(c.fullName)}>
+                <Tag key={c.id} color={colorScale()(c.fullName)}>
                   {c.fullName}
                 </Tag>
               ))
@@ -118,5 +118,7 @@ const EventsDetail = props => {
     </Modal>
   );
 };
+EventsDetail.whyDidYouRender = true;
+
 
 export default EventsDetail;
