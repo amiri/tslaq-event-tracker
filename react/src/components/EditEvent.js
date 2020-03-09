@@ -55,6 +55,6 @@ const EditEvent = props => {
     </Modal>
   );
 };
-EditEvent.whyDidYouRender = true;
+//EditEvent.whyDidYouRender = true;
 
 export default EditEvent;

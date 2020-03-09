@@ -140,6 +140,6 @@ const NavBarForm = ({
     </Formik>
   );
 };
-NavBarForm.whyDidYouRender = true;
+//NavBarForm.whyDidYouRender = true;
 
 export default NavBarForm;

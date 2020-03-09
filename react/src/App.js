@@ -135,6 +135,6 @@ const App = () => {
   );
 };
 
-App.whyDidYouRender = true;
+//App.whyDidYouRender = true;
 
 render(React.createElement(App), document.getElementById('root'));

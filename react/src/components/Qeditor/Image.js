@@ -16,6 +16,7 @@ export const ImageButton = ({ editor, eventId }) => {
       onMouseDown={e => {
         e.preventDefault();
         sessionStorage.setItem('imageInsertLocation', JSON.stringify(editor.selection));
+        //console.log('setting imageInsertLocation: ', editor.selection);
         openImageUploadModal({ history, id: eventId });
       }}
     />
@@ -56,8 +57,9 @@ export const withImages = editor => {
 export const insertImage = (editor, url, location) => {
   const text = { text: '' };
   const image = { type: 'image', url, children: [text] };
+    //console.log('insertImage imageInsertLocation: ', location);
   try {
-    Transforms.insertNodes(editor, image, ...(location && {at: location}));
+    Transforms.insertNodes(editor, image, (location && {at: location}));
     Transforms.insertNodes(editor, { type: 'paragraph', children: [text] });
     // console.log('insertImage successful');
   } catch (error) {

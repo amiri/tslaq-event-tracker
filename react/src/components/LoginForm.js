@@ -123,6 +123,6 @@ const LoginForm = ({ setVisible, destination, history }) => {
     />
   );
 };
-LoginForm.whyDidYouRender = true;
+//LoginForm.whyDidYouRender = true;
 
 export default LoginForm;

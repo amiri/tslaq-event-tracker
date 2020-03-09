@@ -80,7 +80,7 @@ const EventForm = ({
         time: has(event, 'time') ? event.time : '',
         title: has(event, 'title') ? event.title : '',
         categories: has(event, 'categories')
-          ? event.categories.map(c => c.id)
+          ? (event.categories ? event.categories.map(c => c.id) : [])
           : [],
       }}
       onSubmit={async (values, actions) => {
@@ -185,7 +185,7 @@ const EventForm = ({
             help={errors && errors.body ? errors.body : ''}
           >
             <Qeditor
-              onChange={change => {
+              formikChange={change => {
                 setFieldValue('body', change);
               }}
               onBlur={handleBlur}
@@ -249,6 +249,6 @@ const EventForm = ({
     />
   );
 };
-EventForm.whyDidYouRender = true;
+//EventForm.whyDidYouRender = true;
 
 export default EventForm;

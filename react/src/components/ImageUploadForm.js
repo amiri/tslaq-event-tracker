@@ -148,6 +148,6 @@ const ImageUploadForm = ({ setVisible }) => {
     />
   );
 };
-ImageUploadForm.whyDidYouRender = true;
+//ImageUploadForm.whyDidYouRender = true;
 
 export default ImageUploadForm;

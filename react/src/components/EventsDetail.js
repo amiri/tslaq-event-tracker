@@ -118,7 +118,7 @@ const EventsDetail = props => {
     </Modal>
   );
 };
-EventsDetail.whyDidYouRender = true;
+//EventsDetail.whyDidYouRender = true;
 
 
 export default EventsDetail;

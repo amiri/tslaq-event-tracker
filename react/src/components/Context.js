@@ -100,6 +100,6 @@ const Context = ({
     </svg>
   );
 };
-Context.whyDidYouRender = true;
+//Context.whyDidYouRender = true;
 
 export default Context;

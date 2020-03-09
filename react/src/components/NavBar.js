@@ -199,6 +199,6 @@ const NavBar = props => {
     </Router>
   );
 };
-NavBar.whyDidYouRender = true;
+//NavBar.whyDidYouRender = true;
 
 export default NavBar;

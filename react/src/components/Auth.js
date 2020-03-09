@@ -75,6 +75,6 @@ export const UserRequired = ({
     />
   );
 };
-Auth.whyDidYouRender = true;
+//Auth.whyDidYouRender = true;
 
 export default Auth;

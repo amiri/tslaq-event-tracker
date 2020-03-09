@@ -38,6 +38,6 @@ const NewEvent = props => {
     </Modal>
   );
 };
-NewEvent.whyDidYouRender = true;
+//NewEvent.whyDidYouRender = true;
 
 export default NewEvent;

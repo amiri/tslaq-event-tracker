@@ -30,5 +30,5 @@ const ImageUpload = props => {
     </Modal>
   );
 };
-ImageUpload.whyDidYouRender = true;
+//ImageUpload.whyDidYouRender = true;
 export default ImageUpload;

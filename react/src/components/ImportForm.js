@@ -302,6 +302,6 @@ const ImportForm = ({ dispatch, setVisible, valuePerOptionFullName }) => {
     </Formik>
   );
 };
-ImportForm.whyDidYouRender = true;
+//ImportForm.whyDidYouRender = true;
 
 export default ImportForm;

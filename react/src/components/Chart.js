@@ -265,6 +265,6 @@ const Chart = props => {
     </div>
   );
 };
-Chart.whyDidYouRender = true;
+//Chart.whyDidYouRender = true;
 
 export default Chart;

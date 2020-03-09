@@ -283,6 +283,6 @@ const Focus = ({
     </svg>
   );
 };
-Focus.whyDidYouRender = true;
+//Focus.whyDidYouRender = true;
 
 export default Focus;

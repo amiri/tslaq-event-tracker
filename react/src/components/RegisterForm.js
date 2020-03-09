@@ -141,6 +141,6 @@ const RegisterForm = ({ setVisible, destination, history }) => {
     />
   );
 };
-RegisterForm.whyDidYouRender = true;
+//RegisterForm.whyDidYouRender = true;
 
 export default RegisterForm;
