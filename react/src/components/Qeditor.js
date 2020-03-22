@@ -8,35 +8,38 @@ import { withTwitter } from './Qeditor/Twitter';
 import { withLinks } from './Qeditor/Link';
 import { renderLeaf, renderElement } from './Qeditor/Render';
 
+const getUpdatedBody = ({ body, editorRef }) => {
+  const storedImageUploads = sessionStorage.getItem('imageUploads');
+  const imageLocation = sessionStorage.getItem('imageInsertLocation');
+  const imageInsertLocation = imageLocation ? JSON.parse(imageLocation) : null;
+  const imageUploads = storedImageUploads ? JSON.parse(storedImageUploads) : [];
+  if (imageUploads.length) {
+    imageUploads.map(i =>
+      insertImage(editorRef.current, i, imageInsertLocation),
+    );
+  }
+  const newValue = imageUploads.length ? editorRef.current.children : body;
+  sessionStorage.removeItem('imageUploads');
+  return newValue;
+};
+
 const Qeditor = ({ body, formikChange, onBlur, eventId }) => {
   const editor = withTwitter(
     withImages(withLinks(withHistory(withReact(createEditor())))),
   );
+
   const editorRef = useRef(editor);
-  const [value, setValue] = useState(body);
+
+  const updatedBody = getUpdatedBody({ body, editorRef });
+  const [value, setValue] = useState(updatedBody);
 
   return (
     <Slate
       editor={editorRef.current}
       value={value}
       onChange={change => {
-        const storedImageUploads = sessionStorage.getItem('imageUploads');
-        const location = sessionStorage.getItem('imageInsertLocation');
-        const imageInsertLocation = location ? JSON.parse(location) : null;
-          //console.log('imageInsertLocation: ', imageInsertLocation);
-        const imageUploads = storedImageUploads
-          ? JSON.parse(storedImageUploads)
-          : [];
-        if (imageUploads.length) {
-          imageUploads.map(i => insertImage(editorRef.current, i, imageInsertLocation));
-        }
-        const newValue = imageUploads.length
-          ? editorRef.current.children
-          : change;
-        sessionStorage.removeItem('imageUploads');
-        // sessionStorage.removeItem('imageInsertLocation');
-        setValue(newValue);
-        formikChange(newValue);
+        setValue(change);
+        formikChange(change);
       }}
       onBlur={onBlur}
     >
@@ -45,6 +48,6 @@ const Qeditor = ({ body, formikChange, onBlur, eventId }) => {
     </Slate>
   );
 };
-Qeditor.whyDidYouRender = true;
+// Qeditor.whyDidYouRender = true;
 
 export default Qeditor;

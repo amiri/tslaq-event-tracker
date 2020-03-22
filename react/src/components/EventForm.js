@@ -57,13 +57,13 @@ const EventForm = ({
   valuePerOptionName,
   history,
   location,
+  // eslint-disable-next-line no-unused-vars
+  imageUploads,
 }) => {
   const { dispatch } = useContext(EventsContext);
   const params = QueryString.parse(location.search);
 
   const editMode = event || params.id ? true : false;
-  // console.log('EventForm: event before Formik: ', event);
-  // console.log('EventForm: event before Formik: ', event);
 
   return (
     <Formik
@@ -80,7 +80,9 @@ const EventForm = ({
         time: has(event, 'time') ? event.time : '',
         title: has(event, 'title') ? event.title : '',
         categories: has(event, 'categories')
-          ? (event.categories ? event.categories.map(c => c.id) : [])
+          ? event.categories
+            ? event.categories.map(c => c.id)
+            : []
           : [],
       }}
       onSubmit={async (values, actions) => {
@@ -138,6 +140,7 @@ const EventForm = ({
               actions.setErrors(transformedError);
             });
           sessionStorage.removeItem('eventEditing');
+          sessionStorage.removeItem('imageInsertLocation');
           setVisible(false);
           history.goBack();
         }
@@ -249,6 +252,6 @@ const EventForm = ({
     />
   );
 };
-//EventForm.whyDidYouRender = true;
+// EventForm.whyDidYouRender = true;
 
 export default EventForm;

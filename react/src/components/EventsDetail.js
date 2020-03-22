@@ -120,5 +120,4 @@ const EventsDetail = props => {
 };
 //EventsDetail.whyDidYouRender = true;
 
-
 export default EventsDetail;

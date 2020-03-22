@@ -8,16 +8,17 @@ import { useHistory } from 'react-router';
 
 export const ImageButton = ({ editor, eventId }) => {
   const history = useHistory();
-  
   return (
     <Button
       size='small'
       icon='file-image'
       onMouseDown={e => {
         e.preventDefault();
-        sessionStorage.setItem('imageInsertLocation', JSON.stringify(editor.selection));
-        //console.log('setting imageInsertLocation: ', editor.selection);
-        openImageUploadModal({ history, id: eventId });
+        sessionStorage.setItem(
+          'imageInsertLocation',
+          JSON.stringify(editor.selection),
+        );
+        openImageUploadModal({ history, id: eventId, editor });
       }}
     />
   );
@@ -57,11 +58,13 @@ export const withImages = editor => {
 export const insertImage = (editor, url, location) => {
   const text = { text: '' };
   const image = { type: 'image', url, children: [text] };
-    //console.log('insertImage imageInsertLocation: ', location);
   try {
-    Transforms.insertNodes(editor, image, (location && {at: location}));
+    Transforms.insertNodes(editor, image, {
+      mode: 'lowest',
+      voids: true,
+      ...(location && { at: location }),
+    });
     Transforms.insertNodes(editor, { type: 'paragraph', children: [text] });
-    // console.log('insertImage successful');
   } catch (error) {
     console.error('insertImage: error: ', error);
   }

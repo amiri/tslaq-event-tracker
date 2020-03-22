@@ -15,15 +15,12 @@ const EditEvent = props => {
   const { filteredEvents } = useContext(EventsContext);
   const params = QueryString.parse(location.search);
   const eventIds = !isNil(params.id) ? decryptIds({ ids: params.id }) : [];
-  // console.log('EditEvent: eventIds: ', eventIds);
-  // console.log('EditEvent: location: ', location);
   const eventId = location.state ? location.state.eventId : eventIds[0];
-  // console.log('EditEvent: eventId: ', eventId);
   const event = filteredEvents.find(e => e.id === eventId);
-  // console.log('setting eventEditing: ', JSON.stringify(event));
   if (event) {
     sessionStorage.setItem('eventEditing', JSON.stringify(event));
   }
+  const imageUploads = sessionStorage.getItem('imageUploads');
 
   useEffect(() => {
     setVisible(location.state ? location.state.visible : true);
@@ -51,6 +48,7 @@ const EditEvent = props => {
         setVisible={setVisible}
         history={history}
         location={location}
+        imageUploads={imageUploads}
       />
     </Modal>
   );

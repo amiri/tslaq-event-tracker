@@ -95,10 +95,13 @@ const NavBar = props => {
   //   const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
   //   openViewModal({ id, history });
   // };
-  const viewEvents = useCallback(({history}) => {
-    const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
-    openViewModal({ id, history });
-  }, [filteredEvents]);
+  const viewEvents = useCallback(
+    ({ history }) => {
+      const id = encryptIds({ ids: filteredEvents.map(e => e.id) });
+      openViewModal({ id, history });
+    },
+    [filteredEvents],
+  );
 
   return (
     <Router>

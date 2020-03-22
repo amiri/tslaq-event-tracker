@@ -1,9 +1,14 @@
-import React, { useCallback, useState, useContext, useRef, useMemo } from 'react';
+import React, {
+  useCallback,
+  useState,
+  useContext,
+  useRef,
+  useMemo,
+} from 'react';
 import { EventsContext } from '../contexts/EventsContext';
 import { PricesContext } from '../contexts/PricesContext';
 import { ChartContext } from '../contexts/ChartContext';
 import moment from 'moment';
-import * as d3 from 'd3';
 require('moment-timezone');
 import useComponentSize from '@rehooks/component-size';
 import {
@@ -12,7 +17,6 @@ import {
   sameDateRange,
   getQueryConfig,
   getColorScale,
-  seq,
 } from './utils/Chart';
 import {
   omit,
@@ -182,35 +186,41 @@ const Chart = props => {
     width - margin.right,
   ]);
 
-  const onBrush = useCallback(({xScale, range}) => {
-    const newDomain = xScale ? range.map(xScale.invert, xScale) : null;
-    const moments = newDomain
-      ? newDomain.map(t => moment(t).tz('America/New_York'))
-      : null;
-    const dateRange = { startDate: moments[0], endDate: moments[1] };
-    const params = mapValues(dateRange, v => {
-      return v.format('YYYY-MM-DD');
-    });
-    updateQueryParams({ params, history, location });
-    if (!isEqual(range, zoomDomain)) {
-      setZoomDomain(range);
-    }
-  }, [zoomDomain, history, location]);
-
-  const onZoom = useCallback(({params, eventType}) => {
-    const l = params[0] < margin.left ? margin.left : params[0];
-    const r =
-      params[1] > width - margin.right ? width - margin.right : params[1];
-    const checkedR = r - l < 5 ? l + 5 : r;
-    if (eventType === 'wheel' || eventType === 'mousemove') {
-      if (!isEqual([l, checkedR], brushDomain)) {
-        setBrushDomain([l, checkedR]);
+  const onBrush = useCallback(
+    ({ xScale, range }) => {
+      const newDomain = xScale ? range.map(xScale.invert, xScale) : null;
+      const moments = newDomain
+        ? newDomain.map(t => moment(t).tz('America/New_York'))
+        : null;
+      const dateRange = { startDate: moments[0], endDate: moments[1] };
+      const params = mapValues(dateRange, v => {
+        return v.format('YYYY-MM-DD');
+      });
+      updateQueryParams({ params, history, location });
+      if (!isEqual(range, zoomDomain)) {
+        setZoomDomain(range);
       }
-    }
-  }, [margin, brushDomain]);
+    },
+    [zoomDomain, history, location],
+  );
+
+  const onZoom = useCallback(
+    ({ params, eventType }) => {
+      const l = params[0] < margin.left ? margin.left : params[0];
+      const r =
+        params[1] > width - margin.right ? width - margin.right : params[1];
+      const checkedR = r - l < 5 ? l + 5 : r;
+      if (eventType === 'wheel' || eventType === 'mousemove') {
+        if (!isEqual([l, checkedR], brushDomain)) {
+          setBrushDomain([l, checkedR]);
+        }
+      }
+    },
+    [margin, brushDomain],
+  );
 
   const colorScale = useCallback(() => {
-      return getColorScale(allCategories);
+    return getColorScale(allCategories);
   }, [allCategories]);
 
   return (

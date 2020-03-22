@@ -545,7 +545,7 @@ export const synopsis = text => {
 export const getEventEdits = ({ updates, event }) => {
   const eventWithCatMap = Object.assign({}, event, {
     body: JSON.parse(event.body),
-    ...(event.categories && {categories: event.categories.map(c => c.id)}),
+    ...(event.categories && { categories: event.categories.map(c => c.id) }),
   });
   const diffs = difference(updates, eventWithCatMap);
   const result = Object.assign({}, diffs, {

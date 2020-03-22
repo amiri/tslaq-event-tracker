@@ -72,10 +72,7 @@ const ImageUploadForm = ({ setVisible }) => {
           }),
         );
         const allUrls = compact([values.url, ...urls]);
-        // console.log('allUrls: ', allUrls);
         sessionStorage.setItem('imageUploads', JSON.stringify(allUrls));
-        // const insertions = allUrls.map(u => insertImage(editor, u));
-        // console.log('upload insertions: ', insertions);
         setVisible(false);
         history.goBack();
       }}
