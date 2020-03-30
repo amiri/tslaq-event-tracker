@@ -4,7 +4,7 @@ import { EventsContext } from '../contexts/EventsContext';
 import React, { useContext } from 'react';
 import * as alerts from '../alerts';
 import { Formik } from 'formik';
-import { has, compact, isArray } from 'lodash';
+import { isEmpty, omit, has, compact, isArray } from 'lodash';
 import { Form, Input, Select, Button, Spin, DatePicker } from 'antd';
 import Qeditor from './Qeditor';
 import {
@@ -63,7 +63,8 @@ const EventForm = ({
   const { dispatch } = useContext(EventsContext);
   const params = QueryString.parse(location.search);
 
-  const editMode = event || params.id ? true : false;
+  const haveEvent = event && !isEmpty(omit(event, ['time'])) ? true : false;
+  const editMode = haveEvent || params.id ? true : false;
 
   return (
     <Formik
